@@ -278,6 +278,15 @@ message TaskInfo {
   optional ExecutorInfo executor = 5;
   optional CommandInfo command = 7;
   optional bytes data = 6;
+  optional TaskChunk sub_tasks = 8;
+}
+
+/**
+ * Describes a collection of tasks to be run for a single offer.
+ * Will eventually encompass task dependencies.
+ */
+message TaskChunk {
+  repeated TaskInfo tasks = 1;
 }
 
 
