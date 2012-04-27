@@ -38,6 +38,9 @@ class ExecutorWrapper(mesos.Executor):
     def shutdown(self, driver):
         self.executor.shutdown(driver)
 
+    def error(self, driver, message):
+        self.executor.error(driver, message)
+
 
 class SchedulerWrapper(mesos.Scheduler):
     """
@@ -72,3 +75,6 @@ class SchedulerWrapper(mesos.Scheduler):
 
     def executorLost(self, driver, executorId, slaveId, status):
         self.scheduler.executorLost(driver, executorId, slaveId, status)
+
+    def error(self, driver, message):
+        self.scheduler.error(driver, message)
