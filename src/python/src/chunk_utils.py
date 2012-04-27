@@ -46,6 +46,7 @@ class SchedulerWrapper(mesos.Scheduler):
     """
     Delegates calls to the underlying scheduler.
     """
+
     def __init__(self, scheduler):
         self.scheduler = scheduler
 
