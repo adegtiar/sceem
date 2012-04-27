@@ -1,12 +1,120 @@
 import mesos
 
 
-class TaskNode(object):
+class MessageType:
+    SUBTASK_UPDATE, KILL_SUBTASKS = range(2)
+
+
+def getMessage(data):
+    #TODO: implement
+#    partially de-serialize data
+#    if matches MessageTypes:
+#        return deserialize_data(data)
+#    else:
+#        return None
     pass
 
 
-class TaskTable(object):
+def serializeSubtaskUpdate(taskUpdate):
+    #TODO: implement
     pass
+
+
+def serializeKillSubtasks(subtaskIds):
+    #TODO: implement
+    pass
+
+
+def isTaskChunk(task):
+    #TODO: implement
+    pass
+
+
+def getNextSubTask(taskChunk):
+    #TODO: implement
+    return subTaskIterator(taskChunk).next()
+
+
+def removeSubtask(parent, subtask):
+    #TODO: implement
+    parent.sub_tasks.remove(subtask)
+
+
+def subTaskIterator(taskChunk):
+    #TODO: implement
+    #for subtask in taskChunk.
+    pass
+
+
+def isTerminalUpdate(statusUpdate):
+    #TODO: implement
+    return statusUpdate in (TASK_FINISHED, TASK_FAILED, TASK_KILLED, TASK_LOST)
+
+
+class TaskTable:
+    """A table of all currently running/pending tasks.
+    """
+
+    class TaskNode:
+        """Stores the graph node of a task within the table.
+        """
+
+        def __init__(self, parent, task, state):
+            self.parent = parent
+            self.task = task
+            self.state = state
+
+    def __init__(self):
+        # Maps taskId to TaskNode.
+        self.all_tasks = {}
+        # The root container for all tasks. TODO: fix.
+        self.rootTask = TaskInfo(name=None, task_id=None, slave_id=None)
+
+    def addTask(task, parent=None):
+        # TODO: fix.
+        newNode = TaskNode(parent, task, TASK_STAGING)
+        all_tasks[task.task_id] = newNode
+        if isTaskChunk(task):
+            for subTask in task.sub_tasks:
+                addTask(subTask, task)
+
+    def removeTask(taskId):
+        # TODO: fix.
+        taskNode = all_tasks[taskId]
+        if taskNode.parent:
+            removeSubTask(taskNode.parent, taskNode.task)
+        if isTaskChunk(taskNode.task):
+            for subTask in task.sub_tasks: # TODO: make this iterable.
+                removeTask(subTask.id)
+        del all_tasks[taskId]
+
+    def hasSubTask(taskChunkId):
+        # TODO: implement
+        pass
+
+    def getNextTask(taskChunkId):
+        # TODO: fix.
+        return getNextSubTask(all_tasks[taskChunkId].task)
+
+    def updateState(taskId, state):
+        # TODO: fix.
+        self.all_tasks[taskId].state = state
+
+    def getState(taskId):
+        # TODO: fix.
+        return all_tasks[taskId].state
+
+    def getParent(subTaskId):
+        # TODO: fix.
+        return all_tasks[taskId].parent
+
+    def isRunning(taskId):
+        # TODO: fix.
+        return getState(taskId) == TASK_RUNNING
+
+    def isSubTask(taskId):
+        # TODO: fix.
+        return taskId in self and getParent(taskId) is not rootTask
 
 
 class ExecutorWrapper(mesos.Executor):
