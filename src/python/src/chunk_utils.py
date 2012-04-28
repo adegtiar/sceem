@@ -40,7 +40,7 @@ def newTaskChunk():
     taskChunk = mesos_pb2.TaskInfo()
     # Initialize the empty sub_tasks field.
     taskChunk.sub_tasks.tasks.extend(())
-    taskChunk
+    return taskChunk
 
 
 def addSubTask(taskChunk, subTask):
@@ -281,7 +281,7 @@ class ExecutorDriverWrapper(mesos.ExecutorDriver):
     def __init__(self, driver):
         self.driver = driver
 
-    def start(self): 
+    def start(self):
         self.driver.start()
 
     def stop(self):
