@@ -58,6 +58,13 @@ def isTaskChunk(task):
     return task.HasField("sub_tasks")
 
 
+def numSubTasks(taskChunk):
+    """
+    Returns the number of direct sub tasks in the given task chunk.
+    """
+    return len(taskChunk.sub_tasks.tasks)
+
+
 def getNextSubTask(taskChunk):
     """
     Gets the next sub task within the given chunk.
@@ -132,12 +139,21 @@ class TaskTable(object):
         Adds the give task to the table.
 
         If no parent is specified, adds it as a top-level task.
+        If the task is already in the table, there is no effect.
         """
+        if task.task_id in self:
+            return
         if not parent:
             parent = self.rootTask
         all_tasks[task.task_id] = TaskNode(parent, task)
         for subTask in subTaskIterator(task):
             addTask(subTask, task)
+
+    def __getitem__(self, taskId):
+        """
+        Retrieves from the table the task with the given id.
+        """
+        return all_tasks[taskId].task
 
     def __delitem__(self, taskId):
         """
@@ -154,10 +170,6 @@ class TaskTable(object):
         Checks if the task with the given id is in the table.
         """
         return taskId in all_tasks
-
-    def getNextTask(taskChunkId):
-        # TODO: fix.
-        return getNextSubTask(all_tasks[taskChunkId].task)
 
     def updateState(taskId, state):
         # TODO: fix.
