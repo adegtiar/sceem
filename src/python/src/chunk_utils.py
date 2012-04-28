@@ -69,8 +69,11 @@ def subTaskIterator(taskChunk):
 
 
 def isTerminalUpdate(statusUpdate):
-    #TODO: implement
-    return statusUpdate in (TASK_FINISHED, TASK_FAILED, TASK_KILLED, TASK_LOST)
+    """Checks whether the given TaskStatus is for a terminal state.
+    """
+    taskState = statusUpdate.state
+    return taskState in (mesos_pb2.TASK_FINISHED, mesos_pb2.TASK_FAILED,
+            mesos_pb2.TASK_KILLED, mesos_pb2.TASK_LOST)
 
 
 class TaskTable:
