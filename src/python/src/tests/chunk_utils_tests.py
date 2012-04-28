@@ -55,7 +55,7 @@ class TestTaskChunks(unittest.TestCase):
         subTasks = []
         for i in range(5):
             subTask = mesos_pb2.TaskInfo()
-            subTask.task_id.value = "{0}".format(i)
+            subTask.task_id.value = "id{0}".format(i)
             subTasks.append(subTask)
             addSubTask(self.chunk, subTask)
         extracted = [task for task in subTaskIterator(self.chunk)]
@@ -75,16 +75,30 @@ class TestTaskTable(unittest.TestCase):
 
     def test_addTask(self):
         task = mesos_pb2.TaskInfo()
-        task.task_id.value = "foo"
+        task.task_id.value = "id1"
         self.table.addTask(task)
+
         task = mesos_pb2.TaskInfo()
-        task.task_id.value = "foo2"
+        task.task_id.value = "id2"
         self.table.addTask(task)
+
         self.assertEqual(2, len(self.table))
 
     def test_addTask_error(self):
         with self.assertRaises(ValueError):
             self.table.addTask(mesos_pb2.TaskInfo())
+
+    def test_addTask_TaskChunk(self):
+        task1 = mesos_pb2.TaskInfo()
+        task1.task_id.value = "id1"
+
+        task2 = mesos_pb2.TaskInfo()
+        task2.task_id.value = "id2"
+
+        taskChunk = newTaskChunk((task1, task2))
+        taskChunk.task_id.value = "chunk_id1"
+        self.table.addTask(taskChunk)
+        self.assertEqual(3, len(self.table))
 
 
 if __name__ == '__main__':
