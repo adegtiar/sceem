@@ -73,6 +73,16 @@ class TestTaskTable(unittest.TestCase):
     def test_len(self):
         self.assertEqual(0, len(self.table))
 
+    def test_addTask(self):
+        task = mesos_pb2.TaskInfo()
+        task.task_id.value = "foo"
+        self.table.addTask(task)
+        self.assertEqual(1, len(self.table))
+
+    def test_addTask_error(self):
+        with self.assertRaises(ValueError):
+            self.table.addTask(mesos_pb2.TaskInfo())
+
 
 if __name__ == '__main__':
     unittest.main()
