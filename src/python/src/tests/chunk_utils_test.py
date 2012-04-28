@@ -14,6 +14,7 @@ import unittest
 
 from mock import MagicMock
 
+
 class TestTaskChunks(unittest.TestCase):
 
     def setUp(self):
@@ -47,6 +48,16 @@ class TestTaskChunks(unittest.TestCase):
         self.assertEqual(0, chunk_utils.numSubTasks(self.chunk))
         with self.assertRaises(ValueError):
             chunk_utils.nextSubTask(self.chunk)
+
+    def test_subTaskIterator(self):
+        subTasks = []
+        for i in range(5):
+            subTask = mesos_pb2.TaskInfo()
+            subTask.task_id.value = "{0}".format(i)
+            subTasks.append(subTask)
+            chunk_utils.addSubTask(self.chunk, subTask)
+        extracted = [task for task in chunk_utils.subTaskIterator(self.chunk)]
+        self.assertEqual(subTasks, extracted)
 
 
 if __name__ == '__main__':
