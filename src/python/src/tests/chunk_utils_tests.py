@@ -71,7 +71,7 @@ class TestTaskTable(unittest.TestCase):
     def setUp(self):
         self.table = TaskTable()
 
-    def get_tasks(self, num):
+    def new_tasks(self, num):
         tasks = []
         for i in range(num):
             task = mesos_pb2.TaskInfo()
@@ -79,11 +79,16 @@ class TestTaskTable(unittest.TestCase):
             tasks.append(task)
         return tasks
 
+    def new_task_chunk(self, subTasksPerChunk):
+        taskChunk = newTaskChunk(self.new_tasks(subTasksPerChunk))
+        taskChunk.task_id.value = "chunk_id"
+        return taskChunk
+
     def test_len(self):
         self.assertEqual(0, len(self.table))
 
     def test_addTask(self):
-        for task in self.get_tasks(2):
+        for task in self.new_tasks(2):
             self.table.addTask(task)
 
         self.assertEqual(2, len(self.table))
@@ -93,17 +98,13 @@ class TestTaskTable(unittest.TestCase):
             self.table.addTask(mesos_pb2.TaskInfo())
 
     def test_addTask_task_chunk(self):
-        taskChunk = newTaskChunk(self.get_tasks(2))
-        taskChunk.task_id.value = "chunk_id"
-
-        self.table.addTask(taskChunk)
+        self.table.addTask(self.new_task_chunk(2))
         self.assertEqual(3, len(self.table))
 
     def test_addTask_deep_task_chunk(self):
-        taskChunk = newTaskChunk(self.get_tasks(2))
-        taskChunk.task_id.value = "chunk_id_inner"
+        innerTaskChunk = self.new_task_chunk(2)
 
-        outerTaskChunk = newTaskChunk((taskChunk,))
+        outerTaskChunk = newTaskChunk((innerTaskChunk,))
         outerTaskChunk.task_id.value = "chunk_id_outer"
 
         self.table.addTask(outerTaskChunk)
