@@ -88,7 +88,7 @@ class TestTaskTable(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.table.addTask(mesos_pb2.TaskInfo())
 
-    def test_addTask_TaskChunk(self):
+    def test_addTask_task_chunk(self):
         task1 = mesos_pb2.TaskInfo()
         task1.task_id.value = "id1"
 
@@ -96,9 +96,25 @@ class TestTaskTable(unittest.TestCase):
         task2.task_id.value = "id2"
 
         taskChunk = newTaskChunk((task1, task2))
-        taskChunk.task_id.value = "chunk_id1"
+        taskChunk.task_id.value = "chunk_id"
         self.table.addTask(taskChunk)
         self.assertEqual(3, len(self.table))
+
+    def test_addTask_deep_task_chunk(self):
+        task1 = mesos_pb2.TaskInfo()
+        task1.task_id.value = "id1"
+
+        task2 = mesos_pb2.TaskInfo()
+        task2.task_id.value = "id2"
+
+        taskChunk = newTaskChunk((task1, task2))
+        taskChunk.task_id.value = "chunk_id_inner"
+
+        outerTaskChunk = newTaskChunk((taskChunk,))
+        outerTaskChunk.task_id.value = "chunk_id_outer"
+
+        self.table.addTask(outerTaskChunk)
+        self.assertEqual(4, len(self.table))
 
 
 if __name__ == '__main__':
