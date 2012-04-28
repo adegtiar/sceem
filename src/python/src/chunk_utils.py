@@ -8,6 +8,11 @@ class MessageType:
     SUBTASK_UPDATE, KILL_SUBTASKS = range(2)
 
 
+# TaskStates that indicate the task is done and can be cleaned up.
+TERMINAL_STATES = (mesos_pb2.TASK_FINISHED, mesos_pb2.TASK_FAILED,
+            mesos_pb2.TASK_KILLED, mesos_pb2.TASK_LOST)
+
+
 def getMessage(data):
     #TODO: implement
 #    partially de-serialize data
@@ -18,12 +23,12 @@ def getMessage(data):
     pass
 
 
-def serializeSubtaskUpdate(taskUpdate):
+def serializeSubTaskUpdate(taskUpdate):
     #TODO: implement
     pass
 
 
-def serializeKillSubtasks(subtaskIds):
+def serializeKillSubTasks(subTaskIds):
     #TODO: implement
     pass
 
@@ -46,7 +51,7 @@ def getNextSubTask(taskChunk):
         raise ValueError("Given task chunk has no sub tasks")
 
 
-def removeSubtask(parent, subTaskId):
+def removeSubTask(parent, subTaskId):
     """Removes the subTask with the given id from the parent.
 
     Returns:
@@ -75,11 +80,10 @@ def isTerminalUpdate(statusUpdate):
     """Checks whether the given TaskStatus is for a terminal state.
     """
     taskState = statusUpdate.state
-    return taskState in (mesos_pb2.TASK_FINISHED, mesos_pb2.TASK_FAILED,
-            mesos_pb2.TASK_KILLED, mesos_pb2.TASK_LOST)
+    return taskState in TERMINAL_STATES
 
 
-class TaskTable:
+class TaskTable(object):
     """A table of all currently running/pending tasks.
     """
 
@@ -87,7 +91,7 @@ class TaskTable:
         """Stores the graph node of a task within the table.
         """
 
-        def __init__(self, parent, task, state):
+        def __init__(self, parent, task, state = mesos_pb2.TASK_STAGING):
             self.parent = parent
             self.task = task
             self.state = state
@@ -95,16 +99,17 @@ class TaskTable:
     def __init__(self):
         # Maps taskId to TaskNode.
         self.all_tasks = {}
-        # The root container for all tasks. TODO: fix.
-        self.rootTask = TaskInfo(name=None, task_id=None, slave_id=None)
+        # The root container for all tasks.
+        self.rootTask = mesos_pb2.TaskInfo()
 
     def addTask(task, parent=None):
-        # TODO: fix.
-        newNode = TaskNode(parent, task, TASK_STAGING)
-        all_tasks[task.task_id] = newNode
-        if isTaskChunk(task):
-            for subTask in task.sub_tasks:
-                addTask(subTask, task)
+        """Adds the give task to the table.
+
+        If no parent is specified, adds it as a top-level task.
+        """
+        all_tasks[task.task_id] = TaskNode(parent, task)
+        for subTask in subTaskIterator(task):
+            addTask(subTask, task)
 
     def removeTask(taskId):
         # TODO: fix.
