@@ -18,7 +18,7 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
         Logic to launch TaskChunks by running through sub-tasks one at a time.
 
         """
-        if False: #isTaskChunk(task):
+        if isTaskChunk(task):
             self.pendingTaskChunks.addTask(task)
             runNextSubTask(driver, task.task_id.value)
         else:
@@ -72,7 +72,7 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
         Launches next subtask from current taskChunk
 
         """
-        if False: #self.pendingTaskChunks.hasSubTask(taskChunkId):
+        if self.pendingTaskChunks.hasSubTask(taskChunkId):
             nextSubTaskId = self.pendingTaskChunks.nextSubTask(taskChunkId)
             self.launchTask(driver,nextSubTaskId)
         else:
@@ -85,8 +85,8 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
         recieved
         
         """
-        #parsed_msg = getMessage(data) #TODO: 
-        if False: #parsed_msg and parsed_msg[0] == KILL_SUBTASKS:
+        parsed_msg = getMessage(data) #TODO: 
+        if parsed_msg and parsed_msg[0] == KILL_SUBTASKS:
             self.killSubTasks(driver, parsed_msg[1])
         else:
             #super(TaskChunkExecutor, self).frameworkMessage(driver, message)
