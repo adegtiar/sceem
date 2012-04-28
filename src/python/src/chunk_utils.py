@@ -42,13 +42,14 @@ def serializeKillSubTasks(subTaskIds):
     pass
 
 
-def newTaskChunk():
+def newTaskChunk(subTasks = ()):
     """
     Creates a new empty chunk of tasks.
+    Any given sub tasks are copied into the chunk.
     """
     taskChunk = mesos_pb2.TaskInfo()
     # Initialize the empty sub_tasks field.
-    taskChunk.sub_tasks.tasks.extend(())
+    taskChunk.sub_tasks.tasks.extend(subTasks)
     return taskChunk
 
 
