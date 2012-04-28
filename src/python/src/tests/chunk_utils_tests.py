@@ -33,7 +33,8 @@ class TestTaskChunks(unittest.TestCase):
 
     def test_addSubTask(self):
         addSubTask(self.chunk, self.subTask)
-        self.assertEqual(1, numSubTasks(self.chunk))
+        addSubTask(self.chunk, self.subTask)
+        self.assertEqual(2, numSubTasks(self.chunk))
 
     def test_nextSubTask(self):
         addSubTask(self.chunk, self.subTask)
