@@ -2,7 +2,15 @@ import mesos
 import mesos_pb2
 
 class MessageType:
+    """
+    The type of a subtask message.
+    """
     SUBTASK_UPDATE, KILL_SUBTASKS = range(2)
+
+
+# TaskStates that indicate the task is done and can be cleaned up.
+TERMINAL_STATES = (mesos_pb2.TASK_FINISHED, mesos_pb2.TASK_FAILED,
+            mesos_pb2.TASK_KILLED, mesos_pb2.TASK_LOST)
 
 
 def getMessage(data):
@@ -15,51 +23,106 @@ def getMessage(data):
     pass
 
 
-def serializeSubtaskUpdate(taskUpdate):
+def serializeSubTaskUpdate(taskUpdate):
     #TODO: implement
     pass
 
 
-def serializeKillSubtasks(subtaskIds):
+def serializeKillSubTasks(subTaskIds):
     #TODO: implement
     pass
+
+
+def newTaskChunk():
+    """
+    Creates a new empty chunk of tasks.
+    """
+    taskChunk = mesos_pb2.TaskInfo()
+    # Initialize the empty sub_tasks field.
+    taskChunk.sub_tasks.tasks.extend(())
+    taskChunk
+
+
+def addSubTask(taskChunk, subTask):
+    """
+    Adds a new sub task to a task chunk.
+    """
+    taskChunk.sub_tasks.tasks.extend((subTask,))
 
 
 def isTaskChunk(task):
-    #TODO: implement
-    pass
+    """
+    Checks whether the given TaskInfo represents a chunk of tasks.
+    """
+    return task.HasField("sub_tasks")
+
+
+def numSubTasks(taskChunk):
+    """
+    Returns the number of direct sub tasks in the given task chunk.
+    """
+    return len(taskChunk.sub_tasks.tasks)
 
 
 def getNextSubTask(taskChunk):
-    #TODO: implement
-    return subTaskIterator(taskChunk).next()
+    """
+    Gets the next sub task within the given chunk.
+
+    Raises:
+        ValueError: The given taskChunk has no sub tasks.
+    """
+    try:
+        return next(subTaskIterator(taskChunk))
+    except StopIteration:
+        raise ValueError("The given task has no sub tasks")
 
 
-def removeSubtask(parent, subtask):
-    #TODO: implement
-    parent.sub_tasks.remove(subtask)
+def removeSubTask(taskChunk, subTaskId):
+    """
+    Removes the subTask with the given id from the parent.
+
+    Returns:
+        The removed subTask.
+
+    Raises:
+        KeyError: No subTask with that id is found.
+    """
+    index = 0
+    for subTask in taskChunk.sub_tasks.tasks:
+        if subTask.task_id == subTaskId:
+            del taskChunk.sub_tasks.tasks[index]
+            return subTask
+        index += 1
+    raise KeyError("subTaskId {0} not found in {1}".format(subTaskId, parent))
 
 
 def subTaskIterator(taskChunk):
-    #TODO: implement
-    #for subtask in taskChunk.
-    pass
+    """
+    An iterator over the direct sub tasks within the given task chunk.
+    """
+    for subTask in taskChunk.sub_tasks.tasks:
+        yield subTask
 
 
 def isTerminalUpdate(statusUpdate):
-    #TODO: implement
-    return statusUpdate in (TASK_FINISHED, TASK_FAILED, TASK_KILLED, TASK_LOST)
+    """
+    Checks whether the given TaskStatus is for a terminal state.
+    """
+    taskState = statusUpdate.state
+    return taskState in TERMINAL_STATES
 
 
-class TaskTable:
-    """A table of all currently running/pending tasks.
+class TaskTable(object):
+    """
+    A table of all currently running/pending tasks.
     """
 
     class TaskNode:
-        """Stores the graph node of a task within the table.
+        """
+        Stores the graph node of a task within the table.
         """
 
-        def __init__(self, parent, task, state):
+        def __init__(self, parent, task, state = mesos_pb2.TASK_STAGING):
             self.parent = parent
             self.task = task
             self.state = state
@@ -67,54 +130,75 @@ class TaskTable:
     def __init__(self):
         # Maps taskId to TaskNode.
         self.all_tasks = {}
-        # The root container for all tasks. TODO: fix.
-        self.rootTask = TaskInfo(name=None, task_id=None, slave_id=None)
+        # The root container for all tasks.
+        self.rootTask = mesos_pb2.TaskInfo()
 
-    def addTask(task, parent=None):
-        # TODO: fix.
-        newNode = TaskNode(parent, task, TASK_STAGING)
-        all_tasks[task.task_id] = newNode
-        if isTaskChunk(task):
-            for subTask in task.sub_tasks:
-                addTask(subTask, task)
+    def addTask(self, task, parent=None):
+        """
+        Adds the give task to the table.
 
-    def removeTask(taskId):
-        # TODO: fix.
-        taskNode = all_tasks[taskId]
-        if taskNode.parent:
-            removeSubTask(taskNode.parent, taskNode.task)
-        if isTaskChunk(taskNode.task):
-            for subTask in task.sub_tasks: # TODO: make this iterable.
-                removeTask(subTask.id)
-        del all_tasks[taskId]
+        If no parent is specified, adds it as a top-level task.
+        If the task is already in the table, there is no effect.
+        """
+        if task.task_id in self:
+            return
+        if not parent:
+            parent = self.rootTask
+        self.all_tasks[task.task_id] = TaskNode(parent, task)
+        for subTask in subTaskIterator(task):
+            addTask(subTask, task)
 
-    def hasSubTask(taskChunkId):
-        # TODO: implement
-        pass
+    def __getitem__(self, taskId):
+        """
+        Retrieves from the table the task with the given id.
+        """
+        return self.all_tasks[taskId].task
 
-    def getNextTask(taskChunkId):
-        # TODO: fix.
-        return getNextSubTask(all_tasks[taskChunkId].task)
+    def __delitem__(self, taskId):
+        """
+        Removes the task with the given task id from the table.
+        """
+        taskNode = self.all_tasks[taskId]
+        removeSubTask(taskNode.parent, taskId)
+        for subTask in subTaskIterator(taskNode.task):
+            del self[subTask.id]
+        del self.all_tasks[taskId]
 
-    def updateState(taskId, state):
-        # TODO: fix.
+    def __contains__(self, taskId):
+        """
+        Checks if the task with the given id is in the table.
+        """
+        return taskId in all_tasks
+
+    def updateState(self, taskId, state):
+        """
+        Updates the state of a task in the table.
+        """
         self.all_tasks[taskId].state = state
 
     def getState(taskId):
-        # TODO: fix.
-        return all_tasks[taskId].state
+        """
+        Returns the current state of a task in the table.
+        """
+        return self.all_tasks[taskId].state
 
     def getParent(subTaskId):
-        # TODO: fix.
-        return all_tasks[taskId].parent
+        """
+        Returns the parent of the sub task with the given id.
+        """
+        return self.all_tasks[taskId].parent
 
     def isRunning(taskId):
-        # TODO: fix.
+        """
+        Checks if the task with the given id is currently running.
+        """
         return getState(taskId) == TASK_RUNNING
 
     def isSubTask(taskId):
-        # TODO: fix.
-        return taskId in self and getParent(taskId) is not rootTask
+        """
+        Checks if the task with the given id is a sub task in the table.
+        """
+        return taskId in self and getParent(taskId) is not self.rootTask
 
 
 class ExecutorWrapper(mesos.Executor):
