@@ -33,6 +33,21 @@ def serializeKillSubTasks(subTaskIds):
     pass
 
 
+def newTaskChunk():
+    """Creates a new empty chunk of tasks.
+    """
+    taskChunk = mesos_pb2.TaskInfo()
+    # Initialize the empty sub_tasks field.
+    taskChunk.sub_tasks.tasks.extend(())
+    taskChunk
+
+
+def addSubTask(taskChunk, subTask):
+    """Adds a new sub task to a task chunk.
+    """
+    taskChunk.sub_tasks.tasks.extend((subTask,))
+
+
 def isTaskChunk(task):
     """Checks whether the given TaskInfo represents a chunk of tasks.
     """
@@ -51,7 +66,7 @@ def getNextSubTask(taskChunk):
         raise ValueError("The given task has no sub tasks")
 
 
-def removeSubTask(parent, subTaskId):
+def removeSubTask(taskChunk, subTaskId):
     """Removes the subTask with the given id from the parent.
 
     Returns:
@@ -61,9 +76,9 @@ def removeSubTask(parent, subTaskId):
         KeyError: No subTask with that id is found.
     """
     index = 0
-    for subTask in parent.sub_tasks.tasks:
+    for subTask in taskChunk.sub_tasks.tasks:
         if subTask.task_id == subTaskId:
-            del parent.sub_tasks.tasks[index]
+            del taskChunk.sub_tasks.tasks[index]
             return subTask
         index += 1
     raise KeyError("subTaskId {0} not found in {1}".format(subTaskId, parent))
