@@ -1,4 +1,5 @@
 import mesos
+import mesos_pb2
 
 
 class MessageType:
@@ -26,8 +27,9 @@ def serializeKillSubtasks(subtaskIds):
 
 
 def isTaskChunk(task):
-    #TODO: implement
-    pass
+    """Checks whether the given TaskInfo represents a chunk of tasks.
+    """
+    return task.HasField("sub_tasks")
 
 
 def getNextSubTask(taskChunk):
@@ -35,9 +37,19 @@ def getNextSubTask(taskChunk):
     return subTaskIterator(taskChunk).next()
 
 
-def removeSubtask(parent, subtask):
-    #TODO: implement
-    parent.sub_tasks.remove(subtask)
+def removeSubtask(parent, subTaskId):
+    """Removes the subTask with the given id from the parent.
+
+    Raises:
+        KeyError: No subTask with that id is found.
+    """
+    index = 0
+    for subTask in parent.sub_tasks.tasks:
+        if subTask.task_id == subTaskId:
+            del parent.sub_tasks.tasks[index]
+            return subTask
+        index += 1
+    raise KeyError("subTaskId {0} not found in {1}".format(subTaskId, parent))
 
 
 def subTaskIterator(taskChunk):
