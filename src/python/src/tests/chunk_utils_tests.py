@@ -77,7 +77,10 @@ class TestTaskTable(unittest.TestCase):
         task = mesos_pb2.TaskInfo()
         task.task_id.value = "foo"
         self.table.addTask(task)
-        self.assertEqual(1, len(self.table))
+        task = mesos_pb2.TaskInfo()
+        task.task_id.value = "foo2"
+        self.table.addTask(task)
+        self.assertEqual(2, len(self.table))
 
     def test_addTask_error(self):
         with self.assertRaises(ValueError):
