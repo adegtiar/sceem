@@ -3,7 +3,8 @@ import mesos_pb2
 
 
 class MessageType:
-    """The type of a subtask message.
+    """
+    The type of a subtask message.
     """
     SUBTASK_UPDATE, KILL_SUBTASKS = range(2)
 
@@ -34,7 +35,8 @@ def serializeKillSubTasks(subTaskIds):
 
 
 def newTaskChunk():
-    """Creates a new empty chunk of tasks.
+    """
+    Creates a new empty chunk of tasks.
     """
     taskChunk = mesos_pb2.TaskInfo()
     # Initialize the empty sub_tasks field.
@@ -43,19 +45,22 @@ def newTaskChunk():
 
 
 def addSubTask(taskChunk, subTask):
-    """Adds a new sub task to a task chunk.
+    """
+    Adds a new sub task to a task chunk.
     """
     taskChunk.sub_tasks.tasks.extend((subTask,))
 
 
 def isTaskChunk(task):
-    """Checks whether the given TaskInfo represents a chunk of tasks.
+    """
+    Checks whether the given TaskInfo represents a chunk of tasks.
     """
     return task.HasField("sub_tasks")
 
 
 def getNextSubTask(taskChunk):
-    """Gets the next sub task within the given chunk.
+    """
+    Gets the next sub task within the given chunk.
 
     Raises:
         ValueError: The given taskChunk has no sub tasks.
@@ -67,7 +72,8 @@ def getNextSubTask(taskChunk):
 
 
 def removeSubTask(taskChunk, subTaskId):
-    """Removes the subTask with the given id from the parent.
+    """
+    Removes the subTask with the given id from the parent.
 
     Returns:
         The removed subTask.
@@ -85,25 +91,29 @@ def removeSubTask(taskChunk, subTaskId):
 
 
 def subTaskIterator(taskChunk):
-    """An iterator over the direct sub tasks within the given task chunk.
+    """
+    An iterator over the direct sub tasks within the given task chunk.
     """
     for subTask in taskChunk.sub_tasks.tasks:
         yield subTask
 
 
 def isTerminalUpdate(statusUpdate):
-    """Checks whether the given TaskStatus is for a terminal state.
+    """
+    Checks whether the given TaskStatus is for a terminal state.
     """
     taskState = statusUpdate.state
     return taskState in TERMINAL_STATES
 
 
 class TaskTable(object):
-    """A table of all currently running/pending tasks.
+    """
+    A table of all currently running/pending tasks.
     """
 
     class TaskNode:
-        """Stores the graph node of a task within the table.
+        """
+        Stores the graph node of a task within the table.
         """
 
         def __init__(self, parent, task, state = mesos_pb2.TASK_STAGING):
@@ -118,7 +128,8 @@ class TaskTable(object):
         self.rootTask = mesos_pb2.TaskInfo()
 
     def addTask(task, parent=None):
-        """Adds the give task to the table.
+        """
+        Adds the give task to the table.
 
         If no parent is specified, adds it as a top-level task.
         """
