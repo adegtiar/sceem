@@ -64,7 +64,7 @@ def numSubTasks(taskChunk):
     return len(taskChunk.sub_tasks.tasks)
 
 
-def getNextSubTask(taskChunk):
+def nextSubTask(taskChunk):
     """
     Gets the next sub task within the given chunk.
 
