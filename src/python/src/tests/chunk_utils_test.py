@@ -48,5 +48,6 @@ class TestTaskChunks(unittest.TestCase):
         with self.assertRaises(ValueError):
             chunk_utils.nextSubTask(self.chunk)
 
+
 if __name__ == '__main__':
     unittest.main()
