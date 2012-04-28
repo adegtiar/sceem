@@ -54,7 +54,7 @@ def newTaskChunk():
 
 def addSubTask(taskChunk, subTask):
     """
-    Adds a new sub task to a task chunk.
+    Adds a copy of the given sub task to the task chunk.
     """
     taskChunk.sub_tasks.tasks.extend((subTask,))
 
