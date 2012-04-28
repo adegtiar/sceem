@@ -35,8 +35,15 @@ def isTaskChunk(task):
 
 
 def getNextSubTask(taskChunk):
-    #TODO: implement
-    return subTaskIterator(taskChunk).next()
+    """Gets the next sub task within the given chunk.
+
+    Raises:
+        ValueError: The given taskChunk has no sub tasks.
+    """
+    try:
+        return next(subTaskIterator(taskChunk))
+    except StopIteration:
+        raise ValueError("Given task chunk has no sub tasks")
 
 
 def removeSubtask(parent, subTaskId):
