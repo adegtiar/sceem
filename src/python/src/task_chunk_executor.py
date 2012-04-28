@@ -9,6 +9,7 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
 
         """
         self.pendingTaskChunks = chunk_utils.TaskTable()
+        self.executor = executor
         #super(TaskChunkExecutor, self).__init__(self, executor)
         chunk_utils.ExecutorWrapper.__init__(self, executor)
 

@@ -19,7 +19,7 @@ class MockTestExecutor(unittest.TestCase):
         self.launchedTask = 0
         self.mExecutor = self.getMockExecutor()
         self.mExecutorDriver = self.getMockExecutorDriver()
-        self.chunkExecutor = self.getChunkExecutor(self.mExecutor)
+        self.chunkExecutor = self.getChunkExecutor()
         self.taskChunk = self.createTaskChunk()
 
     def getTaskId(self):
@@ -29,7 +29,7 @@ class MockTestExecutor(unittest.TestCase):
 
 # crete a mock Executor
     def getMockExecutor(self):
-        mExecutor = Mock(spec=mesos.Executor)
+        self.mExecutor = Mock(spec=mesos.Executor)
         """
         mExecutor.registered.assert_called_once_with(self.mExecutorDriver, executorInfo, frameworkInfo, slaveInfo)
         mExecutor.reregistered.assert_called_once_with(driver, slaveInfo)
@@ -38,25 +38,27 @@ class MockTestExecutor(unittest.TestCase):
 
         mExecutor.launchTask.assert_called_once_with(self.mExecutorDriver, self.t)
         """
-        mExecutor.launchTask.return_value = "Underlying Executor: Launch Task Called"
+        self.mExecutor.launchTask = Mock()
+        self.mExecutor.launchTask.return_value = "Underlying Executor: Launch Task Called"
         #mExecutor.killTask.assert_called_once_with(driver, taskId)
-        mExecutor.killTask.return_value = "Underlying Executor: KillTask Called"
+        self.mExecutor.killTask.return_value = "Underlying Executor: KillTask Called"
         #mExecutor.frameworkMessage.assert_called_once_with(driver, message)
-        mExecutor.frameworkMessage.return_value = "Underlying Executor: FrameworkMessage Called"
+        self.mExecutor.frameworkMessage.return_value = "Underlying Executor: FrameworkMessage Called"
         
         #mExecutor.shutdown.assert_called_once_with(driver)
-        return mExecutor
+        return self.mExecutor
     
     def getMockExecutorDriver(self):
         
         mExecutorDriver = Mock(spec=mesos.ExecutorDriver)
         mExecutorDriver.sendStatusUpdate.return_value = "StatusUpdateCalled"
+        return mExecutorDriver
         #mExecutorDriver.assert_called_once_with(status)
         
         
-    def getChunkExecutor(self, executor):
+    def getChunkExecutor(self):
         # Create a TaskChunk Executor
-        chunkExecutor = task_chunk_executor.TaskChunkExecutor(executor)
+        chunkExecutor = task_chunk_executor.TaskChunkExecutor(self.mExecutor)
         return chunkExecutor
         
     
@@ -114,14 +116,20 @@ class MockTestExecutor(unittest.TestCase):
 
     def test_launchTaskChunks(self):
 #        self.mExecutor.assert_called_once_with(self.mExecutorDriver, self.taskChunk)
-        #self.chunkExecutor.runNextSubTask.assert_called_once_with(self.mExecutorDriver, self.task.task_id.value)
+        self.chunkExecutor.runNextSubTask.assert_called_once_with(self.mExecutorDriver, self.task.task_id.value)
         self.chunkExecutor.launchTask(self.mExecutorDriver,self.taskChunk)
 
     def test_launchTask(self):
         task = self.createTask()
-        self.mExecutor.launchTask.assert_called_once_with(self.mExecutorDriver, task)
-        self.assertFalse(chunk_utils.isTaskChunk(task))
         self.chunkExecutor.launchTask(self.mExecutorDriver, task)
+        self.mExecutor.launchTask.assert_called_once_with(self.mExecutorDriver, task)
+
+    def test_killTask(self):
+        pass
+        #self.mExecutor.launchTask(self.mExecutorDriver, "boo")
+
+        #self.assertFalse(chunk_utils.isTaskChunk(task))
+        #self.chunkExecutor.launchTask(self.mExecutorDriver, task)
                             
 if __name__ == '__main__':
     unittest.main()
