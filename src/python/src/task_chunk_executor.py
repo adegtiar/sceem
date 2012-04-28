@@ -93,13 +93,25 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
             chunk_utils.ExecutorWrapper.frameworkMessage(self, driver, message)
             
 
-class TaskChunkExecutorDriver(mesos.ExecutorDriver):       
+class TaskChunkExecutorDriver(chunk_utils.ExecutorDriverWrapper):       
     
-    def sendStatusUpdate(update):
-        if chunkingExecutor.isSubTask(update.taskId):
+    def __init__(self, executor):
+        """
+        Initialize TaskTable and executorWrapper with executor
+
+        """
+        self.chunkExecutor = TaskChunkExecutor(executor)
+        driver =  mesos.MesosExecutorDriver(self.chunkExecutor)
+        chunk_utils.ExecutorDriverWrapper.__init__(self,driver)
+        #super(TaskChunkExecutor, self).__init__(self, executor)
+        
+
+
+    def sendStatusUpdate(self,update):
+        if False: #self.chunkExecutor.isSubTask(update.taskId):
             sendFrameworkMessage(serializeSubtaskUpdate(update))
             if isTerminalUpdate(update):
-                chunkingExecutor.runNextSubTask(update.taskId)
+                self.chunkExecutor.runNextSubTask(self,update.taskId)
             else:
                # super(TaskChunkExecutorDriver, self).sendStatusUpdate(update)
-                ExecutorDriver.sendStatusUpdate(self,update)
+                chunk_utils.ExecutorDriverWrapper.sendStatusUpdate(self,update)

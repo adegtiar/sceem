@@ -271,3 +271,33 @@ class SchedulerWrapper(mesos.Scheduler):
 
     def error(self, driver, message):
         self.scheduler.error(driver, message)
+
+
+
+class ExecutorDriverWrapper(mesos.ExecutorDriver):
+    """
+    Delegates calls to the underlying scheduler.
+    """
+    def __init__(self, driver):
+        self.driver = driver
+
+    def start(self): 
+        self.driver.start()
+
+    def stop(self):
+        self.driver.stop()
+
+    def abort(self):
+        self.driver.abort()
+
+    def join(self):
+        self.driver.join()
+
+    def run(self):
+        self.driver.run()
+
+    def sendStatusUpdate(self, status):
+        self.driver.sendStatusUpdate(status)
+
+    def sendFrameworkMessage(self, data):
+        self.driver.sendFrameworkMessage(data)

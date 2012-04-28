@@ -34,6 +34,13 @@ class TestScheduler(mesos.Scheduler):
     self.tasksLaunched = 0
     self.tasksFinished = 0
 
+  
+  def getTaskId(self):
+    tid = self.tasksLaunched
+    self.tasksLaunched +=1
+    return tid
+
+
   def registered(self, driver, frameworkId, masterInfo):
     print "Registered with framework ID %s" % frameworkId.value
 
@@ -53,6 +60,14 @@ class TestScheduler(mesos.Scheduler):
         task.slave_id.value = offer.slave_id.value
         task.name = "task %d" % tid
         task.executor.MergeFrom(self.executor)
+        
+        """
+        subTask = task.sub_tasks.add()
+        subTask.task_id.value = str(getTaskId)
+        task.slave_id.value = offer.slave_id.value
+        task.name = "task %d" % tid
+        task.executor.MergeFrom(self.executor)
+        """
 
         cpus = task.resources.add()
         cpus.name = "cpus"

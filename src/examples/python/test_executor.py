@@ -20,10 +20,15 @@ import sys
 import threading
 import time
 
+import sys
+
+sys.path.append("/home/apoorva/cs267/ProjectMesos/mesos-task-stealing/src/python/src")
+
 import mesos
 #import chunk_utils
 import task_chunk_executor
 import mesos_pb2
+
 
 class MyExecutor(mesos.Executor):
   def launchTask(self, driver, task):
@@ -49,6 +54,6 @@ class MyExecutor(mesos.Executor):
 
 if __name__ == "__main__":
   print "Starting executor"
-  chunkExecutor = task_chunk_executor.TaskChunkExecutor(MyExecutor())
-  driver = mesos.MesosExecutorDriver(chunkExecutor)
+  driver = task_chunk_executor.TaskChunkExecutorDriver(MyExecutor())
+  #driver = mesos.MesosExecutorDriver(chunkExecutor)
   sys.exit(0 if driver.run() == mesos_pb2.DRIVER_STOPPED else 1)
