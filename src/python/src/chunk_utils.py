@@ -173,7 +173,7 @@ class TaskTable(object):
             parent = self.rootTask
         self.all_task_nodes[task.task_id] = TaskTable.TaskNode(parent, task)
         for subTask in subTaskIterator(task):
-            addTask(subTask, task)
+            self.addTask(subTask, task)
 
     def __getitem__(self, taskId):
         """
@@ -202,6 +202,13 @@ class TaskTable(object):
         Returns the number of tasks (including sub tasks) in the table.
         """
         return len(self.all_task_nodes)
+
+    def __iter__(self):
+        """
+        Returns an iterator over all tasks (including sub tasks) in the table.
+        """
+        for taskNode in self.all_task_nodes.itervalues():
+            yield taskNode.task
 
     def updateState(self, taskId, state):
         """
