@@ -141,6 +141,8 @@ class TaskTable(object):
         If no parent is specified, adds it as a top-level task.
         If the task is already in the table, there is no effect.
         """
+        if not task.task_id.IsInitialized():
+            raise ValueError("Tasks added to the table must have an id.")
         if task.task_id in self:
             return
         if not parent:
@@ -169,7 +171,7 @@ class TaskTable(object):
         """
         Checks if the task with the given id is in the table.
         """
-        return taskId in all_task_nodes
+        return taskId in self.all_task_nodes
 
     def __len__(self):
         """
