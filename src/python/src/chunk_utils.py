@@ -171,6 +171,12 @@ class TaskTable(object):
         """
         return taskId in all_tasks
 
+    def __len__(self):
+        """
+        Returns the number of tasks (including sub tasks) in the table.
+        """
+        return len(self.all_tasks)
+
     def updateState(self, taskId, state):
         """
         Updates the state of a task in the table.
