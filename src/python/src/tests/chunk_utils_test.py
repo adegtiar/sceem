@@ -8,7 +8,7 @@ sys.path.append(".")
 import stub_mesos
 sys.modules["mesos"] = stub_mesos
 
-import chunk_utils
+from chunk_utils import *
 import mesos_pb2
 import unittest
 
@@ -19,36 +19,36 @@ class TestTaskChunks(unittest.TestCase):
     """
 
     def setUp(self):
-        self.chunk = chunk_utils.newTaskChunk()
+        self.chunk = newTaskChunk()
         self.subTask = mesos_pb2.TaskInfo()
 
     def test_isTaskChunk_true(self):
-        self.assertTrue(chunk_utils.isTaskChunk(self.chunk))
+        self.assertTrue(isTaskChunk(self.chunk))
 
     def test_isTaskChunk_false(self):
-        self.assertFalse(chunk_utils.isTaskChunk(self.subTask))
+        self.assertFalse(isTaskChunk(self.subTask))
 
     def test_numSubTasks(self):
-        self.assertEqual(0, chunk_utils.numSubTasks(self.chunk))
+        self.assertEqual(0, numSubTasks(self.chunk))
 
     def test_addSubTask(self):
-        chunk_utils.addSubTask(self.chunk, self.subTask)
-        self.assertEqual(1, chunk_utils.numSubTasks(self.chunk))
+        addSubTask(self.chunk, self.subTask)
+        self.assertEqual(1, numSubTasks(self.chunk))
 
     def test_nextSubTask(self):
-        chunk_utils.addSubTask(self.chunk, self.subTask)
-        self.assertEqual(self.subTask, chunk_utils.nextSubTask(self.chunk))
+        addSubTask(self.chunk, self.subTask)
+        self.assertEqual(self.subTask, nextSubTask(self.chunk))
 
     def test_nextSubTask_error(self):
         with self.assertRaises(ValueError):
-            chunk_utils.nextSubTask(self.chunk)
+            nextSubTask(self.chunk)
 
     def test_removeSubTask(self):
-        chunk_utils.addSubTask(self.chunk, self.subTask)
-        chunk_utils.removeSubTask(self.chunk, self.subTask.task_id)
-        self.assertEqual(0, chunk_utils.numSubTasks(self.chunk))
+        addSubTask(self.chunk, self.subTask)
+        removeSubTask(self.chunk, self.subTask.task_id)
+        self.assertEqual(0, numSubTasks(self.chunk))
         with self.assertRaises(ValueError):
-            chunk_utils.nextSubTask(self.chunk)
+            nextSubTask(self.chunk)
 
     def test_subTaskIterator(self):
         subTasks = []
@@ -56,8 +56,8 @@ class TestTaskChunks(unittest.TestCase):
             subTask = mesos_pb2.TaskInfo()
             subTask.task_id.value = "{0}".format(i)
             subTasks.append(subTask)
-            chunk_utils.addSubTask(self.chunk, subTask)
-        extracted = [task for task in chunk_utils.subTaskIterator(self.chunk)]
+            addSubTask(self.chunk, subTask)
+        extracted = [task for task in subTaskIterator(self.chunk)]
         self.assertEqual(subTasks, extracted)
 
 
@@ -67,7 +67,7 @@ class TestTaskTable(unittest.TestCase):
     """
 
     def setUp(self):
-        self.table = chunk_utils.TaskTable()
+        self.table = TaskTable()
 
 
 if __name__ == '__main__':
