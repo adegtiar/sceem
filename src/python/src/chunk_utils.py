@@ -3,6 +3,8 @@ import mesos_pb2
 
 
 class MessageType:
+    """The type of a subtask message.
+    """
     SUBTASK_UPDATE, KILL_SUBTASKS = range(2)
 
 
@@ -53,9 +55,10 @@ def removeSubtask(parent, subTaskId):
 
 
 def subTaskIterator(taskChunk):
-    #TODO: implement
-    #for subtask in taskChunk.
-    pass
+    """An iterator over the direct sub tasks within the given task chunk.
+    """
+    for subTask in parent.sub_tasks.tasks:
+        yield subTask
 
 
 def isTerminalUpdate(statusUpdate):
