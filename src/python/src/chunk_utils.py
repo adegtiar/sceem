@@ -1,5 +1,5 @@
 import mesos
-
+import mesos_pb2
 
 class MessageType:
     SUBTASK_UPDATE, KILL_SUBTASKS = range(2)
