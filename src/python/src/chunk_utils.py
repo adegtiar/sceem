@@ -145,7 +145,7 @@ class TaskTable(object):
             return
         if not parent:
             parent = self.rootTask
-        all_tasks[task.task_id] = TaskNode(parent, task)
+        self.all_tasks[task.task_id] = TaskNode(parent, task)
         for subTask in subTaskIterator(task):
             addTask(subTask, task)
 
@@ -153,17 +153,17 @@ class TaskTable(object):
         """
         Retrieves from the table the task with the given id.
         """
-        return all_tasks[taskId].task
+        return self.all_tasks[taskId].task
 
     def __delitem__(self, taskId):
         """
         Removes the task with the given task id from the table.
         """
-        taskNode = all_tasks[taskId]
+        taskNode = self.all_tasks[taskId]
         removeSubTask(taskNode.parent, taskId)
         for subTask in subTaskIterator(taskNode.task):
             del self[subTask.id]
-        del all_tasks[taskId]
+        del self.all_tasks[taskId]
 
     def __contains__(self, taskId):
         """
@@ -177,11 +177,11 @@ class TaskTable(object):
 
     def getState(taskId):
         # TODO: fix.
-        return all_tasks[taskId].state
+        return self.all_tasks[taskId].state
 
     def getParent(subTaskId):
         # TODO: fix.
-        return all_tasks[taskId].parent
+        return self.all_tasks[taskId].parent
 
     def isRunning(taskId):
         # TODO: fix.
