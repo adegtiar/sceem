@@ -10,7 +10,7 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
         """
         self.pendingTaskChunks = chunk_utils.TaskTable()
         #super(TaskChunkExecutor, self).__init__(self, executor)
-        ExecutorWrapper.__init__(self,executor)
+        chunk_utils.ExecutorWrapper.__init__(self,executor)
 
 
     def launchTask(self, driver, task):
@@ -18,12 +18,12 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
         Logic to launch TaskChunks by running through sub-tasks one at a time.
 
         """
-        if isTaskChunk(task):
+        if chunk_utils.isTaskChunk(task):
             self.pendingTaskChunks.addTask(task)
             runNextSubTask(driver, task.task_id.value)
         else:
             #super(TaskChunkExecutor, self).launchTask(driver, task)
-            ExecutorWrapper.launchTask(self, driver, task)
+            chunk_utils.ExecutorWrapper.launchTask(self, driver, task)
             
     def killTask(self, driver, taskId):
         """
@@ -43,7 +43,7 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
             self.pendingTaskChunks.removeTask(origTaskId)
 
         #super(TaskChunkExecutor, self).killTask(driver, taskId)
-        ExecutorWrapper.killTask(self, driver, taskId)
+        chunk_utils.ExecutorWrapper.killTask(self, driver, taskId)
 
 
     def killSubTasks(self, driver, subTaskIds):
@@ -90,7 +90,7 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
             self.killSubTasks(driver, parsed_msg[1])
         else:
             #super(TaskChunkExecutor, self).frameworkMessage(driver, message)
-            ExecutorWrapper.frameworkMessage(self, driver, message)
+            chunk_utils.ExecutorWrapper.frameworkMessage(self, driver, message)
             
 
 class TaskChunkExecutorDriver(mesos.ExecutorDriver):       

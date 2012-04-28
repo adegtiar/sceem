@@ -21,7 +21,7 @@ import threading
 import time
 
 import mesos
-import chunk_utils
+#import chunk_utils
 import task_chunk_executor
 import mesos_pb2
 
@@ -49,6 +49,6 @@ class MyExecutor(mesos.Executor):
 
 if __name__ == "__main__":
   print "Starting executor"
-  chunkExecutor = task_chunk_executor.TaskChunkExecutor(myExecutor())
+  chunkExecutor = task_chunk_executor.TaskChunkExecutor(MyExecutor())
   driver = mesos.MesosExecutorDriver(chunkExecutor)
   sys.exit(0 if driver.run() == mesos_pb2.DRIVER_STOPPED else 1)
