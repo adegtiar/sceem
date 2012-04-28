@@ -70,6 +70,9 @@ class TestTaskTable(unittest.TestCase):
     def setUp(self):
         self.table = TaskTable()
 
+    def test_len(self):
+        self.assertEqual(0, len(self.table))
+
 
 if __name__ == '__main__':
     unittest.main()
