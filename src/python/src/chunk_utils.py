@@ -48,7 +48,7 @@ def getNextSubTask(taskChunk):
     try:
         return next(subTaskIterator(taskChunk))
     except StopIteration:
-        raise ValueError("Given task chunk has no sub tasks")
+        raise ValueError("The given task has no sub tasks")
 
 
 def removeSubTask(parent, subTaskId):
@@ -72,7 +72,7 @@ def removeSubTask(parent, subTaskId):
 def subTaskIterator(taskChunk):
     """An iterator over the direct sub tasks within the given task chunk.
     """
-    for subTask in parent.sub_tasks.tasks:
+    for subTask in taskChunk.sub_tasks.tasks:
         yield subTask
 
 
