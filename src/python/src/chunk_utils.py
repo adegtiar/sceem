@@ -49,6 +49,9 @@ def getNextSubTask(taskChunk):
 def removeSubtask(parent, subTaskId):
     """Removes the subTask with the given id from the parent.
 
+    Returns:
+        The removed subTask.
+
     Raises:
         KeyError: No subTask with that id is found.
     """
