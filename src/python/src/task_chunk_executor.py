@@ -10,8 +10,7 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
         """
         self.pendingTaskChunks = chunk_utils.TaskTable()
         #super(TaskChunkExecutor, self).__init__(self, executor)
-        chunk_utils.ExecutorWrapper.__init__(self,executor)
-
+        chunk_utils.ExecutorWrapper.__init__(self, executor)
 
     def launchTask(self, driver, task):
         """
@@ -40,11 +39,10 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
                         taskId = subTask.task_id
                         task = self.pendingTaskChunks[taskId]
                         break
-            self.pendingTaskChunks.removeTask(origTaskId)
+            del self.pendingTaskChunks[origTaskId]
 
         #super(TaskChunkExecutor, self).killTask(driver, taskId)
         chunk_utils.ExecutorWrapper.killTask(self, driver, taskId)
-
 
     def killSubTasks(self, driver, subTaskIds):
         """
@@ -61,23 +59,22 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
                 parent = self.pendingTaskChunks.getParent(subTaskId)
                 taskChunksToRun.add(parent.task_id)
             else:
-                self.pendingTaskChunks.removeTask(subTaskId)
+                del self.pendingTaskChunks[subTaskId]
 
         for taskChunkId in taskChunksToRun:
             self.runNextSubTask(driver, taskChunkId)
-
 
     def runNextSubTask(self, driver, taskChunkId):
         """
         Launches next subtask from current taskChunk.
 
         """
-        if self.pendingTaskChunks.hasSubTask(taskChunkId):
-            nextSubTaskId = self.pendingTaskChunks.nextSubTask(taskChunkId)
-            self.launchTask(driver,nextSubTaskId)
+        taskChunk = self.pendingTaskChunks[taskChunkId]
+        if chunk_utils.numSubTasks(taskChunk) > 0:
+            nextSubTaskId = chunk_utils.nextSubTask(taskChunk)
+            self.launchTask(driver, nextSubTaskId)
         else:
-            driver.sendStatusUpdate(TaskStatus(taskChunkId, FINISHED))
-
+            driver.sendStatusUpdate(TaskStatus(taskChunkId, mesos_pb2.TASK_FINISHED))
 
     def frameworkMessage(self, driver, message):
         """
@@ -85,7 +82,7 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
         recieved.
 
         """
-        parsed_msg = getMessage(data) #TODO:
+        parsed_msg = getMessage(data)
         if parsed_msg and parsed_msg[0] == KILL_SUBTASKS:
             self.killSubTasks(driver, parsed_msg[1])
         else:
@@ -102,4 +99,4 @@ class TaskChunkExecutorDriver(mesos.ExecutorDriver):
                 chunkingExecutor.runNextSubTask(update.taskId)
             else:
                # super(TaskChunkExecutorDriver, self).sendStatusUpdate(update)
-                ExecutorDriver.sendStatusUpdate(self,update)
+                mesos.ExecutorDriver.sendStatusUpdate(self, update)
