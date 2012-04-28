@@ -1,16 +1,25 @@
 import mesos
 import mesos_pb2
 
+
+# TaskStates that indicate the task is done and can be cleaned up.
+TERMINAL_STATES = (mesos_pb2.TASK_FINISHED, mesos_pb2.TASK_FAILED,
+            mesos_pb2.TASK_KILLED, mesos_pb2.TASK_LOST)
+
+
+def isTerminalUpdate(statusUpdate):
+    """
+    Checks whether the given TaskStatus is for a terminal state.
+    """
+    taskState = statusUpdate.state
+    return taskState in TERMINAL_STATES
+
+
 class MessageType:
     """
     The type of a subtask message.
     """
     SUBTASK_UPDATE, KILL_SUBTASKS = range(2)
-
-
-# TaskStates that indicate the task is done and can be cleaned up.
-TERMINAL_STATES = (mesos_pb2.TASK_FINISHED, mesos_pb2.TASK_FAILED,
-            mesos_pb2.TASK_KILLED, mesos_pb2.TASK_LOST)
 
 
 def getMessage(data):
@@ -102,14 +111,6 @@ def subTaskIterator(taskChunk):
     """
     for subTask in taskChunk.sub_tasks.tasks:
         yield subTask
-
-
-def isTerminalUpdate(statusUpdate):
-    """
-    Checks whether the given TaskStatus is for a terminal state.
-    """
-    taskState = statusUpdate.state
-    return taskState in TERMINAL_STATES
 
 
 class TaskTable(object):
