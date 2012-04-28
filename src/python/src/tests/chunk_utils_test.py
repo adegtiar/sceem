@@ -12,10 +12,11 @@ import chunk_utils
 import mesos_pb2
 import unittest
 
-from mock import MagicMock
-
 
 class TestTaskChunks(unittest.TestCase):
+    """
+    Tests for the base task chunk utilities.
+    """
 
     def setUp(self):
         self.chunk = chunk_utils.newTaskChunk()
@@ -58,6 +59,15 @@ class TestTaskChunks(unittest.TestCase):
             chunk_utils.addSubTask(self.chunk, subTask)
         extracted = [task for task in chunk_utils.subTaskIterator(self.chunk)]
         self.assertEqual(subTasks, extracted)
+
+
+class TestTaskTable(unittest.TestCase):
+    """
+    Tests for the TaskTable in chunk_utils.
+    """
+
+    def setUp(self):
+        self.table = chunk_utils.TaskTable()
 
 
 if __name__ == '__main__':
