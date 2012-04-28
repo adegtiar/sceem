@@ -149,9 +149,11 @@ class TaskTable(object):
             del self[subTask.id]
         del all_tasks[taskId]
 
-    def hasSubTask(taskChunkId):
-        # TODO: implement
-        pass
+    def __contains__(self, taskId):
+        """
+        Checks if the task with the given id is in the table.
+        """
+        return taskId in all_tasks
 
     def getNextTask(taskChunkId):
         # TODO: fix.
