@@ -127,24 +127,26 @@ class TaskTable(object):
         # The root container for all tasks.
         self.rootTask = mesos_pb2.TaskInfo()
 
-    def addTask(task, parent=None):
+    def addTask(self, task, parent=None):
         """
         Adds the give task to the table.
 
         If no parent is specified, adds it as a top-level task.
         """
+        if not parent:
+            parent = self.rootTask
         all_tasks[task.task_id] = TaskNode(parent, task)
         for subTask in subTaskIterator(task):
             addTask(subTask, task)
 
-    def removeTask(taskId):
-        # TODO: fix.
+    def __delitem__(self, taskId):
+        """
+        Removes the task with the given task id from the table.
+        """
         taskNode = all_tasks[taskId]
-        if taskNode.parent:
-            removeSubTask(taskNode.parent, taskNode.task)
-        if isTaskChunk(taskNode.task):
-            for subTask in task.sub_tasks: # TODO: make this iterable.
-                removeTask(subTask.id)
+        removeSubTask(taskNode.parent, taskId)
+        for subTask in subTaskIterator(taskNode.task):
+            del self[subTask.id]
         del all_tasks[taskId]
 
     def hasSubTask(taskChunkId):
