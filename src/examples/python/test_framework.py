@@ -63,11 +63,11 @@ class TestScheduler(mesos.Scheduler):
         
         """
         subTask = task.sub_tasks.add()
-        subTask.task_id.value = str(getTaskId)
-        task.slave_id.value = offer.slave_id.value
-        task.name = "task %d" % tid
-        task.executor.MergeFrom(self.executor)
-        """
+        subTask.task_id.value = str(self.getTaskId())
+        subTask.slave_id.value = offer.slave_id.value
+        subTask.name = "task %d" % subtask.task_id.value
+        subTask.executor.MergeFrom(self.executor)
+        """    
 
         cpus = task.resources.add()
         cpus.name = "cpus"
