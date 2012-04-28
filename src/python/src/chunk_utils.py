@@ -203,6 +203,13 @@ class TaskTable(object):
         """
         return len(self.all_task_nodes)
 
+    def __iter__(self):
+        """
+        Returns an iterator over all tasks (including sub tasks) in the table.
+        """
+        for taskNode in self.all_task_nodes.itervalues():
+            yield taskNode.task
+
     def updateState(self, taskId, state):
         """
         Updates the state of a task in the table.
