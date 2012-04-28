@@ -1,16 +1,25 @@
 import mesos
 import mesos_pb2
 
+
+# TaskStates that indicate the task is done and can be cleaned up.
+TERMINAL_STATES = (mesos_pb2.TASK_FINISHED, mesos_pb2.TASK_FAILED,
+            mesos_pb2.TASK_KILLED, mesos_pb2.TASK_LOST)
+
+
+def isTerminalUpdate(statusUpdate):
+    """
+    Checks whether the given TaskStatus is for a terminal state.
+    """
+    taskState = statusUpdate.state
+    return taskState in TERMINAL_STATES
+
+
 class MessageType:
     """
     The type of a subtask message.
     """
     SUBTASK_UPDATE, KILL_SUBTASKS = range(2)
-
-
-# TaskStates that indicate the task is done and can be cleaned up.
-TERMINAL_STATES = (mesos_pb2.TASK_FINISHED, mesos_pb2.TASK_FAILED,
-            mesos_pb2.TASK_KILLED, mesos_pb2.TASK_LOST)
 
 
 def getMessage(data):
@@ -45,7 +54,7 @@ def newTaskChunk():
 
 def addSubTask(taskChunk, subTask):
     """
-    Adds a new sub task to a task chunk.
+    Adds a copy of the given sub task to the task chunk.
     """
     taskChunk.sub_tasks.tasks.extend((subTask,))
 
@@ -104,14 +113,6 @@ def subTaskIterator(taskChunk):
         yield subTask
 
 
-def isTerminalUpdate(statusUpdate):
-    """
-    Checks whether the given TaskStatus is for a terminal state.
-    """
-    taskState = statusUpdate.state
-    return taskState in TERMINAL_STATES
-
-
 class TaskTable(object):
     """
     A table of all currently running/pending tasks.
@@ -129,7 +130,7 @@ class TaskTable(object):
 
     def __init__(self):
         # Maps taskId to TaskNode.
-        self.all_tasks = {}
+        self.all_task_nodes = {}
         # The root container for all tasks.
         self.rootTask = mesos_pb2.TaskInfo()
 
@@ -140,11 +141,13 @@ class TaskTable(object):
         If no parent is specified, adds it as a top-level task.
         If the task is already in the table, there is no effect.
         """
+        if not task.task_id.IsInitialized():
+            raise ValueError("Tasks added to the table must have an id.")
         if task.task_id in self:
             return
         if not parent:
             parent = self.rootTask
-        self.all_tasks[task.task_id] = TaskNode(parent, task)
+        self.all_task_nodes[task.task_id] = TaskNode(parent, task)
         for subTask in subTaskIterator(task):
             addTask(subTask, task)
 
@@ -152,41 +155,47 @@ class TaskTable(object):
         """
         Retrieves from the table the task with the given id.
         """
-        return self.all_tasks[taskId].task
+        return self.all_task_nodes[taskId].task
 
     def __delitem__(self, taskId):
         """
         Removes the task with the given task id from the table.
         """
-        taskNode = self.all_tasks[taskId]
+        taskNode = self.all_task_nodes[taskId]
         removeSubTask(taskNode.parent, taskId)
         for subTask in subTaskIterator(taskNode.task):
             del self[subTask.id]
-        del self.all_tasks[taskId]
+        del self.all_task_nodes[taskId]
 
     def __contains__(self, taskId):
         """
         Checks if the task with the given id is in the table.
         """
-        return taskId in all_tasks
+        return taskId in self.all_task_nodes
+
+    def __len__(self):
+        """
+        Returns the number of tasks (including sub tasks) in the table.
+        """
+        return len(self.all_task_nodes)
 
     def updateState(self, taskId, state):
         """
         Updates the state of a task in the table.
         """
-        self.all_tasks[taskId].state = state
+        self.all_task_nodes[taskId].state = state
 
     def getState(taskId):
         """
         Returns the current state of a task in the table.
         """
-        return self.all_tasks[taskId].state
+        return self.all_task_nodes[taskId].state
 
     def getParent(subTaskId):
         """
         Returns the parent of the sub task with the given id.
         """
-        return self.all_tasks[taskId].parent
+        return self.all_task_nodes[taskId].parent
 
     def isRunning(taskId):
         """
