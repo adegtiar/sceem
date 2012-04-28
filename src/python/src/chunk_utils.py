@@ -113,6 +113,28 @@ def subTaskIterator(taskChunk):
         yield subTask
 
 
+class TransformingDict(dict):
+    """
+    A dictionary that applies a map function prior to using keys.
+    """
+
+    def __init__(self, mapper=lambda x: x):
+        dict.__init__(self)
+        self.mapper = mapper
+
+    def __getitem__(self, key):
+        return dict.__getitem__(self, self.mapper(key))
+
+    def __setitem__(self, key, value):
+        return dict.__setitem__(self, self.mapper(key), value)
+
+    def __delitem__(self, key):
+        return dict.__delitem__(self, self.mapper(key))
+
+    def __contains__(self, key):
+        return dict.__contains__(self, self.mapper(key))
+
+
 class TaskTable(object):
     """
     A table of all currently running/pending tasks.
@@ -130,7 +152,9 @@ class TaskTable(object):
 
     def __init__(self):
         # Maps taskId to TaskNode.
-        self.all_task_nodes = {}
+        def task_id_mapper(task_id):
+            return task_id.SerializeToString()
+        self.all_task_nodes = TransformingDict(task_id_mapper)
         # The root container for all tasks.
         self.rootTask = mesos_pb2.TaskInfo()
 
@@ -147,7 +171,7 @@ class TaskTable(object):
             return
         if not parent:
             parent = self.rootTask
-        self.all_task_nodes[task.task_id] = TaskNode(parent, task)
+        self.all_task_nodes[task.task_id] = TaskTable.TaskNode(parent, task)
         for subTask in subTaskIterator(task):
             addTask(subTask, task)
 
