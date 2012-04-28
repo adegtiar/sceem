@@ -173,7 +173,7 @@ class TaskTable(object):
             parent = self.rootTask
         self.all_task_nodes[task.task_id] = TaskTable.TaskNode(parent, task)
         for subTask in subTaskIterator(task):
-            addTask(subTask, task)
+            self.addTask(subTask, task)
 
     def __getitem__(self, taskId):
         """
