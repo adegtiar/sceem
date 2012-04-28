@@ -171,25 +171,35 @@ class TaskTable(object):
         """
         return taskId in all_tasks
 
-    def updateState(taskId, state):
-        # TODO: fix.
+    def updateState(self, taskId, state):
+        """
+        Updates the state of a task in the table.
+        """
         self.all_tasks[taskId].state = state
 
     def getState(taskId):
-        # TODO: fix.
+        """
+        Returns the current state of a task in the table.
+        """
         return self.all_tasks[taskId].state
 
     def getParent(subTaskId):
-        # TODO: fix.
+        """
+        Returns the parent of the sub task with the given id.
+        """
         return self.all_tasks[taskId].parent
 
     def isRunning(taskId):
-        # TODO: fix.
+        """
+        Checks if the task with the given id is currently running.
+        """
         return getState(taskId) == TASK_RUNNING
 
     def isSubTask(taskId):
-        # TODO: fix.
-        return taskId in self and getParent(taskId) is not rootTask
+        """
+        Checks if the task with the given id is a sub task in the table.
+        """
+        return taskId in self and getParent(taskId) is not self.rootTask
 
 
 class ExecutorWrapper(mesos.Executor):
