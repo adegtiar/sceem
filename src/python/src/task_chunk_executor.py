@@ -15,11 +15,10 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
     def launchTask(self, driver, task):
         """
         Logic to launch TaskChunks by running through sub-tasks one at a time.
-
         """
         if chunk_utils.isTaskChunk(task):
             self.pendingTaskChunks.addTask(task)
-            runNextSubTask(driver, task.task_id.value)
+            self.runNextSubTask(driver, task.task_id.value)
         else:
             #super(TaskChunkExecutor, self).launchTask(driver, task)
             chunk_utils.ExecutorWrapper.launchTask(self, driver, task)
