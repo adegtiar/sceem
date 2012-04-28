@@ -57,6 +57,8 @@ def addSubTask(taskChunk, subTask):
     """
     Adds a copy of the given sub task to the task chunk.
     """
+    if not subTask.task_id.IsInitialized():
+        raise ValueError("Sub tasks added to a task chunk must have an id.")
     taskChunk.sub_tasks.tasks.extend((subTask,))
 
 

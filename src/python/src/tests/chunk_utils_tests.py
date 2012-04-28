@@ -21,6 +21,7 @@ class TestTaskChunks(unittest.TestCase):
     def setUp(self):
         self.chunk = newTaskChunk()
         self.subTask = mesos_pb2.TaskInfo()
+        self.subTask.task_id.value = "subtask_1"
 
     def test_isTaskChunk_true(self):
         self.assertTrue(isTaskChunk(self.chunk))
