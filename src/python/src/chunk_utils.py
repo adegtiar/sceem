@@ -101,26 +101,6 @@ SubTaskMessage.messageClasses[SubTaskMessage.SUBTASK_UPDATE] = SubTaskUpdateMess
 SubTaskMessage.messageClasses[SubTaskMessage.KILL_SUBTASKS] = KillSubTasksMessage
 
 
-def getMessage(data):
-    #TODO: implement
-#    partially de-serialize data
-#    if matches MessageTypes:
-#        return deserialize_data(data)
-#    else:
-#        return None
-    pass
-
-
-def serializeSubTaskUpdate(taskUpdate):
-    #TODO: implement
-    pass
-
-
-def serializeKillSubTasks(subTaskIds):
-    #TODO: implement
-    pass
-
-
 def newTaskChunk(subTasks = ()):
     """
     Creates a new empty chunk of tasks.
