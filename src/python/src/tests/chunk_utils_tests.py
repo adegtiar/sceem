@@ -203,6 +203,21 @@ class TestTaskTable(unittest.TestCase):
         self.table.setActive(tasks[0].task_id)
         self.assertTrue(self.table.isActive(tasks[0].task_id))
 
+    def test_getParent(self):
+        tasks = self.new_tasks(2)
+        taskChunk = newTaskChunk(tasks)
+        taskChunk.task_id.value = "chunk_id"
+
+        outerTaskChunk = newTaskChunk((taskChunk,))
+        outerTaskChunk.task_id.value = "chunk_id_outer"
+
+        self.table.addTask(outerTaskChunk)
+
+        self.assertEqual(self.table.rootTask, self.table.getParent(outerTaskChunk.task_id))
+        self.assertEqual(outerTaskChunk, self.table.getParent(taskChunk.task_id))
+        for task in tasks:
+            self.assertEqual(taskChunk, self.table.getParent(task.task_id))
+
 
 if __name__ == '__main__':
     unittest.main()
