@@ -241,6 +241,11 @@ class TestSubTaskMessage(unittest.TestCase):
     Tests for SubTaskMessage in chunk_utils.
     """
 
+    def setUp(self):
+        self.payload = 513948
+        self.messageType = 3
+        self.message = SubTaskMessage(self.messageType, self.payload)
+
     def test_invalidMessage(self):
         invalidMessage = SubTaskMessage(valid = False)
 
@@ -264,6 +269,15 @@ class TestSubTaskMessage(unittest.TestCase):
     def test_parseInvalidMessage(self):
         invalidMessage = SubTaskMessage.fromString("invalid stuff")
         self.assertFalse(invalidMessage.isValid())
+
+    def test_validMessage(self):
+        self.assertTrue(self.message.isValid())
+
+    def test_getPayload(self):
+        self.assertEqual(self.payload, self.message.getPayload())
+
+    def test_getType(self):
+        self.assertEqual(self.messageType, self.message.getType())
 
 
 
