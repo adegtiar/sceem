@@ -216,7 +216,7 @@ class TaskTable(object):
         for taskNode in self.all_task_nodes.itervalues():
             yield taskNode.task
 
-    def updateState(self, taskId, state):
+    def setState(self, taskId, state):
         """
         Updates the state of a task in the table.
         """
