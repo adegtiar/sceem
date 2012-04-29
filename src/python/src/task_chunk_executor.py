@@ -1,4 +1,5 @@
 import mesos
+import mesos_pb2
 import chunk_utils
 
 
@@ -26,8 +27,11 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
             taskChunkId = task.task_id
             if not self.pendingTaskChunks.isRunning(taskChunkId):
                 #TODO: Send a task started message
-                driver.sendStatusUpdate(TaskStatus(taskChunkId, 
-                                                   mesos_pb2.TASK_RUNNING))
+                update = mesos_pb2.TaskStatus()
+                update.task_id.value = taskChunkId.value
+                update.state = mesos_pb2.TASK_RUNNING
+                driver.sendStatusUpdate(update)
+                
             self.runNextSubTask(driver, taskChunkId)
         else:
             #super(TaskChunkExecutor, self).launchTask(driver, task)
@@ -82,8 +86,10 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
             nextSubTaskId = chunk_utils.nextSubTask(taskChunk)
             self.launchTask(driver, nextSubTaskId)
         else:
-            
-            driver.sendStatusUpdate(mesos_pb2.TaskStatus(taskChunkId, mesos_pb2.TASK_FINISHED))
+            update = mesos_pb2.TaskStatus()
+            update.task_id.value = taskChunkId.value
+            update.state = mesos_pb2.TASK_FINISHED
+            driver.sendStatusUpdate(update)
 
     def frameworkMessage(self, driver, message):
         """

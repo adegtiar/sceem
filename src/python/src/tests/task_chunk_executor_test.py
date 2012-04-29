@@ -133,7 +133,10 @@ class MockTestExecutor(unittest.TestCase):
     def test_runNextSubtask(self): #empty subtask
         self.chunkExecutor.pendingTaskChunks.addTask(self.taskChunk)
         self.chunkExecutor.runNextSubTask(self.mExecutorDriver, self.taskChunk.task_id)
-        self.mExecutorDriver.sendStatusUpdate.assert_called_once_with(mesos_pb2.TaskStatus(self.taskChunk.task_id, mesos_pb2.TASK_FINISHED))
+        update = mesos_pb2.TaskStatus()
+        update.task_id.value = self.taskChunk.task_id.value
+        update.state = mesos_pb2.TASK_FINISHED
+        self.mExecutorDriver.sendStatusUpdate.assert_called_once_with(update)
 
     def test_frameworkMessage(self):
         addSubTask(self.taskChunk, self.task)
