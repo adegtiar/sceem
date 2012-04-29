@@ -316,7 +316,7 @@ class SchedulerWrapper(mesos.Scheduler):
 
 class ExecutorDriverWrapper(mesos.ExecutorDriver):
     """
-    Delegates calls to the underlying scheduler.
+    Delegates calls to the underlying MesosExecutorDriver.
     """
     def __init__(self, driver):
         self.driver = driver
@@ -341,3 +341,45 @@ class ExecutorDriverWrapper(mesos.ExecutorDriver):
 
     def sendFrameworkMessage(self, data):
         self.driver.sendFrameworkMessage(data)
+
+
+class SchedulerDriverWrapper(mesos.SchedulerDriver):
+    """
+    Delegates calls to the underlying MesosSchedulerDriver.
+    """
+    def __init__(self, driver):
+        self.driver = driver
+
+    def start(self):
+        self.driver.start()
+
+    def stop(self, failover=False):
+        self.driver.stop(failover)
+
+    def abort(self):
+        self.driver.abort()
+
+    def join(self):
+        self.driver.join()
+
+    def run(self):
+        self.driver.run()
+    
+    def requestResources(self, requests):
+        self.driver.requestResources(requests)
+
+    def launchTasks(self, offerId, tasks, filters=None):
+        self.driver.launchTasks(offerId, tasks, filters)
+        
+    def killTask(self, taskId):
+        self.driver.killTask(taskId)
+
+    def declineOffer(self, offerId, filters=None):
+        self.driver.declineOffer(self, offerId, filters)
+   
+    def reviveOffers(self):
+        self.driver.reviveOffers()
+    
+    def sendFrameworkMessage(self, executorId, slaveId, data): 
+        self.driver.sendFrameworkMessage(executorId, slaveId, data)
+

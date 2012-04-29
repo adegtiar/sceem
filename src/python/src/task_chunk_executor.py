@@ -68,17 +68,21 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
         be provided).
 
         """
-        taskChunksToRun = set()
+        taskIdsToRun = set()
         for subTaskId in subTaskIds:
             if self.pendingTaskChunks.isActive(subTaskId):
-                self.killTask(driver, subTaskId)
                 parent = self.pendingTaskChunks.getParent(subTaskId)
-                taskChunksToRun.add(parent.task_id)
+                self.killTask(driver, subTaskId)
+            #    if not parent.task_id.SerializeToString() in taskIdsToRun:
+                taskIdsToRun.add(parent.task_id.SerializeToString())
             else:
                 del self.pendingTaskChunks[subTaskId]
-
-        for taskChunkId in taskChunksToRun:
-            self.runNextSubTask(driver, taskChunkId)
+                
+        
+        for taskChunkId in taskIdsToRun:
+            taskID = mesos_pb2.TaskID()
+            taskID.ParseFromString(taskChunkId)
+            self.runNextSubTask(driver, taskID)
 
     def runNextSubTask(self, driver, taskChunkId):
         """
