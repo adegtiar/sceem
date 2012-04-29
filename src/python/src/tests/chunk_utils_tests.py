@@ -236,5 +236,11 @@ class TestTaskTable(unittest.TestCase):
             self.assertFalse(self.table.isSubTask(task.task_id))
 
 
+class TestSubTaskMessage(unittest.TestCase):
+    """
+    Tests for SubTaskMessage in chunk_utils.
+    """
+
+
 if __name__ == '__main__':
     unittest.main()
