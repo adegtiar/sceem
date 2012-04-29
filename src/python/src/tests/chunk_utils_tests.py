@@ -21,6 +21,7 @@ class TestTaskChunks(unittest.TestCase):
     def setUp(self):
         self.chunk = newTaskChunk()
         self.subTask = mesos_pb2.TaskInfo()
+        self.subTask.task_id.value = "subtask_1"
 
     def test_isTaskChunk_true(self):
         self.assertTrue(isTaskChunk(self.chunk))
@@ -55,7 +56,7 @@ class TestTaskChunks(unittest.TestCase):
         subTasks = []
         for i in range(5):
             subTask = mesos_pb2.TaskInfo()
-            subTask.task_id.value = "{0}".format(i)
+            subTask.task_id.value = "id{0}".format(i)
             subTasks.append(subTask)
             addSubTask(self.chunk, subTask)
         extracted = [task for task in subTaskIterator(self.chunk)]
@@ -70,18 +71,101 @@ class TestTaskTable(unittest.TestCase):
     def setUp(self):
         self.table = TaskTable()
 
+    def new_tasks(self, num):
+        tasks = []
+        for i in range(num):
+            task = mesos_pb2.TaskInfo()
+            task.task_id.value = "id{0}".format(i)
+            tasks.append(task)
+        return tasks
+
+    def new_task_chunk(self, subTasksPerChunk):
+        taskChunk = newTaskChunk(self.new_tasks(subTasksPerChunk))
+        taskChunk.task_id.value = "chunk_id"
+        return taskChunk
+
     def test_len(self):
         self.assertEqual(0, len(self.table))
 
     def test_addTask(self):
-        task = mesos_pb2.TaskInfo()
-        task.task_id.value = "foo"
-        self.table.addTask(task)
-        self.assertEqual(1, len(self.table))
+        for task in self.new_tasks(2):
+            self.table.addTask(task)
+
+        self.assertEqual(2, len(self.table))
 
     def test_addTask_error(self):
         with self.assertRaises(ValueError):
             self.table.addTask(mesos_pb2.TaskInfo())
+
+    def test_addTask_task_chunk(self):
+        self.table.addTask(self.new_task_chunk(2))
+        self.assertEqual(3, len(self.table))
+
+    def test_addTask_deep_task_chunk(self):
+        innerTaskChunk = self.new_task_chunk(2)
+
+        outerTaskChunk = newTaskChunk((innerTaskChunk,))
+        outerTaskChunk.task_id.value = "chunk_id_outer"
+
+        self.table.addTask(outerTaskChunk)
+        self.assertEqual(4, len(self.table))
+
+    def test_addTask_same(self):
+        for task in self.new_tasks(2):
+            self.table.addTask(task)
+        for task in self.new_tasks(2):
+            self.table.addTask(task)
+
+        self.assertEqual(2, len(self.table))
+
+    def test_in(self):
+        tasks = self.new_tasks(2)
+        taskChunk = newTaskChunk(tasks)
+        taskChunk.task_id.value = "chunk_id"
+
+        self.table.addTask(taskChunk)
+
+        self.assertTrue(taskChunk.task_id in self.table)
+        for task in tasks:
+            self.assertTrue(task.task_id in self.table)
+
+        someId = mesos_pb2.TaskID(value="foo")
+        self.assertFalse(someId in self.table)
+
+    def test_get(self):
+        tasks = self.new_tasks(2)
+        taskChunk = newTaskChunk(tasks)
+        taskChunk.task_id.value = "chunk_id"
+
+        self.table.addTask(taskChunk)
+
+        self.assertEqual(taskChunk, self.table[taskChunk.task_id])
+        for task in tasks:
+            self.assertEqual(task, self.table[task.task_id])
+
+    def test_del_sub_task(self):
+        tasks = self.new_tasks(2)
+        taskChunk = newTaskChunk(tasks)
+        taskChunk.task_id.value = "chunk_id"
+
+        self.table.addTask(taskChunk)
+
+        del self.table[tasks[0].task_id]
+        self.assertFalse(tasks[0].task_id in self.table)
+        self.assertEqual(2, len(self.table))
+
+    def test_del_task_chunk(self):
+        tasks = self.new_tasks(2)
+        taskChunk = newTaskChunk(tasks)
+        taskChunk.task_id.value = "chunk_id"
+
+        self.table.addTask(taskChunk)
+
+        del self.table[taskChunk.task_id]
+        self.assertFalse(taskChunk.task_id in self.table)
+        for task in tasks:
+            self.assertFalse(task.task_id in self.table)
+        self.assertEqual(0, len(self.table))
 
 
 if __name__ == '__main__':

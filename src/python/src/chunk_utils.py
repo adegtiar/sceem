@@ -42,13 +42,14 @@ def serializeKillSubTasks(subTaskIds):
     pass
 
 
-def newTaskChunk():
+def newTaskChunk(subTasks = ()):
     """
     Creates a new empty chunk of tasks.
+    Any given sub tasks are copied into the chunk.
     """
     taskChunk = mesos_pb2.TaskInfo()
     # Initialize the empty sub_tasks field.
-    taskChunk.sub_tasks.tasks.extend(())
+    taskChunk.sub_tasks.tasks.extend(subTasks)
     return taskChunk
 
 
@@ -56,6 +57,8 @@ def addSubTask(taskChunk, subTask):
     """
     Adds a copy of the given sub task to the task chunk.
     """
+    if not subTask.task_id.IsInitialized():
+        raise ValueError("Sub tasks added to a task chunk must have an id.")
     taskChunk.sub_tasks.tasks.extend((subTask,))
 
 
@@ -102,7 +105,7 @@ def removeSubTask(taskChunk, subTaskId):
             del taskChunk.sub_tasks.tasks[index]
             return subTask
         index += 1
-    raise KeyError("subTaskId {0} not found in {1}".format(subTaskId, parent))
+    raise KeyError("subTaskId {0} not found in {1}".format(subTaskId, taskChunk))
 
 
 def subTaskIterator(taskChunk):
@@ -160,7 +163,7 @@ class TaskTable(object):
 
     def addTask(self, task, parent=None):
         """
-        Adds the give task to the table.
+        Adds the given task to the table.
 
         If no parent is specified, adds it as a top-level task.
         If the task is already in the table, there is no effect.
@@ -171,6 +174,7 @@ class TaskTable(object):
             return
         if not parent:
             parent = self.rootTask
+            addSubTask(parent, task)
         self.all_task_nodes[task.task_id] = TaskTable.TaskNode(parent, task)
         for subTask in subTaskIterator(task):
             self.addTask(subTask, task)
@@ -188,7 +192,7 @@ class TaskTable(object):
         taskNode = self.all_task_nodes[taskId]
         removeSubTask(taskNode.parent, taskId)
         for subTask in subTaskIterator(taskNode.task):
-            del self[subTask.id]
+            del self[subTask.task_id]
         del self.all_task_nodes[taskId]
 
     def __contains__(self, taskId):
