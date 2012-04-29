@@ -105,7 +105,7 @@ def removeSubTask(taskChunk, subTaskId):
             del taskChunk.sub_tasks.tasks[index]
             return subTask
         index += 1
-    raise KeyError("subTaskId {0} not found in {1}".format(subTaskId, parent))
+    raise KeyError("subTaskId {0} not found in {1}".format(subTaskId, taskChunk))
 
 
 def subTaskIterator(taskChunk):
@@ -174,6 +174,7 @@ class TaskTable(object):
             return
         if not parent:
             parent = self.rootTask
+            addSubTask(parent, task)
         self.all_task_nodes[task.task_id] = TaskTable.TaskNode(parent, task)
         for subTask in subTaskIterator(task):
             self.addTask(subTask, task)
@@ -191,7 +192,7 @@ class TaskTable(object):
         taskNode = self.all_task_nodes[taskId]
         removeSubTask(taskNode.parent, taskId)
         for subTask in subTaskIterator(taskNode.task):
-            del self[subTask.id]
+            del self[subTask.task_id]
         del self.all_task_nodes[taskId]
 
     def __contains__(self, taskId):
