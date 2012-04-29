@@ -244,6 +244,8 @@ class TestSubTaskMessage(unittest.TestCase):
     def test_invalidMessage(self):
         invalidMessage = SubTaskMessage(valid = False)
 
+        self.assertFalse(invalidMessage.isValid())
+
         with self.assertRaises(NotImplementedError):
             invalidMessage.toString()
 
