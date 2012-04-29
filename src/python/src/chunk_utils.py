@@ -73,9 +73,15 @@ class SubTaskUpdateMessage(SubTaskMessage):
     @staticmethod
     def fromString(serializedPayload):
         pass
+        taskStatus = mesos_pb2.TaskStatus()
+        # TODO error handling?
+        taskStatus.ParseFromString(serializedPayload)
+        return SubTaskUpdateMessage(taskStatus)
 
     def toString(self):
         pass
+        # TODO error handling?
+        return getPayload().SerializeToString()
 
 
 class KillSubTasksMessage(SubTaskMessage):
