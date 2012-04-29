@@ -182,9 +182,10 @@ class TestChunkExecutorDriver(unittest.TestCase):
         self.taskChunk = newTaskChunk()
         self.taskChunk.task_id.value = str(self.getTaskId())
         self.task = self.getNewSubtask()
-        self.mExecutor = self.getMockExecutor()
+        self.mExecutor = Mock(spec=mesos.Executor)
+        self.mExecutorDriver = Mock(spec=mesos.ExecutorDriver)
         self.chunkExecutor = self.getChunkExecutor()
-        self.mExecutorDriver = self.getChunkExecutorDriver()
+        self.chunkExecutorDriver = self.getChunkExecutorDriver()
         
     def getTaskId(self):
         self.tid = self.launchedTask
@@ -196,7 +197,41 @@ class TestChunkExecutorDriver(unittest.TestCase):
         subTask.task_id.value = str(self.getTaskId())
         return subTask
 
+    def getChunkExecutor(self):
+        # Create a TaskChunk Executor
+        chunkExecutor = TaskChunkExecutor(self.mExecutor)
+        return chunkExecutor
     
+    def getChunkExecutorDriver(self):
+        chunkDriver = TaskChunkExecutorDriver(self.mExecutor)
+        return chunkDriver
+
+    def test_sendStatusUpdateSubtaskTerminal(self):
+        addSubTask(self.taskChunk, self.task)
+        self.mExecutor.sendStatusUpdate = Mock()
+        self.chunkExecutorDriver.chunkExecutor.pendingTaskChunks.addTask(self.taskChunk)
+        self.chunkExecutorDriver.chunkExecutor.runNextSubTask = Mock()
+        update = mesos_pb2.TaskStatus()
+        update.task_id.value = self.task.task_id.value
+        update.state = mesos_pb2.TASK_FINISHED
+        self.chunkExecutorDriver.sendStatusUpdate(update)
+        self.chunkExecutorDriver.chunkExecutor.runNextSubTask.assert_called_once_with(self.chunkExecutorDriver, self.taskChunk.task_id)
+
+
+    def test_sendStatusUpdateSubtask(self):        
+        self.mExecutor.sendStatusUpdate = Mock()
+        addSubTask(self.taskChunk, self.task)
+        self.chunkExecutorDriver.chunkExecutor.pendingTaskChunks.addTask(self.taskChunk)
+        self.chunkExecutorDriver.driver.sendStatusUpdate = Mock()
+        update = mesos_pb2.TaskStatus()
+        update.task_id.value = self.taskChunk.task_id.value
+        update.state = mesos_pb2.TASK_FINISHED
+        self.chunkExecutorDriver.sendStatusUpdate(update)
+        self.chunkExecutorDriver.driver.sendStatusUpdate.assert_called_once_with(update)
+
+
+    #def test_sendStatusUpdate(self):
+        
         
         
         
