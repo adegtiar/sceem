@@ -39,7 +39,7 @@ class SubTaskMessage(object):
         """
         try:
             messageType, serializedPayload = pickle.loads(serialized_message)
-        except pickle.UnpicklingError:
+        except Exception:
             return SubTaskMessage(valid = False)
 
         if messageType in SubTaskMessage.messageClasses:
