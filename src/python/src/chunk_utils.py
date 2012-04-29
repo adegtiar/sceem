@@ -64,12 +64,12 @@ class SubTaskMessage(object):
         """
         Retrieves the un-serialized payload of the message.
         """
-        if not isValid():
+        if not self.isValid():
             raise ValueError("Cannot retrieve the payload of an invalid message")
         return self.__payload
 
     def getType(self):
-        if not isValid():
+        if not self.isValid():
             raise ValueError("Cannot retrieve the type of an invalid message")
         return self.__type
 
