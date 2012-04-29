@@ -15,8 +15,7 @@ from mock import Mock, MagicMock
 
 SUBTASK_UPDATE, KILL_SUBTASKS = range(2)
 
-class MockTestExecutor(unittest.TestCase):
-  
+class TestChunkExecutor(unittest.TestCase):
 
     def setUp(self):
         self.tid = 0
@@ -151,9 +150,54 @@ class MockTestExecutor(unittest.TestCase):
         self.chunkExecutor.frameworkMessage(self.mExecutorDriver, "message")
         self.mExecutor.frameworkMessage.assert_called_once_with(self.mExecutorDriver, "message")
         
-        
-        
+    
 
+class TestHelperMethod():
+    
+    def __init__():
+        pass
+
+    def getMockExecutor(self):
+        mExecutor = Mock(spec=mesos.Executor)
+        mExecutor.launchTask.return_value = "uExecutor: Launch Task Called"
+        mExecutor.killTask.return_value = "uExecutor: KillTask Called"
+        mExecutor.frameworkMessage.return_value = "uExecutor: FrameMessage Called"
+        return mExecutor
+    
+    def getMockExecutorDriver(self):
+        mExecutorDriver = Mock(spec=mesos.ExecutorDriver)
+        return mExecutorDriver
+    
+    def getChunkExecutor(self):
+        # Create a TaskChunk Executor
+        chunkExecutor = TaskChunkExecutor(self.mExecutor)
+        return chunkExecutor
+
+    
+        
+class TestChunkExecutorDriver(unittest.TestCase):
+
+    def setUp(self):
+        self.tid = 0
+        self.launchedTask = 0
+        self.taskChunk = newTaskChunk()
+        self.taskChunk.task_id.value = str(self.getTaskId())
+        self.task = self.getNewSubtask()
+        self.mExecutor = self.getMockExecutor()
+        self.chunkExecutor = self.getChunkExecutor()
+        self.mExecutorDriver = self.getChunkExecutorDriver()
+        
+    def getTaskId(self):
+        self.tid = self.launchedTask
+        self.launchedTask +=1
+        return self.tid
+    
+    def getNewSubtask(self):
+        subTask = mesos_pb2.TaskInfo()
+        subTask.task_id.value = str(self.getTaskId())
+        return subTask
+
+    
         
         
         

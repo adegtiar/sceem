@@ -85,6 +85,7 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
         if chunk_utils.numSubTasks(taskChunk) > 0:
             nextSubTaskId = chunk_utils.nextSubTask(taskChunk)
             self.launchTask(driver, nextSubTaskId)
+            self.pendingTaskChunks.set
         else:
             update = mesos_pb2.TaskStatus()
             update.task_id.value = taskChunkId.value
@@ -123,14 +124,20 @@ class TaskChunkExecutorDriver(chunk_utils.ExecutorDriverWrapper):
         if self.chunkExecutor.isSubTask(update.taskId):
             sendFrameworkMessage(serializeSubtaskUpdate(update))
             
+            pending_tasks.setState(update.state)
+            
             if isTerminalUpdate(update):
-                del pending_tasks[update.taskId]
-                self.chunkExecutor.runNextSubTask(self,)
+                parent = pending_tasks.getParent(update.taskId)
+                del pending_tasks[update.taskId]            
+                self.chunkExecutor.runNextSubTask(self, parent.task_id)
         else:
             
-            if update.task_id in pending_tasks and isTerminalUpdate(update):
-                del pending_tasks[update.taskId]
+            if update.task_id in pending_tasks:
+                
+                if isTerminalUpdate(update):
+                    del pending_tasks[update.taskId]
+                
                
-            chunk_utils.ExecutorDriverWrapper.sendStatusUpdate(self,update)
+            chunk_utils.ExecutorDriverWrapper.sendStatusUpdate(self, update)
             #super(TaskChunkExecutorDriver, self).sendStatusUpdate(update)
 
