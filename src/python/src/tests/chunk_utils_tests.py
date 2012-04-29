@@ -143,6 +143,30 @@ class TestTaskTable(unittest.TestCase):
         for task in tasks:
             self.assertEqual(task, self.table[task.task_id])
 
+    def test_del_sub_task(self):
+        tasks = self.new_tasks(2)
+        taskChunk = newTaskChunk(tasks)
+        taskChunk.task_id.value = "chunk_id"
+
+        self.table.addTask(taskChunk)
+
+        del self.table[tasks[0].task_id]
+        self.assertFalse(tasks[0].task_id in self.table)
+        self.assertEqual(2, len(self.table))
+
+    def test_del_task_chunk(self):
+        tasks = self.new_tasks(2)
+        taskChunk = newTaskChunk(tasks)
+        taskChunk.task_id.value = "chunk_id"
+
+        self.table.addTask(taskChunk)
+
+        del self.table[taskChunk.task_id]
+        self.assertFalse(taskChunk.task_id in self.table)
+        for task in tasks:
+            self.assertFalse(task.task_id in self.table)
+        self.assertEqual(0, len(self.table))
+
 
 if __name__ == '__main__':
     unittest.main()
