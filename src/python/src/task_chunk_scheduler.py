@@ -10,13 +10,23 @@ class TaskChunkScheduler(chunk_utils.SchedulerWrapper):
         else:
             SchedulerWrapper.frameworkMessage(self, driver, data)
 
-class TaskChunkSchedulerDriver(mesos.MesosSchedulerDriver):
+class TaskChunkSchedulerDriver(chunk_utils.SchedulerDriverWrapper):
     
+    def __init__(self, scheduler):
+        """
+        Initialize scheduler wrapper with framework scheduler
+        
+        """
+        self.chunkScheduler = TaskChunkScheduler(scheduler)
+        driver = mesos.MesosSchedulerDriver(self.chunkScheduler)
+        chunk_utils.SchedulerDriverWrapper.__init__(self,driver)
+
     def killSubtasks(self, subTasks):
         perExecutorTasks = defaultdict(list)
         for subTask in subTasks:
             perExecutorTasks[subTask.executor.executor_id].append(subTask)
             for executorId, subTasks in perExecutorTasks.iteritems():
                 message = serializeKillSubtasks(taskIds)
-                SchedulerWrapper.sendFrameworkMessage(executorId, subTasks[0].slave_id, message)
+                chunk_utils.SchedulerDriverWrapper.sendFrameworkMessage(
+                    executorId,subTasks[0].slave_id, message)
                 
