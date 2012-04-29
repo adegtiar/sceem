@@ -118,7 +118,7 @@ class TestTaskTable(unittest.TestCase):
 
         self.assertEqual(2, len(self.table))
 
-    def test_in(self):
+    def test_contains(self):
         tasks = self.new_tasks(2)
         taskChunk = newTaskChunk(tasks)
         taskChunk.task_id.value = "chunk_id"
@@ -166,6 +166,27 @@ class TestTaskTable(unittest.TestCase):
         for task in tasks:
             self.assertFalse(task.task_id in self.table)
         self.assertEqual(0, len(self.table))
+
+    def test_iter(self):
+        all_tasks = []
+        innerTaskChunk = self.new_task_chunk(2)
+
+        all_tasks.append(innerTaskChunk)
+        for subTask in subTaskIterator(innerTaskChunk):
+            all_tasks.append(subTask)
+
+        outerTaskChunk = newTaskChunk((innerTaskChunk,))
+        outerTaskChunk.task_id.value = "chunk_id_outer"
+
+        all_tasks.append(outerTaskChunk)
+
+        self.table.addTask(outerTaskChunk)
+
+        num_iter_tasks = 0
+        for task in self.table:
+            self.assertTrue(task in all_tasks)
+            num_iter_tasks += 1
+        self.assertEqual(len(all_tasks), num_iter_tasks)
 
 
 if __name__ == '__main__':

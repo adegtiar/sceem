@@ -191,7 +191,9 @@ class TaskTable(object):
         """
         taskNode = self.all_task_nodes[taskId]
         removeSubTask(taskNode.parent, taskId)
-        for subTask in subTaskIterator(taskNode.task):
+        # Generate a list of sub tasks to avoid concurrent modification.
+        subTasks = [subTask for subTask in subTaskIterator(taskNode.task)]
+        for subTask in subTasks:
             del self[subTask.task_id]
         del self.all_task_nodes[taskId]
 
@@ -214,31 +216,25 @@ class TaskTable(object):
         for taskNode in self.all_task_nodes.itervalues():
             yield taskNode.task
 
-    def updateState(self, taskId, state):
+    def setActive(self, taskId):
         """
         Updates the state of a task in the table.
         """
-        self.all_task_nodes[taskId].state = state
+        self.all_task_nodes[taskId].state = mesos_pb2.TASK_RUNNING
 
-    def getState(self,taskId):
-        """
-        Returns the current state of a task in the table.
-        """
-        return self.all_task_nodes[taskId].state
-
-    def getParent(self,subTaskId):
+    def getParent(self, subTaskId):
         """
         Returns the parent of the sub task with the given id.
         """
         return self.all_task_nodes[subTaskId].parent
 
-    def isRunning(self,taskId):
+    def isActive(self, taskId):
         """
         Checks if the task with the given id is currently running.
         """
-        return self.getState(taskId) == mesos_pb2.TASK_RUNNING
+        return self.all_task_nodes[taskId].state == mesos_pb2.TASK_RUNNING
 
-    def isSubTask(self,taskId):
+    def isSubTask(self, taskId):
         """
         Checks if the task with the given id is a sub task in the table.
         """
