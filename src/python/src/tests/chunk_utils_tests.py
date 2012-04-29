@@ -241,6 +241,19 @@ class TestSubTaskMessage(unittest.TestCase):
     Tests for SubTaskMessage in chunk_utils.
     """
 
+    def test_invalidMessage(self):
+        invalidMessage = SubTaskMessage(valid = False)
+
+        with self.assertRaises(NotImplementedError):
+            invalidMessage.toString()
+
+        with self.assertRaises(ValueError):
+            invalidMessage.getPayload()
+
+        with self.assertRaises(ValueError):
+            invalidMessage.getType()
+
+
 
 if __name__ == '__main__':
     unittest.main()
