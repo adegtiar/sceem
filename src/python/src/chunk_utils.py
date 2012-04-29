@@ -216,17 +216,11 @@ class TaskTable(object):
         for taskNode in self.all_task_nodes.itervalues():
             yield taskNode.task
 
-    def setState(self, taskId, state):
+    def setActive(self, taskId):
         """
         Updates the state of a task in the table.
         """
-        self.all_task_nodes[taskId].state = state
-
-    def getState(self, taskId):
-        """
-        Returns the current state of a task in the table.
-        """
-        return self.all_task_nodes[taskId].state
+        self.all_task_nodes[taskId].state = mesos_pb2.TASK_RUNNING
 
     def getParent(self, subTaskId):
         """
@@ -234,11 +228,11 @@ class TaskTable(object):
         """
         return self.all_task_nodes[subTaskId].parent
 
-    def isRunning(self, taskId):
+    def isActive(self, taskId):
         """
         Checks if the task with the given id is currently running.
         """
-        return self.getState(taskId) == mesos_pb2.TASK_RUNNING
+        return self.all_task_nodes[taskId].state == mesos_pb2.TASK_RUNNING
 
     def isSubTask(self, taskId):
         """
