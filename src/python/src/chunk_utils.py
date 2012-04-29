@@ -191,7 +191,9 @@ class TaskTable(object):
         """
         taskNode = self.all_task_nodes[taskId]
         removeSubTask(taskNode.parent, taskId)
-        for subTask in subTaskIterator(taskNode.task):
+        # Generate a list of sub tasks to avoid concurrent modification.
+        subTasks = [subTask for subTask in subTaskIterator(taskNode.task)]
+        for subTask in subTasks:
             del self[subTask.task_id]
         del self.all_task_nodes[taskId]
 
