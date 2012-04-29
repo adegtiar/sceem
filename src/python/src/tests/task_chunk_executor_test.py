@@ -76,10 +76,8 @@ class TestChunkExecutor(unittest.TestCase):
         task = self.getNewSubtask()
         addSubTask(self.taskChunk,task)
         self.chunkExecutor.pendingTaskChunks.addTask(self.taskChunk)
-        self.chunkExecutor.pendingTaskChunks.updateState(self.taskChunk.task_id,
-                                                          mesos_pb2.TASK_RUNNING)
-        self.chunkExecutor.pendingTaskChunks.updateState(task.task_id,
-                                                          mesos_pb2.TASK_RUNNING)
+        self.chunkExecutor.pendingTaskChunks.setActive(self.taskChunk.task_id)
+        self.chunkExecutor.pendingTaskChunks.setActive(task.task_id)
         self.chunkExecutor.killTask(self.mExecutorDriver, self.taskChunk.task_id)
         self.mExecutor.killTask.assert_called_once_with(self.mExecutorDriver,
                                                         task.task_id)
@@ -111,7 +109,8 @@ class TestChunkExecutor(unittest.TestCase):
             subtaskIds.append(task.task_id)
             addSubTask(self.taskChunk, task)
         self.chunkExecutor.pendingTaskChunks.addTask(self.taskChunk)
-        self.chunkExecutor.pendingTaskChunks.updateState(subtaskIds[0], mesos_pb2.TASK_RUNNING)
+        self.chunkExecutor.pendingTaskChunks.setActive(self.taskChunk.task_id)
+        self.chunkExecutor.pendingTaskChunks.setActive(subtaskIds[0])
         self.chunkExecutor.killSubTasks(self.mExecutorDriver, subtaskIds)
         
         for taskid in subtaskIds:
