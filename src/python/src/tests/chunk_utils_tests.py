@@ -261,6 +261,10 @@ class TestSubTaskMessage(unittest.TestCase):
 
         self.assertFalse(unknownMessage.isValid())
 
+    def test_parseInvalidMessage(self):
+        invalidMessage = SubTaskMessage.fromString("invalid stuff")
+        self.assertFalse(invalidMessage.isValid())
+
 
 
 if __name__ == '__main__':
