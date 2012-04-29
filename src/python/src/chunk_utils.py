@@ -1,5 +1,6 @@
 import mesos
 import mesos_pb2
+import pickle
 
 
 # TaskStates that indicate the task is done and can be cleaned up.
@@ -18,11 +19,80 @@ def isTerminalUpdate(statusUpdate):
     return taskState in TERMINAL_STATES
 
 
-class SubclassMessages:
+class SubTaskMessage(object):
     """
-    The type of a subtask message.
+    A message corresponding to a task chunk's sub task.
     """
     SUBTASK_UPDATE, KILL_SUBTASKS = range(2)
+    messageClasses = {}
+
+    def __init__(self, messageType = None, payload = None, valid = True):
+        self.__type = messageType
+        self.__payload = payload
+        self.__valid = valid
+
+    @staticmethod
+    def fromString(serialized_message):
+        """
+        Returns a sub task message with a type and a payload.
+        If this fails, message.isValid() will be False.
+        """
+        try:
+            messageType, serializedPayload = pickle.loads(serialized_message)
+        except pickle.UnpicklingError:
+            return SubTaskMessage(valid = False)
+
+        if messageType in messageClasses:
+            return messageClasses[messageType].fromString(serializedPayload)
+        else:
+            return SubTaskMessage(valid = False)
+
+
+    def toString(self):
+        raise NotImplementedError()
+
+    def isValid(self):
+        return self.__valid
+
+    def getPayload(self):
+        if not isValid():
+            raise ValueError("Cannot retrieve the payload of an invalid message")
+        return self.__payload
+
+    def getType(self):
+        if not isValid():
+            raise ValueError("Cannot retrieve the type of an invalid message")
+        return self.__type
+
+
+class SubTaskUpdateMessage(SubTaskMessage):
+
+    def __init__(self, taskStatus):
+        SubTaskMessage.__init__(SubTaskMessage.SUBTASK_UPDATE, taskStatus)
+
+    @staticmethod
+    def fromString(serializedPayload):
+        pass
+
+    def toString(self):
+        pass
+
+
+class KillSubTasksMessage(SubTaskMessage):
+
+    def __init__(self, subTaskIds):
+        pass
+
+    @staticmethod
+    def fromString(serializedPayload):
+        pass
+
+    def toString(self):
+        pass
+
+# Initialize class list of SubTaskMessage.
+SubTaskMessage.messageClasses[SubTaskMessage.SUBTASK_UPDATE] = SubTaskUpdateMessage
+SubTaskMessage.messageClasses[SubTaskMessage.KILL_SUBTASKS] = KillSubTasksMessage
 
 
 def getMessage(data):
