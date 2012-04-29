@@ -188,6 +188,21 @@ class TestTaskTable(unittest.TestCase):
             num_iter_tasks += 1
         self.assertEqual(len(all_tasks), num_iter_tasks)
 
+    def test_active(self):
+        tasks = self.new_tasks(2)
+        taskChunk = newTaskChunk(tasks)
+        taskChunk.task_id.value = "chunk_id"
+
+        self.table.addTask(taskChunk)
+
+        # Tasks are initially inactive.
+        self.assertFalse(self.table.isActive(taskChunk.task_id))
+        for task in tasks:
+            self.assertFalse(self.table.isActive(task.task_id))
+
+        self.table.setActive(tasks[0].task_id)
+        self.assertTrue(self.table.isActive(tasks[0].task_id))
+
 
 if __name__ == '__main__':
     unittest.main()
