@@ -163,7 +163,7 @@ class TaskTable(object):
 
     def addTask(self, task, parent=None):
         """
-        Adds the give task to the table.
+        Adds the given task to the table.
 
         If no parent is specified, adds it as a top-level task.
         If the task is already in the table, there is no effect.
