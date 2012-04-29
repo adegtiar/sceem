@@ -216,29 +216,29 @@ class TaskTable(object):
         """
         self.all_task_nodes[taskId].state = state
 
-    def getState(taskId):
+    def getState(self,taskId):
         """
         Returns the current state of a task in the table.
         """
         return self.all_task_nodes[taskId].state
 
-    def getParent(subTaskId):
+    def getParent(self,subTaskId):
         """
         Returns the parent of the sub task with the given id.
         """
         return self.all_task_nodes[taskId].parent
 
-    def isRunning(taskId):
+    def isRunning(self,taskId):
         """
         Checks if the task with the given id is currently running.
         """
-        return getState(taskId) == TASK_RUNNING
+        return self.getState(taskId) == mesos_pb2.TASK_RUNNING
 
-    def isSubTask(taskId):
+    def isSubTask(self,taskId):
         """
         Checks if the task with the given id is a sub task in the table.
         """
-        return taskId in self and getParent(taskId) is not self.rootTask
+        return taskId in self and self.getParent(taskId) is not self.rootTask
 
 
 class ExecutorWrapper(mesos.Executor):
