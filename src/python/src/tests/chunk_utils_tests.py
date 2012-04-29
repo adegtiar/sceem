@@ -118,12 +118,27 @@ class TestTaskTable(unittest.TestCase):
 
         self.assertEqual(2, len(self.table))
 
+    def test_in(self):
+        tasks = self.new_tasks(2)
+        taskChunk = newTaskChunk(tasks)
+        taskChunk.task_id.value = "chunk_id"
+
+        self.table.addTask(taskChunk)
+
+        self.assertTrue(taskChunk.task_id in self.table)
+        for task in tasks:
+            self.assertTrue(task.task_id in self.table)
+
+        someId = mesos_pb2.TaskID(value="foo")
+        self.assertFalse(someId in self.table)
+
     def test_get(self):
         tasks = self.new_tasks(2)
         taskChunk = newTaskChunk(tasks)
         taskChunk.task_id.value = "chunk_id"
 
         self.table.addTask(taskChunk)
+
         self.assertEqual(taskChunk, self.table[taskChunk.task_id])
         for task in tasks:
             self.assertEqual(task, self.table[task.task_id])
