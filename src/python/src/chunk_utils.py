@@ -102,14 +102,21 @@ class KillSubTasksMessage(SubTaskMessage):
     """
 
     def __init__(self, subTaskIds):
-        pass
+        SubTaskMessage.__init__(SubTaskMessage.KILL_SUBTASKS, subTaskIds)
 
     @staticmethod
     def fromString(serializedPayload):
-        pass
+        subTaskIdStrings = pickle.loads(subTaskIdStrings)
+        subTaskIds = []
+        for serializedSubTaskId in subTaskIdStrings:
+            taskId = mesos_pb2.TaskID()
+            taskId.ParseFromString(serializedSubTaskId)
+            subTaskIds.append(taskId)
+        return KillSubTasksMessage(subTaskIds)
 
     def toString(self):
-        pass
+        subTaskIdStrings = [subTaskId.SerializeToString for subTaskId in getPayload()]
+        return pickle.dumps(subTaskIdStrings)
 
 # Initialize class list of SubTaskMessage.
 SubTaskMessage.messageClasses[SubTaskMessage.SUBTASK_UPDATE] = SubTaskUpdateMessage
