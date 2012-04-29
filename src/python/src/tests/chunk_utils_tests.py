@@ -255,6 +255,12 @@ class TestSubTaskMessage(unittest.TestCase):
         with self.assertRaises(ValueError):
             invalidMessage.getType()
 
+    def test_parseUnknownMessageType(self):
+        serializedMessage = pickle.dumps((123, "foo"))
+        unknownMessage = SubTaskMessage.fromString(serializedMessage)
+
+        self.assertFalse(unknownMessage.isValid())
+
 
 
 if __name__ == '__main__':

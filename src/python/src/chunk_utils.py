@@ -42,8 +42,8 @@ class SubTaskMessage(object):
         except pickle.UnpicklingError:
             return SubTaskMessage(valid = False)
 
-        if messageType in messageClasses:
-            return messageClasses[messageType].fromString(serializedPayload)
+        if messageType in SubTaskMessage.messageClasses:
+            return SubTaskMessage.messageClasses[messageType].fromString(serializedPayload)
         else:
             return SubTaskMessage(valid = False)
 
