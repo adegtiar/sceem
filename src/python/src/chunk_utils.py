@@ -230,7 +230,7 @@ class TaskTable(object):
         """
         Returns the parent of the sub task with the given id.
         """
-        return self.all_task_nodes[taskId].parent
+        return self.all_task_nodes[subTaskId].parent
 
     def isRunning(self,taskId):
         """
