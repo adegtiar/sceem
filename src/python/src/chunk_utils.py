@@ -49,12 +49,21 @@ class SubTaskMessage(object):
 
 
     def toString(self):
+        """
+        Serializes the message into a string.
+        """
         raise NotImplementedError()
 
     def isValid(self):
+        """
+        Checks whether or not the message was parsed successfully.
+        """
         return self.__valid
 
     def getPayload(self):
+        """
+        Retrieves the un-serialized payload of the message.
+        """
         if not isValid():
             raise ValueError("Cannot retrieve the payload of an invalid message")
         return self.__payload
@@ -66,6 +75,9 @@ class SubTaskMessage(object):
 
 
 class SubTaskUpdateMessage(SubTaskMessage):
+    """
+    A message that holds the TaskStatus for a sub task.
+    """
 
     def __init__(self, taskStatus):
         SubTaskMessage.__init__(SubTaskMessage.SUBTASK_UPDATE, taskStatus)
@@ -85,6 +97,9 @@ class SubTaskUpdateMessage(SubTaskMessage):
 
 
 class KillSubTasksMessage(SubTaskMessage):
+    """
+    A message that holds the list of the ids of sub tasks to kill.
+    """
 
     def __init__(self, subTaskIds):
         pass
