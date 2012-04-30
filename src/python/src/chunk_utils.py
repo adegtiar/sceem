@@ -45,7 +45,7 @@ class SubTaskMessage(object):
 
             message_class = SubTaskMessage.messageClasses[messageType]
             payload = message_class.payloadFromString(serializedPayload)
-            return SubTaskMessage(messageType, payload)
+            return message_class(payload)
         except Exception:
             return SubTaskMessage(valid = False)
 
@@ -86,6 +86,9 @@ class SubTaskUpdateMessage(SubTaskMessage):
     """
     A message that holds the TaskStatus for a sub task.
     """
+
+    def __init__(self, taskStatus):
+        SubTaskMessage.__init__(SubTaskMessage.SUBTASK_UPDATE, taskStatus)
 
     @staticmethod
     def payloadFromString(serializedPayload):
