@@ -55,7 +55,7 @@ class TestScheduler(mesos.Scheduler):
         tid = self.tasksLaunched
         self.tasksLaunched += 1
 
-        print "Accepting offer on %s to start task %d" % (offer.hostname, tid)
+        print "Adding subtask %d to chunk" % tid
 
         task = mesos_pb2.TaskInfo()
         task.task_id.value = str(tid)
@@ -81,14 +81,26 @@ class TestScheduler(mesos.Scheduler):
         taskChunk.name = "taskChunk"
         taskChunk.executor.MergeFrom(self.executor)
 
-        driver.launchTasks(offer.id, tasks)
+        cpus = taskChunk.resources.add()
+        cpus.name = "cpus"
+        cpus.type = mesos_pb2.Value.SCALAR
+        cpus.scalar.value = TASK_CPUS
+
+        mem = taskChunk.resources.add()
+        mem.name = "mem"
+        mem.type = mesos_pb2.Value.SCALAR
+        mem.scalar.value = TASK_MEM
+
+        print "Accepting offer on %s to start task chunk" % offer.hostname
+
+        driver.launchTasks(offer.id, [taskChunk])
       break
 
   def statusUpdate(self, driver, update):
     print "Task %s is in state %d" % (update.task_id.value, update.state)
     if update.state == mesos_pb2.TASK_FINISHED:
       self.tasksFinished += 1
-      if self.tasksFinished == TOTAL_TASKS:
+      if self.tasksFinished == TOTAL_TASKS + 1:
         print "All tasks done, exiting"
         driver.stop()
 
