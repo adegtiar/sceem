@@ -323,5 +323,16 @@ class TestSubTaskUpdateMessage(unittest.TestCase, TestSubTaskSerialization):
         self.serializationClass = SubTaskUpdateMessage
 
 
+class TestKillSubTasksMessage(unittest.TestCase, TestSubTaskSerialization):
+    """
+    Tests for SubTaskUpdateMessage.
+    """
+
+    def setUp(self):
+        taskIds = [mesos_pb2.TaskID(value="{0}".format(i)) for i in xrange(5)]
+        self.payload = taskIds
+        self.serializationClass = KillSubTasksMessage
+
+
 if __name__ == '__main__':
     unittest.main()
