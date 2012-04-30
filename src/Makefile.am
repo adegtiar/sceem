@@ -523,9 +523,15 @@ clean-java:
 PHONY_TARGETS += clean-java
 
 
+TASK_CHUNK_TARGETS = python/src/task_chunk_executor.py	\
+		     python/src/task_chunk_scheduler.py	\
+		     python/src/chunk_utils.py
+
+
 # Python files listed outside HAS_PYTHON so they are included with the
 # distribution unconditionally.
 EXTRA_DIST += python/src/mesos.py				\
+	      $(TASK_CHUNK_TARGETS)				\
 	      python/native/mesos_executor_driver_impl.cpp	\
 	      python/native/mesos_executor_driver_impl.hpp	\
 	      python/native/mesos_scheduler_driver_impl.cpp	\
@@ -565,12 +571,13 @@ CLEANFILES += $(PROTOBUF_EGG)
 MESOS_EGG = python/dist/mesos-$(PACKAGE_VERSION)$(PYTHON_EGG_POSTFIX).egg
 
 $(MESOS_EGG): python/setup.py $(srcdir)/python/src/mesos.py	\
+	      $(TASK_CHUNK_TARGETS)				\
 	      $(PYTHON_PROTOS) libmesos_no_third_party.la	\
 	      $(PROTOBUF_EGG)
 	@echo "Building Mesos Python egg ..."
 	@if test "$(top_srcdir)" != "$(top_builddir)"; then \
 	  $(MKDIR_P) python/src; \
-	  cp -pf $(srcdir)/python/src/mesos.py python/src; \
+	  cp -pf $(srcdir)/python/src/mesos.py $(TASK_CHUNK_TARGETS) python/src; \
 	fi
 	@LIBS="$(LIBS)" PYTHONPATH=$(SETUPTOOLS) \
 	  $(PYTHON) python/setup.py bdist_egg
@@ -588,7 +595,7 @@ endif # HAS_PYTHON
 clean-python:
 	test "$(top_srcdir)" = "$(top_builddir)" || \
 	  (chmod -R u+w python/native; \
-	   rm -rf python/src/mesos.py python/native)
+	   rm -rf python/src/mesos.py $(TASK_CHUNK_TARGETS) python/native)
 	-rm -rf python/src/mesos.egg-info python/build
 
 PHONY_TARGETS += clean-python

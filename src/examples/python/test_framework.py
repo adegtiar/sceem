@@ -7,9 +7,9 @@
 # to you under the Apache License, Version 2.0 (the
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,6 +26,7 @@ sys.path.append("/home/apoorva/cs267/ProjectMesos/mesos-task-stealing/src/python
 import mesos
 import mesos_pb2
 import task_chunk_scheduler
+
 import chunk_utils
 
 TOTAL_TASKS = 5
@@ -43,7 +44,6 @@ class TestScheduler(mesos.Scheduler):
     tid = self.tasksLaunched
     self.tasksLaunched +=1
     return tid
-
 
   def registered(self, driver, frameworkId, masterInfo):
     print "Registered with framework ID %s" % frameworkId.value
@@ -63,7 +63,6 @@ class TestScheduler(mesos.Scheduler):
         task.task_id.value = str(tid)
         task.slave_id.value = offer.slave_id.value
         task.name = "task %d" % tid
-        task.executor.MergeFrom(self.executor)    
 
         cpus = task.resources.add()
         cpus.name = "cpus"
@@ -107,6 +106,7 @@ if __name__ == "__main__":
   framework = mesos_pb2.FrameworkInfo()
   framework.user = "" # Have Mesos fill in the current user.
   framework.name = "Test Framework (Python)"
+
 
   driver = task_chunk_scheduler.TaskChunkSchedulerDriver(
     TestScheduler(executor),
