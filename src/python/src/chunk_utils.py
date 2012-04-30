@@ -92,7 +92,8 @@ class SubTaskUpdateMessage(SubTaskMessage):
     """
 
     def __init__(self, taskStatus):
-        SubTaskMessage.__init__(self, SubTaskMessage.SUBTASK_UPDATE, taskStatus)
+        super(SubTaskUpdateMessage, self).__init__(
+                SubTaskMessage.SUBTASK_UPDATE, taskStatus)
 
     @staticmethod
     def payloadFromString(serializedPayload):
@@ -111,7 +112,8 @@ class KillSubTasksMessage(SubTaskMessage):
     """
 
     def __init__(self, subTaskIds):
-        SubTaskMessage.__init__(self, SubTaskMessage.KILL_SUBTASKS, subTaskIds)
+        super(KillSubTasksMessage, self).__init__(
+                SubTaskMessage.KILL_SUBTASKS, subTaskIds)
 
     @staticmethod
     def payloadFromString(serializedPayload):
