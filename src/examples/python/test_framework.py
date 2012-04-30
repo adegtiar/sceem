@@ -16,15 +16,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import os
 import sys
 import time
 
+sys.path.append("/home/apoorva/cs267/ProjectMesos/mesos-task-stealing/src/python/src")
+
 import mesos
 import mesos_pb2
-
-sys.path.append("/home/apoorva/cs267/ProjectMesos/mesos-task-stealing/src/python/src")
 import task_chunk_scheduler
+import chunk_utils
 
 TOTAL_TASKS = 5
 
@@ -51,7 +53,7 @@ class TestScheduler(mesos.Scheduler):
     for offer in offers:
       tasks = []
       print "Got resource offer %s" % offer.id.value
-      if self.tasksLaunched < TOTAL_TASKS:
+      while self.tasksLaunched < TOTAL_TASKS:
         tid = self.tasksLaunched
         self.tasksLaunched += 1
 
@@ -61,15 +63,7 @@ class TestScheduler(mesos.Scheduler):
         task.task_id.value = str(tid)
         task.slave_id.value = offer.slave_id.value
         task.name = "task %d" % tid
-        task.executor.MergeFrom(self.executor)
-        
-        """
-        subTask = task.sub_tasks.add()
-        subTask.task_id.value = str(self.getTaskId())
-        subTask.slave_id.value = offer.slave_id.value
-        subTask.name = "task %d" % subtask.task_id.value
-        subTask.executor.MergeFrom(self.executor)
-        """    
+        task.executor.MergeFrom(self.executor)    
 
         cpus = task.resources.add()
         cpus.name = "cpus"
@@ -82,7 +76,16 @@ class TestScheduler(mesos.Scheduler):
         mem.scalar.value = TASK_MEM
 
         tasks.append(task)
+      
+      if tasks:
+        taskChunk = chunk_utils.newTaskChunk(tasks)
+        taskChunk.task_id.value = "chunk_id"
+        taskChunk.slave_id.value = offer.slave_id.value
+        taskChunk.name = "taskChunk"
+        taskChunk.executor.MergeFrom(self.executor)
+
         driver.launchTasks(offer.id, tasks)
+      break
 
   def statusUpdate(self, driver, update):
     print "Task %s is in state %d" % (update.task_id.value, update.state)
