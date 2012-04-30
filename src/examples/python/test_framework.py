@@ -21,8 +21,6 @@ import os
 import sys
 import time
 
-sys.path.append("/home/apoorva/cs267/ProjectMesos/mesos-task-stealing/src/python/src")
-
 import mesos
 import mesos_pb2
 import task_chunk_scheduler
