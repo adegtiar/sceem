@@ -63,7 +63,9 @@ class TestChunkExecutor(unittest.TestCase):
         task = self.getNewSubtask()
         addSubTask(self.taskChunk,task)
         self.chunkExecutor.runNextSubTask = Mock()
+
         self.chunkExecutor.launchTask(self.mExecutorDriver,self.taskChunk)
+
         self.chunkExecutor.runNextSubTask.assert_called_once_with(
             self.mExecutorDriver, self.taskChunk.task_id)
 
