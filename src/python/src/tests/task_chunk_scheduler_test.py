@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import sys
 import threading
 import time
@@ -47,14 +45,11 @@ class TestChunkScheduler(unittest.TestCase):
         update = mesos_pb2.TaskStatus()
         update.task_id.value = self.taskChunk.task_id.value
         update.state = mesos_pb2.TASK_FINISHED
-
-        updateMessage = chunk_utils.SubTaskUpdateMessage(update)
-
         self.mScheduler.statusUpdate = Mock()
-        self.chunkScheduler.frameworkMessage(self.mSchedulerDriver,
-                updateMessage.toString())
-        self.mScheduler.statusUpdate.assert_called_once_with(
-                self.mSchedulerDriver, update)
+        updateMessage = chunk_utils.SubTaskUpdateMessage(update)
+        message = SubTaskMessage.fromString(updateMessage.toString())
+        self.chunkScheduler.frameworkMessage(self.mSchedulerDriver, updateMessage.toString())
+        self.mScheduler.statusUpdate.assert_called_once_with(self.mSchedulerDriver, update)
 
     def test_frameworkMessage(self):
         self.chunkScheduler.frameworkMessage(self.mSchedulerDriver, "message")
@@ -113,9 +108,7 @@ class TestChunkSchedulerDriver(unittest.TestCase):
         subTasks = []
         subTaskIds = []
         executor1 = self.getExecutor()
-        expectedCalls = []
         self.chunkSchedulerDriver.sendFrameworkMessage = Mock()
-#executor2 = self.getExecutor()
         for i in xrange(4):
             subtask = self.getNewSubTask()
             subtask.slave_id.value = self.getSlaveID().value
@@ -124,10 +117,12 @@ class TestChunkSchedulerDriver(unittest.TestCase):
             subTaskIds.append(subtask.task_id)
 
         message = chunk_utils.KillSubTasksMessage(subTaskIds)
-        self.chunkSchedulerDriver.killSubtasks(subTasks)
-        self.chunkSchedulerDriver.sendFrameworkMessage.assert_called_once_with(executor1.executor_id, subTasks[0].slave_id, message)
 
-#        self.assertTrue(self.chunkSchedulerDriver.sendFrameworkMessage.call_args_list ==
+        self.chunkSchedulerDriver.killSubtasks(subTasks)
+        self.chunkSchedulerDriver.sendFrameworkMessage.assert_called_once_with(
+                executor1.executor_id, subTasks[0].slave_id, message.toString())
+
+#self.assertTrue(self.chunkSchedulerDriver.sendFrameworkMessage.call_args_list ==
 
 if __name__ == '__main__':
     unittest.main()
