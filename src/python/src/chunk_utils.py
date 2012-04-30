@@ -216,7 +216,7 @@ class TransformingDict(dict):
     """
 
     def __init__(self, mapper=lambda x: x):
-        dict.__init__(self)
+        super(TransformingDict, self).__init__()
         self.mapper = mapper
 
     def __getitem__(self, key):
