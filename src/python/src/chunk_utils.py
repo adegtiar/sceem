@@ -92,7 +92,6 @@ class SubTaskUpdateMessage(SubTaskMessage):
 
     @staticmethod
     def payloadFromString(serializedPayload):
-        pass
         taskStatus = mesos_pb2.TaskStatus()
         taskStatus.ParseFromString(serializedPayload)
         return taskStatus

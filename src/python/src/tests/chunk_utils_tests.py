@@ -285,6 +285,17 @@ class TestSubTaskMessage(unittest.TestCase):
     Tests for SubTaskUpdateMessage.
     """
 
+    def test_serialization(self):
+       taskStatus = mesos_pb2.TaskStatus()
+       taskStatus.task_id.value = "id"
+       taskStatus.state = mesos_pb2.TASK_RUNNING
+       taskStatus.message = "foo message"
+       taskStatus.data = "foo data"
+
+       serialized = SubTaskUpdateMessage.payloadToString(taskStatus)
+       deserialized = SubTaskUpdateMessage.payloadFromString(taskStatus)
+       assertEqual(taskStatus, deserialized)
+
 
 if __name__ == '__main__':
     unittest.main()
