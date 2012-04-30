@@ -7,6 +7,9 @@ TERMINAL_STATES = (mesos_pb2.TASK_FINISHED, mesos_pb2.TASK_FAILED,
             mesos_pb2.TASK_KILLED, mesos_pb2.TASK_LOST)
 
 
+
+    
+
 def isTerminalUpdate(statusUpdate):
     """
     Checks whether the given TaskStatus is for a terminal state.
@@ -15,7 +18,7 @@ def isTerminalUpdate(statusUpdate):
     return taskState in TERMINAL_STATES
 
 
-class MessageType:
+class SubclassMessages:
     """
     The type of a subtask message.
     """

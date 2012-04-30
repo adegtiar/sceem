@@ -88,10 +88,18 @@ class ExecutorDriver:
 # Alias the MesosSchedulerDriverImpl from _mesos. Ideally we would make this
 # class inherit from SchedulerDriver somehow, but this complicates the C++
 # code, and there seems to be no point in doing it in a dynamic language.
-MesosSchedulerDriver = SchedulerDriver
+class MesosSchedulerDriver(SchedulerDriver):
+  
+  def __init__(self, scheduler):
+    self.scheduler = scheduler
+    SchedulerDriver()
 
 
 # Alias the MesosExecutorDriverImpl from _mesos. Ideally we would make this
 # class inherit from ExecutorDriver somehow, but this complicates the C++
 # code, and there seems to be no point in doing it in a dynamic language.
-MesosExecutorDriver = ExecutorDriver
+class MesosExecutorDriver(ExecutorDriver):
+  
+  def __init__(self, executor):
+    self.executor  = executor
+    ExecutorDriver()

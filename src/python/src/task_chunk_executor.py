@@ -1,9 +1,8 @@
 import mesos
 import mesos_pb2
 import chunk_utils
+from chunk_utils import SubclassMessages
 
-
-SUBTASK_UPDATE, KILL_SUBTASKS = range(2)
 
 class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
 
@@ -14,7 +13,6 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
 
         """
         self.pendingTaskChunks = chunk_utils.TaskTable()
-        self.executor = executor
         #super(TaskChunkExecutor, self).__init__(self, executor)
         chunk_utils.ExecutorWrapper.__init__(self, executor)
 
@@ -106,7 +104,7 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
 
         """
         parsed_msg = driver.getMessage(message)
-        if parsed_msg and parsed_msg[0] == KILL_SUBTASKS:
+        if parsed_msg and parsed_msg[0] == SubclassMessages.KILL_SUBTASKS:
             self.killSubTasks(driver, parsed_msg[1])
         else:
             #super(TaskChunkExecutor, self).frameworkMessage(driver, message)
@@ -121,9 +119,8 @@ class TaskChunkExecutorDriver(chunk_utils.ExecutorDriverWrapper):
 
         """
         self.chunkExecutor = TaskChunkExecutor(executor)
-        self.driver =  mesos.ExecutorDriver()
-        #mesos.MesosExecutorDriver(self.chunkExecutor)
-        chunk_utils.ExecutorDriverWrapper.__init__(self,self.driver)
+        driver = mesos.MesosExecutorDriver(self.chunkExecutor)
+        chunk_utils.ExecutorDriverWrapper.__init__(self, driver)
         #super(TaskChunkExecutor, self).__init__(self, executor)
 
     def sendStatusUpdate(self,update):

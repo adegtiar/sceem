@@ -13,7 +13,6 @@ from task_chunk_executor import *
 from chunk_utils import *
 from mock import Mock, MagicMock
 
-SUBTASK_UPDATE, KILL_SUBTASKS = range(2)
 
 class TestChunkExecutor(unittest.TestCase):
 
@@ -49,7 +48,7 @@ class TestChunkExecutor(unittest.TestCase):
         mExecutorDriver = Mock(spec=mesos.ExecutorDriver)
         mExecutorDriver.sendStatusUpdate.return_value = "StatusUpdateCalled"
         mExecutorDriver.getMessage = Mock()
-        mExecutorDriver.getMessage.return_value = (KILL_SUBTASKS, 
+        mExecutorDriver.getMessage.return_value = (SubclassMessages.KILL_SUBTASKS, 
                                                    [self.task.task_id])
         return mExecutorDriver
         
