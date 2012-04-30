@@ -293,8 +293,8 @@ class TestSubTaskMessage(unittest.TestCase):
        taskStatus.data = "foo data"
 
        serialized = SubTaskUpdateMessage.payloadToString(taskStatus)
-       deserialized = SubTaskUpdateMessage.payloadFromString(taskStatus)
-       assertEqual(taskStatus, deserialized)
+       deserialized = SubTaskUpdateMessage.payloadFromString(serialized)
+       self.assertEqual(taskStatus, deserialized)
 
 
 if __name__ == '__main__':
