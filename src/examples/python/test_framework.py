@@ -23,6 +23,9 @@ import time
 import mesos
 import mesos_pb2
 
+sys.path.append("/home/apoorva/cs267/ProjectMesos/mesos-task-stealing/src/python/src")
+import task_chunk_scheduler
+
 TOTAL_TASKS = 5
 
 TASK_CPUS = 1
@@ -34,7 +37,6 @@ class TestScheduler(mesos.Scheduler):
     self.tasksLaunched = 0
     self.tasksFinished = 0
 
-  
   def getTaskId(self):
     tid = self.tasksLaunched
     self.tasksLaunched +=1
@@ -103,7 +105,7 @@ if __name__ == "__main__":
   framework.user = "" # Have Mesos fill in the current user.
   framework.name = "Test Framework (Python)"
 
-  driver = mesos.MesosSchedulerDriver(
+  driver = task_chunk_scheduler.TaskChunkSchedulerDriver(
     TestScheduler(executor),
     framework,
     sys.argv[1])
