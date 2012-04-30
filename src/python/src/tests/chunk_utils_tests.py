@@ -213,8 +213,10 @@ class TestTaskTable(unittest.TestCase):
 
         self.table.addTask(outerTaskChunk)
 
-        self.assertEqual(self.table.rootTask, self.table.getParent(outerTaskChunk.task_id))
-        self.assertEqual(outerTaskChunk, self.table.getParent(taskChunk.task_id))
+        self.assertEqual(self.table.rootTask,
+                self.table.getParent(outerTaskChunk.task_id))
+        self.assertEqual(outerTaskChunk,
+                self.table.getParent(taskChunk.task_id))
         for task in tasks:
             self.assertEqual(taskChunk, self.table.getParent(task.task_id))
 
