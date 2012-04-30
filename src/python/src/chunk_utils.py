@@ -8,9 +8,6 @@ TERMINAL_STATES = (mesos_pb2.TASK_FINISHED, mesos_pb2.TASK_FAILED,
             mesos_pb2.TASK_KILLED, mesos_pb2.TASK_LOST)
 
 
-
-    
-
 def isTerminalUpdate(statusUpdate):
     """
     Checks whether the given TaskStatus is for a terminal state.
@@ -459,22 +456,22 @@ class SchedulerDriverWrapper(mesos.SchedulerDriver):
 
     def run(self):
         self.driver.run()
-    
+
     def requestResources(self, requests):
         self.driver.requestResources(requests)
 
     def launchTasks(self, offerId, tasks, filters=None):
         self.driver.launchTasks(offerId, tasks, filters)
-        
+
     def killTask(self, taskId):
         self.driver.killTask(taskId)
 
     def declineOffer(self, offerId, filters=None):
         self.driver.declineOffer(self, offerId, filters)
-   
+
     def reviveOffers(self):
         self.driver.reviveOffers()
-    
-    def sendFrameworkMessage(self, executorId, slaveId, data): 
+
+    def sendFrameworkMessage(self, executorId, slaveId, data):
         self.driver.sendFrameworkMessage(executorId, slaveId, data)
 
