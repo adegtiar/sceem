@@ -6,7 +6,6 @@ from chunk_utils import SubclassMessages
 
 class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
 
-
     def __init__(self, executor):
         """
         Initialize TaskTable and executorWrapper with executor.
@@ -20,10 +19,10 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
         """
         Logic to launch TaskChunks by running through sub-tasks one at a time.
         """
-        
+
         if task.task_id in self.pendingTaskChunks:
             self.pendingTaskChunks.setActive(task.task_id)
-            
+
         if chunk_utils.isTaskChunk(task):
             self.pendingTaskChunks.addTask(task)
             taskChunkId = task.task_id
@@ -75,8 +74,8 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
                 taskIdsToRun.add(parent.task_id.SerializeToString())
             else:
                 del self.pendingTaskChunks[subTaskId]
-                
-        
+
+
         for taskChunkId in taskIdsToRun:
             taskID = mesos_pb2.TaskID()
             taskID.ParseFromString(taskChunkId)
@@ -130,7 +129,7 @@ class TaskChunkExecutorDriver(chunk_utils.ExecutorDriverWrapper):
             chunk_utils.ExecutorDriverWrapper.sendFrameworkMessage(chunk_utils.serializeSubtaskUpdate(update))
             if chunk_utils.isTerminalUpdate(update):
                 parent = pending_tasks.getParent(update.taskId)
-                del pending_tasks[update.task_id]            
+                del pending_tasks[update.task_id]
                 self.chunkExecutor.runNextSubTask(self, parent.task_id)
         else:
 

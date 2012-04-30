@@ -25,12 +25,12 @@ class TestChunkExecutor(unittest.TestCase):
         self.mExecutor = self.getMockExecutor()
         self.mExecutorDriver = self.getMockExecutorDriver()
         self.chunkExecutor = self.getChunkExecutor()
-        
+
     def getTaskId(self):
         self.tid = self.launchedTask
         self.launchedTask +=1
         return self.tid
-    
+
     def getNewSubtask(self):
         subTask = mesos_pb2.TaskInfo()
         subTask.task_id.value = str(self.getTaskId())
@@ -43,20 +43,20 @@ class TestChunkExecutor(unittest.TestCase):
         mExecutor.killTask.return_value = "uExecutor: KillTask Called"
         mExecutor.frameworkMessage.return_value = "uExecutor: FrameMessage Called"
         return mExecutor
-    
+
     def getMockExecutorDriver(self):
         mExecutorDriver = Mock(spec=mesos.ExecutorDriver)
         mExecutorDriver.sendStatusUpdate.return_value = "StatusUpdateCalled"
         mExecutorDriver.getMessage = Mock()
-        mExecutorDriver.getMessage.return_value = (SubclassMessages.KILL_SUBTASKS, 
+        mExecutorDriver.getMessage.return_value = (SubclassMessages.KILL_SUBTASKS,
                                                    [self.task.task_id])
         return mExecutorDriver
-        
+
     def getChunkExecutor(self):
         # Create a TaskChunk Executor
         chunkExecutor = TaskChunkExecutor(self.mExecutor)
         return chunkExecutor
-        
+
     def test_launchTaskChunks(self):
         task = self.getNewSubtask()
         addSubTask(self.taskChunk,task)
@@ -66,9 +66,9 @@ class TestChunkExecutor(unittest.TestCase):
             self.mExecutorDriver, self.taskChunk.task_id)
 
     def test_launchTask(self):
-        task = self.getNewSubtask()        
+        task = self.getNewSubtask()
         self.chunkExecutor.launchTask(self.mExecutorDriver, task)
-        self.mExecutor.launchTask.assert_called_once_with(self.mExecutorDriver, 
+        self.mExecutor.launchTask.assert_called_once_with(self.mExecutorDriver,
                                                           task)
 
     def test_killTaskChunks(self): #kill currently running Task Chunk
@@ -97,7 +97,7 @@ class TestChunkExecutor(unittest.TestCase):
             addSubTask(self.taskChunk, task)
         self.chunkExecutor.pendingTaskChunks.addTask(self.taskChunk)
         self.chunkExecutor.killSubTasks(self.mExecutorDriver, subtaskIds)
-        
+
         for taskid in subtaskIds:
             self.assertFalse(taskid in self.chunkExecutor.pendingTaskChunks)
 
@@ -111,10 +111,10 @@ class TestChunkExecutor(unittest.TestCase):
         self.chunkExecutor.pendingTaskChunks.setActive(self.taskChunk.task_id)
         self.chunkExecutor.pendingTaskChunks.setActive(subtaskIds[0])
         self.chunkExecutor.killSubTasks(self.mExecutorDriver, subtaskIds)
-        
+
         for taskid in subtaskIds:
             self.assertFalse(taskid in self.chunkExecutor.pendingTaskChunks)
-        
+
         self.mExecutor.killTask.assert_called_once_with(self.mExecutorDriver,
                                                         subtaskIds[0])
 
@@ -126,7 +126,7 @@ class TestChunkExecutor(unittest.TestCase):
         self.chunkExecutor.runNextSubTask(self.mExecutorDriver, self.taskChunk.taskId)
         self.chunkExecutor.launchTask.assert_called_once_with(self.mExecutorDriver
                                                               ,subTask.task_id)
-        
+
     def test_runNextSubtask(self): #empty subtask
         self.chunkExecutor.pendingTaskChunks.addTask(self.taskChunk)
         self.chunkExecutor.runNextSubTask(self.mExecutorDriver, self.taskChunk.task_id)
@@ -140,18 +140,17 @@ class TestChunkExecutor(unittest.TestCase):
         self.chunkExecutor.pendingTaskChunks.addTask(self.taskChunk)
         self.chunkExecutor.frameworkMessage(self.mExecutorDriver, "message")
         self.mExecutorDriver.getMessage.assert_called_once()
-        
+
         self.assertFalse(self.task.task_id in self.chunkExecutor.pendingTaskChunks)
- 
+
     def test_frameworkMessage(self):
         self.mExecutorDriver.getMessage.return_value = ("1", "2")
         self.chunkExecutor.frameworkMessage(self.mExecutorDriver, "message")
         self.mExecutor.frameworkMessage.assert_called_once_with(self.mExecutorDriver, "message")
-        
-    
+
 
 class TestHelperMethod():
-    
+
     def __init__():
         pass
 
@@ -161,18 +160,17 @@ class TestHelperMethod():
         mExecutor.killTask.return_value = "uExecutor: KillTask Called"
         mExecutor.frameworkMessage.return_value = "uExecutor: FrameMessage Called"
         return mExecutor
-    
+
     def getMockExecutorDriver(self):
         mExecutorDriver = Mock(spec=mesos.ExecutorDriver)
         return mExecutorDriver
-    
+
     def getChunkExecutor(self):
         # Create a TaskChunk Executor
         chunkExecutor = TaskChunkExecutor(self.mExecutor)
         return chunkExecutor
 
-    
-        
+
 class TestChunkExecutorDriver(unittest.TestCase):
 
     def setUp(self):
@@ -185,12 +183,12 @@ class TestChunkExecutorDriver(unittest.TestCase):
         self.mExecutorDriver = Mock(spec=mesos.ExecutorDriver)
         self.chunkExecutor = self.getChunkExecutor()
         self.chunkExecutorDriver = self.getChunkExecutorDriver()
-        
+
     def getTaskId(self):
         self.tid = self.launchedTask
         self.launchedTask +=1
         return self.tid
-    
+
     def getNewSubtask(self):
         subTask = mesos_pb2.TaskInfo()
         subTask.task_id.value = str(self.getTaskId())
@@ -200,7 +198,7 @@ class TestChunkExecutorDriver(unittest.TestCase):
         # Create a TaskChunk Executor
         chunkExecutor = TaskChunkExecutor(self.mExecutor)
         return chunkExecutor
-    
+
     def getChunkExecutorDriver(self):
         chunkDriver = TaskChunkExecutorDriver(self.mExecutor)
         return chunkDriver
@@ -216,8 +214,7 @@ class TestChunkExecutorDriver(unittest.TestCase):
         self.chunkExecutorDriver.sendStatusUpdate(update)
         self.chunkExecutorDriver.chunkExecutor.runNextSubTask.assert_called_once_with(self.chunkExecutorDriver, self.taskChunk.task_id)
 
-
-    def test_sendStatusUpdateSubtask(self):        
+    def test_sendStatusUpdateSubtask(self):
         self.mExecutor.sendStatusUpdate = Mock()
         addSubTask(self.taskChunk, self.task)
         self.chunkExecutorDriver.chunkExecutor.pendingTaskChunks.addTask(self.taskChunk)
@@ -230,14 +227,8 @@ class TestChunkExecutorDriver(unittest.TestCase):
 
 
     #def test_sendStatusUpdate(self):
-        
-        
-        
-        
-        
 
 
-    
 if __name__ == '__main__':
     unittest.main()
 
