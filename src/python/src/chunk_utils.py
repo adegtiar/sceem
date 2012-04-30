@@ -32,8 +32,10 @@ class SubTaskMessage(object):
         self.__valid = valid
 
     def __eq__(self, other):
-        (isinstance(other, SubTaskMessage) and self.__type == other.__type and
-                self.__payload == other.__payload and self.__valid == other.__valid)
+        return (isinstance(other, SubTaskMessage) and
+                self.__type == other.__type and
+                self.__payload == other.__payload and
+                self.__valid == other.__valid)
 
 
     @staticmethod
