@@ -56,7 +56,10 @@ class SubTaskMessage(object):
         """
         if not self.isValid():
             raise ValueError("Cannot serialize an invalid message")
-        payloadString = self.payloadToString(self.getPayload())
+        try:
+            payloadString = self.payloadToString(self.getPayload())
+        except Exception:
+            raise ValueError("Payload is invalid and cannot be serialized")
         return pickle.dumps((self.getType(), payloadString))
 
     def isValid(self):
@@ -88,13 +91,11 @@ class SubTaskUpdateMessage(SubTaskMessage):
     def payloadFromString(serializedPayload):
         pass
         taskStatus = mesos_pb2.TaskStatus()
-        # TODO error handling.
         taskStatus.ParseFromString(serializedPayload)
         return taskStatus
 
     @staticmethod
     def payloadToString(payload):
-        # TODO error handling?
         return payload.SerializeToString()
 
 
@@ -108,7 +109,6 @@ class KillSubTasksMessage(SubTaskMessage):
 
     @staticmethod
     def payloadFromString(serializedPayload):
-        # TODO error handling.
         subTaskIdStrings = pickle.loads(subTaskIdStrings)
         subTaskIds = []
         for serializedSubTaskId in subTaskIdStrings:
@@ -119,7 +119,6 @@ class KillSubTasksMessage(SubTaskMessage):
 
     @staticmethod
     def payloadToString(payload):
-        # TODO error handling?
         subTaskIdStrings = [subTaskId.SerializeToString for subTaskId in payload]
         return pickle.dumps(subTaskIdStrings)
 
