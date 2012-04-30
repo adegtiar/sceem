@@ -283,10 +283,10 @@ class TestSubTaskMessage(unittest.TestCase):
         payload = self.payload
         messageType = self.messageType
         message = SubTaskMessage(messageType, payload)
-        assertEqual(self.message, message)
+        self.assertEqual(self.message, message)
 
 
-class TestSubTaskMessage(unittest.TestCase):
+class TestSubTaskUpdateMessage(unittest.TestCase):
     """
     Tests for SubTaskUpdateMessage.
     """
