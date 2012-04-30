@@ -7,9 +7,9 @@
 # to you under the Apache License, Version 2.0 (the
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,7 @@ import time
 
 import mesos
 import mesos_pb2
+import task_chunk_scheduler
 
 TOTAL_TASKS = 5
 
@@ -34,7 +35,7 @@ class TestScheduler(mesos.Scheduler):
     self.tasksLaunched = 0
     self.tasksFinished = 0
 
-  
+
   def getTaskId(self):
     tid = self.tasksLaunched
     self.tasksLaunched +=1
@@ -60,14 +61,14 @@ class TestScheduler(mesos.Scheduler):
         task.slave_id.value = offer.slave_id.value
         task.name = "task %d" % tid
         task.executor.MergeFrom(self.executor)
-        
+
         """
         subTask = task.sub_tasks.add()
         subTask.task_id.value = str(self.getTaskId())
         subTask.slave_id.value = offer.slave_id.value
         subTask.name = "task %d" % subtask.task_id.value
         subTask.executor.MergeFrom(self.executor)
-        """    
+        """
 
         cpus = task.resources.add()
         cpus.name = "cpus"
@@ -103,7 +104,7 @@ if __name__ == "__main__":
   framework.user = "" # Have Mesos fill in the current user.
   framework.name = "Test Framework (Python)"
 
-  driver = mesos.MesosSchedulerDriver(
+  driver = mesos.TaskChunkSchedulerDriver(
     TestScheduler(executor),
     framework,
     sys.argv[1])
