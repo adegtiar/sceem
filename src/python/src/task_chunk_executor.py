@@ -1,7 +1,7 @@
 import mesos
 import mesos_pb2
 import chunk_utils
-from chunk_utils import SubclassMessages
+from chunk_utils import SubTaskMessage
 
 
 class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
@@ -104,7 +104,7 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
 
         """
         parsed_msg = driver.getMessage(message)
-        if parsed_msg and parsed_msg[0] == SubclassMessages.KILL_SUBTASKS:
+        if parsed_msg and parsed_msg[0] == SubTaskMessages.KILL_SUBTASKS:
             self.killSubTasks(driver, parsed_msg[1])
         else:
             #super(TaskChunkExecutor, self).frameworkMessage(driver, message)
