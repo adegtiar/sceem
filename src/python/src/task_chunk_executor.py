@@ -1,7 +1,7 @@
 import mesos
 import mesos_pb2
 import chunk_utils
-from chunk_utils import SubclassMessages
+from chunk_utils import SubTaskMessage
 
 
 class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
@@ -102,9 +102,9 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
         recieved.
 
         """
-        parsed_msg = driver.getMessage(message)
-        if parsed_msg and parsed_msg[0] == SubclassMessages.KILL_SUBTASKS:
-            self.killSubTasks(driver, parsed_msg[1])
+        message = SubTaskMessage.fromString(message)
+        if message.isValid() and message.getType() == SubTaskMessage.KILL_SUBTASKS:
+            self.killSubTasks(driver, message.getPayload())
         else:
             #super(TaskChunkExecutor, self).frameworkMessage(driver, message)
             chunk_utils.ExecutorWrapper.frameworkMessage(self, driver, message)
@@ -122,20 +122,19 @@ class TaskChunkExecutorDriver(chunk_utils.ExecutorDriverWrapper):
         chunk_utils.ExecutorDriverWrapper.__init__(self, driver)
         #super(TaskChunkExecutor, self).__init__(self, executor)
 
-    def sendStatusUpdate(self,update):
+    def sendStatusUpdate(self, update):
         pending_tasks = self.chunkExecutor.pendingTaskChunks
 
         if pending_tasks.isSubTask(update.task_id):
-            chunk_utils.ExecutorDriverWrapper.sendFrameworkMessage(chunk_utils.serializeSubtaskUpdate(update))
+            updateMessage = SubTaskUpdateMessage(update)
+            chunk_utils.ExecutorDriverWrapper.sendFrameworkMessage(self, updateMessage)
             if chunk_utils.isTerminalUpdate(update):
                 parent = pending_tasks.getParent(update.taskId)
                 del pending_tasks[update.task_id]
                 self.chunkExecutor.runNextSubTask(self, parent.task_id)
         else:
-
             if update.task_id in pending_tasks and chunk_utils.isTerminalUpdate(update):
                 del pending_tasks[update.task_id]
 
             chunk_utils.ExecutorDriverWrapper.sendStatusUpdate(self,update)
             #super(TaskChunkExecutorDriver, self).sendStatusUpdate(update)
-
