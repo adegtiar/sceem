@@ -6,7 +6,7 @@ from collections import defaultdict
 
 class TaskChunkScheduler(chunk_utils.SchedulerWrapper):
 
-    
+
     def __init__(self, scheduler):
         """
         Initialize schedulerWrapper with executor.
@@ -19,17 +19,17 @@ class TaskChunkScheduler(chunk_utils.SchedulerWrapper):
     def frameworkMessage(self, driver, data):
         message = driver.getMessage(data)
         if message and message[0] == SubclassMessages.SUBTASK_UPDATE:
-            chunk_utils.SchedulerWrapper.statusUpdate(self, driver, 
+            chunk_utils.SchedulerWrapper.statusUpdate(self, driver,
 message[1])
         else:
             chunk_utils.SchedulerWrapper.frameworkMessage(self, driver, data)
 
 class TaskChunkSchedulerDriver(chunk_utils.SchedulerDriverWrapper):
-    
+
     def __init__(self, scheduler):
         """
         Initialize scheduler wrapper with framework scheduler
-        
+
         """
         self.chunkScheduler = TaskChunkScheduler(scheduler)
         driver = mesos.MesosSchedulerDriver(self.chunkScheduler)
@@ -45,4 +45,4 @@ class TaskChunkSchedulerDriver(chunk_utils.SchedulerDriverWrapper):
                 message = serializeKillSubtasks(subTaskIds)
                 chunk_utils.SchedulerDriverWrapper.sendFrameworkMessage(
                     executorId,subTasks[0].slave_id, message)
-                
+

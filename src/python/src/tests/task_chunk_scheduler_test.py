@@ -23,15 +23,15 @@ class TestChunkScheduler(unittest.TestCase):
         self.taskChunk = newTaskChunk()
         self.taskChunk.task_id.value = str(self.getTaskId())
         self.task = self.getNewSubtask()
-        self.mSchedulerDriver = Mock(spec=mesos.SchedulerDriver()) 
+        self.mSchedulerDriver = Mock(spec=mesos.SchedulerDriver())
         self.mScheduler = Mock(spec=mesos.Scheduler)
         self.chunkScheduler = self.getChunkScheduler()
-        
+
     def getTaskId(self):
         self.tid = self.launchedTask
         self.launchedTask +=1
         return self.tid
-    
+
     def getChunkScheduler(self):
         chunkScheduler = TaskChunkScheduler(self.mScheduler)
         return chunkScheduler
@@ -50,13 +50,13 @@ class TestChunkScheduler(unittest.TestCase):
         self.mSchedulerDriver.getMessage.return_value = (SubclassMessages.SUBTASK_UPDATE,update)
         self.chunkScheduler.frameworkMessage(self.mSchedulerDriver, "message")
         self.mScheduler.statusUpdate.assert_called_once_with(self.mSchedulerDriver, update)
-    
+
     def test_frameworkMessage(self):
         self.mSchedulerDriver.getMessage = Mock()
         self.mSchedulerDriver.getMessage.return_value = ("1", "2")
         self.chunkScheduler.frameworkMessage(self.mSchedulerDriver, "message")
         self.mScheduler.frameworkMessage.assert_called_once_with(self.mSchedulerDriver, "message")
-        
+
 class TestChunkSchedulerDriver(unittest.TestCase):
 
     def setUp(self):
@@ -67,16 +67,16 @@ class TestChunkSchedulerDriver(unittest.TestCase):
         self.taskChunk = newTaskChunk()
         self.taskChunk.task_id.value = str(self.getTaskId())
         self.task = self.getNewSubTask()
-        self.mSchedulerDriver = Mock(spec=mesos.SchedulerDriver()) 
+        self.mSchedulerDriver = Mock(spec=mesos.SchedulerDriver())
         self.mScheduler = Mock(spec=mesos.Scheduler)
         self.chunkScheduler = self.getChunkScheduler()
         self.chunkSchedulerDriver = self.getChunkSchedulerDriver()
-        
+
     def getTaskId(self):
         self.tid = self.launchedTask
         self.launchedTask +=1
         return self.tid
-    
+
     def getExecutorId(self):
         self.currExecutor = self.numExecutor
         self.numExecutor +=1
@@ -96,12 +96,12 @@ class TestChunkSchedulerDriver(unittest.TestCase):
         executor.executor_id.value = str(self.getExecutorId())
         executor.command.value = os.path.abspath("./test-executor")
         return executor
-    
+
     def getSlaveID(self):
         slave = mesos_pb2.SlaveID()
         slave.value = "01"
         return slave
-        
+
     def getChunkSchedulerDriver(self):
         chunkSchedulerDriver = TaskChunkSchedulerDriver(self.mScheduler)
         return chunkSchedulerDriver
@@ -117,13 +117,13 @@ class TestChunkSchedulerDriver(unittest.TestCase):
             subtask.slave_id.value = self.getSlaveID().value
             subtask.executor.MergeFrom(executor1)
             subTasks.append(subtask)
-            
-        
+
+
         self.chunkSchedulerDriver.killSubtasks(subTasks)
         self.chunkSchedulerDriver.sendFrameworkMessage.assert_called_once_with(executor1.executor_id, subTasks[0].slave_id, message)
 
-#        self.assertTrue(self.chunkSchedulerDriver.sendFrameworkMessage.call_args_list == 
-           
+#        self.assertTrue(self.chunkSchedulerDriver.sendFrameworkMessage.call_args_list ==
+
 if __name__ == '__main__':
     unittest.main()
 
