@@ -108,7 +108,7 @@ class TestChunkSchedulerDriver(unittest.TestCase):
         subTasks = []
         subTaskIds = []
         executor1 = self.getExecutor()
-        self.chunkSchedulerDriver.sendFrameworkMessage = Mock()
+        self.chunkSchedulerDriver.driver.sendFrameworkMessage = Mock()
         for i in xrange(4):
             subtask = self.getNewSubTask()
             subtask.slave_id.value = self.getSlaveID().value
@@ -119,7 +119,7 @@ class TestChunkSchedulerDriver(unittest.TestCase):
         message = chunk_utils.KillSubTasksMessage(subTaskIds)
 
         self.chunkSchedulerDriver.killSubtasks(subTasks)
-        self.chunkSchedulerDriver.sendFrameworkMessage.assert_called_once_with(
+        self.chunkSchedulerDriver.driver.sendFrameworkMessage.assert_called_once_with(
                 executor1.executor_id, subTasks[0].slave_id, message.toString())
 
 #self.assertTrue(self.chunkSchedulerDriver.sendFrameworkMessage.call_args_list ==
