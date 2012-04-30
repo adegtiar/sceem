@@ -19,8 +19,7 @@ class TaskChunkScheduler(chunk_utils.SchedulerWrapper):
     def frameworkMessage(self, driver, data):
         message = SubTaskMessage.fromString(data)
         if message.isValid() and message.getType() == SubTaskMessage.SUBTASK_UPDATE:
-            chunk_utils.SchedulerWrapper.statusUpdate(self, driver, 
-                                                      message.getPayload())
+            self.statusUpdate(driver, message.getPayload())
         else:
             chunk_utils.SchedulerWrapper.frameworkMessage(self, driver, data)
 
@@ -48,5 +47,5 @@ class TaskChunkSchedulerDriver(chunk_utils.SchedulerDriverWrapper):
             executorId = mesos_pb2.ExecutorID()
             executorId.ParseFromString(executorIdString)
 
-            chunk_utils.SchedulerDriverWrapper.sendFrameworkMessage(self,
-                executorId, subTasks[0].slave_id, message.toString())
+            self.sendFrameworkMessage(executorId, subTasks[0].slave_id,
+                    message.toString())
