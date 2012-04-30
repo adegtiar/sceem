@@ -41,11 +41,11 @@ class TaskChunkSchedulerDriver(chunk_utils.SchedulerDriverWrapper):
             executorIdString = subTask.executor.executor_id.SerializeToString()
             perExecutorTasks[executorIdString].append(subTask.task_id)
 
-        for executorIdString, subTasks in perExecutorTasks.iteritems():
-            message = chunkUtils.KillSubTasksMessage(subTaskIds)
+        for executorIdString, subTaskIds in perExecutorTasks.iteritems():
+            message = chunk_utils.KillSubTasksMessage(subTaskIds)
 
             executorId = mesos_pb2.ExecutorID()
             executorId.ParseFromString(executorIdString)
 
-            chunk_utils.SchedulerDriverWrapper.sendFrameworkMessage(
+            chunk_utils.SchedulerDriverWrapper.sendFrameworkMessage(self,
                 executorId, subTasks[0].slave_id, message)
