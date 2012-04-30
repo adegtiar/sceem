@@ -48,7 +48,7 @@ class TestChunkExecutor(unittest.TestCase):
         mExecutorDriver = Mock(spec=mesos.ExecutorDriver)
         mExecutorDriver.sendStatusUpdate.return_value = "StatusUpdateCalled"
         mExecutorDriver.getMessage = Mock()
-        mExecutorDriver.getMessage.return_value = (SubclassMessages.KILL_SUBTASKS,
+        mExecutorDriver.getMessage.return_value = (SubTaskMessage.KILL_SUBTASKS,
                                                    [self.task.task_id])
         return mExecutorDriver
 
