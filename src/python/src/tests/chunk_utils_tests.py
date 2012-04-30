@@ -65,7 +65,7 @@ class TestTaskChunks(unittest.TestCase):
 
 class TestTaskTable(unittest.TestCase):
     """
-    Tests for the TaskTable in chunk_utils.
+    Tests for the TaskTable.
     """
 
     def setUp(self):
@@ -213,8 +213,10 @@ class TestTaskTable(unittest.TestCase):
 
         self.table.addTask(outerTaskChunk)
 
-        self.assertEqual(self.table.rootTask, self.table.getParent(outerTaskChunk.task_id))
-        self.assertEqual(outerTaskChunk, self.table.getParent(taskChunk.task_id))
+        self.assertEqual(self.table.rootTask,
+                self.table.getParent(outerTaskChunk.task_id))
+        self.assertEqual(outerTaskChunk,
+                self.table.getParent(taskChunk.task_id))
         for task in tasks:
             self.assertEqual(taskChunk, self.table.getParent(task.task_id))
 
@@ -234,6 +236,104 @@ class TestTaskTable(unittest.TestCase):
             self.assertTrue(self.table.isSubTask(task.task_id))
         for task in tasks[2:]:
             self.assertFalse(self.table.isSubTask(task.task_id))
+
+
+class TestSubTaskMessage(unittest.TestCase):
+    """
+    Tests for SubTaskMessage.
+    """
+
+    def setUp(self):
+        self.payload = 513948
+        self.messageType = 3
+        self.message = SubTaskMessage(self.messageType, self.payload)
+
+    def test_invalidMessage(self):
+        invalidMessage = SubTaskMessage(valid = False)
+
+        self.assertFalse(invalidMessage.isValid())
+
+        with self.assertRaises(ValueError):
+            invalidMessage.toString()
+
+        with self.assertRaises(ValueError):
+            invalidMessage.getPayload()
+
+        with self.assertRaises(ValueError):
+            invalidMessage.getType()
+
+    def test_parseUnknownMessageType(self):
+        serializedMessage = pickle.dumps((123, "foo"))
+        unknownMessage = SubTaskMessage.fromString(serializedMessage)
+
+        self.assertFalse(unknownMessage.isValid())
+
+    def test_parseInvalidMessage(self):
+        invalidMessage = SubTaskMessage.fromString("invalid stuff")
+        self.assertFalse(invalidMessage.isValid())
+
+    def test_validMessage(self):
+        self.assertTrue(self.message.isValid())
+
+    def test_getPayload(self):
+        self.assertEqual(self.payload, self.message.getPayload())
+
+    def test_getType(self):
+        self.assertEqual(self.messageType, self.message.getType())
+
+    def test_eq(self):
+        payload = self.payload
+        messageType = self.messageType
+        message = SubTaskMessage(messageType, payload)
+        self.assertEqual(self.message, message)
+
+
+class TestSubTaskSerialization(object):
+
+    def setUp(self):
+        """
+        Implement this to store self.payload and self.serializationClass.
+        """
+        raise NotImplemented()
+
+    def test_serialization(self):
+        serialized = self.serializationClass.payloadToString(self.payload)
+        deserialized = self.serializationClass.payloadFromString(serialized)
+
+        self.assertEqual(self.payload, deserialized)
+
+    def test_endToEnd(self):
+        message = self.serializationClass(self.payload)
+        serialized = message.toString()
+        deserialized = SubTaskMessage.fromString(serialized)
+
+        self.assertEqual(message, deserialized)
+
+
+class TestSubTaskUpdateMessage(unittest.TestCase, TestSubTaskSerialization):
+    """
+    Tests for SubTaskUpdateMessage.
+    """
+
+    def setUp(self):
+        taskStatus = mesos_pb2.TaskStatus()
+        taskStatus.task_id.value = "id"
+        taskStatus.state = mesos_pb2.TASK_RUNNING
+        taskStatus.message = "foo message"
+        taskStatus.data = "foo data"
+        self.payload = taskStatus
+        self.serializationClass = SubTaskUpdateMessage
+
+
+class TestKillSubTasksMessage(unittest.TestCase, TestSubTaskSerialization):
+    """
+    Tests for SubTaskUpdateMessage.
+    """
+
+    def setUp(self):
+        taskIds = [mesos_pb2.TaskID(value="{0}".format(i)) for i in xrange(5)]
+        self.payload = taskIds
+        self.serializationClass = KillSubTasksMessage
 
 
 if __name__ == '__main__':

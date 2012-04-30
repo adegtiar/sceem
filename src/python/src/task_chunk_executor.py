@@ -6,7 +6,6 @@ from chunk_utils import SubTaskMessage
 
 class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
 
-
     def __init__(self, executor):
         """
         Initialize TaskTable and executorWrapper with executor.
@@ -20,10 +19,10 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
         """
         Logic to launch TaskChunks by running through sub-tasks one at a time.
         """
-        
+
         if task.task_id in self.pendingTaskChunks:
             self.pendingTaskChunks.setActive(task.task_id)
-            
+
         if chunk_utils.isTaskChunk(task):
             self.pendingTaskChunks.addTask(task)
             taskChunkId = task.task_id
@@ -75,8 +74,8 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
                 taskIdsToRun.add(parent.task_id.SerializeToString())
             else:
                 del self.pendingTaskChunks[subTaskId]
-                
-        
+
+
         for taskChunkId in taskIdsToRun:
             taskID = mesos_pb2.TaskID()
             taskID.ParseFromString(taskChunkId)
@@ -103,9 +102,9 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
         recieved.
 
         """
-        parsed_msg = driver.getMessage(message)
-        if parsed_msg and parsed_msg[0] == SubTaskMessages.KILL_SUBTASKS:
-            self.killSubTasks(driver, parsed_msg[1])
+        parsedMessage = SubTaskMessage.fromString(message)
+        if parsedMessage.isValid() and parsedMessage.getType() == SubTaskMessage.KILL_SUBTASKS:
+            self.killSubTasks(driver, parsedMessage.getPayload())
         else:
             #super(TaskChunkExecutor, self).frameworkMessage(driver, message)
             chunk_utils.ExecutorWrapper.frameworkMessage(self, driver, message)
@@ -123,20 +122,19 @@ class TaskChunkExecutorDriver(chunk_utils.ExecutorDriverWrapper):
         chunk_utils.ExecutorDriverWrapper.__init__(self, driver)
         #super(TaskChunkExecutor, self).__init__(self, executor)
 
-    def sendStatusUpdate(self,update):
+    def sendStatusUpdate(self, update):
         pending_tasks = self.chunkExecutor.pendingTaskChunks
 
         if pending_tasks.isSubTask(update.task_id):
-            chunk_utils.ExecutorDriverWrapper.sendFrameworkMessage(chunk_utils.serializeSubtaskUpdate(update))
+            updateMessage = chunk_utils.SubTaskUpdateMessage(update)
+            chunk_utils.ExecutorDriverWrapper.sendFrameworkMessage(self, updateMessage)
             if chunk_utils.isTerminalUpdate(update):
                 parent = pending_tasks.getParent(update.taskId)
-                del pending_tasks[update.task_id]            
+                del pending_tasks[update.task_id]
                 self.chunkExecutor.runNextSubTask(self, parent.task_id)
         else:
-
             if update.task_id in pending_tasks and chunk_utils.isTerminalUpdate(update):
                 del pending_tasks[update.task_id]
 
             chunk_utils.ExecutorDriverWrapper.sendStatusUpdate(self,update)
             #super(TaskChunkExecutorDriver, self).sendStatusUpdate(update)
-

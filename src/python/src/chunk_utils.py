@@ -1,14 +1,12 @@
 import mesos
 import mesos_pb2
+import pickle
 
 
 # TaskStates that indicate the task is done and can be cleaned up.
 TERMINAL_STATES = (mesos_pb2.TASK_FINISHED, mesos_pb2.TASK_FAILED,
             mesos_pb2.TASK_KILLED, mesos_pb2.TASK_LOST)
 
-
-
-    
 
 def isTerminalUpdate(statusUpdate):
     """
@@ -18,31 +16,124 @@ def isTerminalUpdate(statusUpdate):
     return taskState in TERMINAL_STATES
 
 
-class SubclassMessages:
+class SubTaskMessage(object):
     """
-    The type of a subtask message.
+    A message corresponding to a task chunk's sub task.
     """
     SUBTASK_UPDATE, KILL_SUBTASKS = range(2)
+    messageClasses = {}
+
+    def __init__(self, messageType = None, payload = None, valid = True):
+        self.__type = messageType
+        self.__payload = payload
+        self.__valid = valid
+
+    def __eq__(self, other):
+        return (isinstance(other, SubTaskMessage) and
+                self.__type == other.__type and
+                self.__payload == other.__payload and
+                self.__valid == other.__valid)
 
 
-def getMessage(data):
-    #TODO: implement
-#    partially de-serialize data
-#    if matches MessageTypes:
-#        return deserialize_data(data)
-#    else:
-#        return None
-    pass
+    @staticmethod
+    def fromString(serialized_message):
+        """
+        Returns a sub task message with a type and a payload.
+        If this fails, message.isValid() will be False.
+        """
+        try:
+            messageType, serializedPayload = pickle.loads(serialized_message)
+
+            if messageType not in SubTaskMessage.messageClasses:
+                raise ValueError
+
+            message_class = SubTaskMessage.messageClasses[messageType]
+            payload = message_class.payloadFromString(serializedPayload)
+            return message_class(payload)
+        except Exception:
+            return SubTaskMessage(valid = False)
 
 
-def serializeSubTaskUpdate(taskUpdate):
-    #TODO: implement
-    pass
+    def toString(self):
+        """
+        Serializes the message into a string.
+        """
+        if not self.isValid():
+            raise ValueError("Cannot serialize an invalid message")
+        try:
+            payloadString = self.payloadToString(self.getPayload())
+        except Exception:
+            raise ValueError("Payload is invalid and cannot be serialized")
+        return pickle.dumps((self.getType(), payloadString))
+
+    def isValid(self):
+        """
+        Checks whether or not the message was parsed successfully.
+        """
+        return self.__valid
+
+    def getPayload(self):
+        """
+        Retrieves the un-serialized payload of the message.
+        """
+        if not self.isValid():
+            raise ValueError("Cannot retrieve the payload of an invalid message")
+        return self.__payload
+
+    def getType(self):
+        if not self.isValid():
+            raise ValueError("Cannot retrieve the type of an invalid message")
+        return self.__type
 
 
-def serializeKillSubTasks(subTaskIds):
-    #TODO: implement
-    pass
+class SubTaskUpdateMessage(SubTaskMessage):
+    """
+    A message that holds the TaskStatus for a sub task.
+    """
+
+    def __init__(self, taskStatus):
+        super(SubTaskUpdateMessage, self).__init__(
+                SubTaskMessage.SUBTASK_UPDATE, taskStatus)
+
+    @staticmethod
+    def payloadFromString(serializedPayload):
+        taskStatus = mesos_pb2.TaskStatus()
+        taskStatus.ParseFromString(serializedPayload)
+        return taskStatus
+
+    @staticmethod
+    def payloadToString(payload):
+        return payload.SerializeToString()
+
+
+class KillSubTasksMessage(SubTaskMessage):
+    """
+    A message that holds the list of the ids of sub tasks to kill.
+    """
+
+    def __init__(self, subTaskIds):
+        super(KillSubTasksMessage, self).__init__(
+                SubTaskMessage.KILL_SUBTASKS, subTaskIds)
+
+    @staticmethod
+    def payloadFromString(serializedPayload):
+        subTaskIdStrings = pickle.loads(serializedPayload)
+        subTaskIds = []
+        for serializedSubTaskId in subTaskIdStrings:
+            taskId = mesos_pb2.TaskID()
+            taskId.ParseFromString(serializedSubTaskId)
+            subTaskIds.append(taskId)
+        return subTaskIds
+
+    @staticmethod
+    def payloadToString(payload):
+        subTaskIdStrings = [subTaskId.SerializeToString() for subTaskId in payload]
+        return pickle.dumps(subTaskIdStrings)
+
+
+# Initialize class list of SubTaskMessage.
+SubTaskMessage.messageClasses[SubTaskMessage.SUBTASK_UPDATE] = SubTaskUpdateMessage
+SubTaskMessage.messageClasses[SubTaskMessage.KILL_SUBTASKS] = KillSubTasksMessage
 
 
 def newTaskChunk(subTasks = ()):
@@ -125,7 +216,7 @@ class TransformingDict(dict):
     """
 
     def __init__(self, mapper=lambda x: x):
-        dict.__init__(self)
+        super(TransformingDict, self).__init__()
         self.mapper = mapper
 
     def __getitem__(self, key):
@@ -367,22 +458,22 @@ class SchedulerDriverWrapper(mesos.SchedulerDriver):
 
     def run(self):
         self.driver.run()
-    
+
     def requestResources(self, requests):
         self.driver.requestResources(requests)
 
     def launchTasks(self, offerId, tasks, filters=None):
         self.driver.launchTasks(offerId, tasks, filters)
-        
+
     def killTask(self, taskId):
         self.driver.killTask(taskId)
 
     def declineOffer(self, offerId, filters=None):
         self.driver.declineOffer(self, offerId, filters)
-   
+
     def reviveOffers(self):
         self.driver.reviveOffers()
-    
-    def sendFrameworkMessage(self, executorId, slaveId, data): 
+
+    def sendFrameworkMessage(self, executorId, slaveId, data):
         self.driver.sendFrameworkMessage(executorId, slaveId, data)
 
