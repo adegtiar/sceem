@@ -39,12 +39,14 @@ class SubTaskMessage(object):
         """
         try:
             messageType, serializedPayload = pickle.loads(serialized_message)
-        except Exception:
-            return SubTaskMessage(valid = False)
 
-        if messageType in SubTaskMessage.messageClasses:
-            return SubTaskMessage.messageClasses[messageType].fromString(serializedPayload)
-        else:
+            if messageType not in SubTaskMessage.messageClasses:
+                raise ValueError
+
+            message_class = SubTaskMessage.messageClasses[messageType]
+            payload = message_class.payloadFromString(serializedPayload)
+            return SubTaskMessage(messageType, payload)
+        except Exception:
             return SubTaskMessage(valid = False)
 
 
@@ -52,7 +54,10 @@ class SubTaskMessage(object):
         """
         Serializes the message into a string.
         """
-        raise NotImplementedError()
+        if not self.isValid():
+            raise ValueError("Cannot serialize an invalid message")
+        payloadString = self.payloadToString(self.getPayload())
+        return pickle.dumps((self.getType(), payloadString))
 
     def isValid(self):
         """
@@ -79,21 +84,18 @@ class SubTaskUpdateMessage(SubTaskMessage):
     A message that holds the TaskStatus for a sub task.
     """
 
-    def __init__(self, taskStatus):
-        SubTaskMessage.__init__(SubTaskMessage.SUBTASK_UPDATE, taskStatus)
-
     @staticmethod
-    def fromString(serializedPayload):
+    def payloadFromString(serializedPayload):
         pass
         taskStatus = mesos_pb2.TaskStatus()
         # TODO error handling.
         taskStatus.ParseFromString(serializedPayload)
-        return SubTaskUpdateMessage(taskStatus)
+        return taskStatus
 
-    def toString(self):
-        pass
+    @staticmethod
+    def payloadToString(payload):
         # TODO error handling?
-        return getPayload().SerializeToString()
+        return payload.SerializeToString()
 
 
 class KillSubTasksMessage(SubTaskMessage):
@@ -105,7 +107,7 @@ class KillSubTasksMessage(SubTaskMessage):
         SubTaskMessage.__init__(SubTaskMessage.KILL_SUBTASKS, subTaskIds)
 
     @staticmethod
-    def fromString(serializedPayload):
+    def payloadFromString(serializedPayload):
         # TODO error handling.
         subTaskIdStrings = pickle.loads(subTaskIdStrings)
         subTaskIds = []
@@ -113,12 +115,14 @@ class KillSubTasksMessage(SubTaskMessage):
             taskId = mesos_pb2.TaskID()
             taskId.ParseFromString(serializedSubTaskId)
             subTaskIds.append(taskId)
-        return KillSubTasksMessage(subTaskIds)
+        return subTaskIds
 
-    def toString(self):
+    @staticmethod
+    def payloadToString(payload):
         # TODO error handling?
-        subTaskIdStrings = [subTaskId.SerializeToString for subTaskId in getPayload()]
+        subTaskIdStrings = [subTaskId.SerializeToString for subTaskId in payload]
         return pickle.dumps(subTaskIdStrings)
+
 
 # Initialize class list of SubTaskMessage.
 SubTaskMessage.messageClasses[SubTaskMessage.SUBTASK_UPDATE] = SubTaskUpdateMessage

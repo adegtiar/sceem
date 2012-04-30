@@ -251,7 +251,7 @@ class TestSubTaskMessage(unittest.TestCase):
 
         self.assertFalse(invalidMessage.isValid())
 
-        with self.assertRaises(NotImplementedError):
+        with self.assertRaises(ValueError):
             invalidMessage.toString()
 
         with self.assertRaises(ValueError):
