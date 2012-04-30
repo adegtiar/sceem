@@ -103,7 +103,10 @@ class TestChunkSchedulerDriver(unittest.TestCase):
         return slave
 
     def getChunkSchedulerDriver(self):
-        chunkSchedulerDriver = TaskChunkSchedulerDriver(self.mScheduler)
+        framework = mesos_pb2.FrameworkInfo()
+        framework.user = "" # Have Mesos fill in the current user.
+        framework.name = "Test Framework (Python)"
+        chunkSchedulerDriver = TaskChunkSchedulerDriver(self.mScheduler, framework, "local")
         return chunkSchedulerDriver
 
     def test_killSubtasks(self):
