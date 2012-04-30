@@ -218,6 +218,23 @@ class TestChunkExecutorDriver(unittest.TestCase):
         self.chunkExecutorDriver.sendStatusUpdate(update)
         self.chunkExecutorDriver.chunkExecutor.runNextSubTask.assert_called_once_with(self.chunkExecutorDriver, self.taskChunk.task_id)
 
+        
+    def test_sendStatusUpdateSubtaskTerminalMultiple(self):
+        addSubTask(self.taskChunk, self.task)
+        subtask = self.getNewSubtask()
+        addSubTask(self.taskChunk, subtask)
+
+        self.mExecutor.sendStatusUpdate = Mock()
+        self.mExecutor.launchTask = Mock()
+        self.chunkExecutorDriver.chunkExecutor.pendingTaskChunks.addTask(self.taskChunk)
+        self.mExecutor.launchTask =  Mock()
+        update = mesos_pb2.TaskStatus()
+        update.task_id.value = self.task.task_id.value
+        update.state = mesos_pb2.TASK_FINISHED
+        self.chunkExecutorDriver.sendStatusUpdate(update)
+        #self.chunkExecutorDriver.chunkExecutor.runNextSubTask.assert_called_once_with(self.chunkExecutorDriver, self.taskChunk.task_id)
+        self.mExecutor.launchTask.assert_called_once_with(self.chunkExecutorDriver, subtask)
+
     def test_sendStatusUpdateSubtask(self):
         self.mExecutor.sendStatusUpdate = Mock()
         addSubTask(self.taskChunk, self.task)
