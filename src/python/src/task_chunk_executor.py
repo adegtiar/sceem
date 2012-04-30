@@ -126,7 +126,7 @@ class TaskChunkExecutorDriver(chunk_utils.ExecutorDriverWrapper):
         pending_tasks = self.chunkExecutor.pendingTaskChunks
 
         if pending_tasks.isSubTask(update.task_id):
-            updateMessage = SubTaskUpdateMessage(update)
+            updateMessage = chunk_utils.SubTaskUpdateMessage(update)
             chunk_utils.ExecutorDriverWrapper.sendFrameworkMessage(self, updateMessage)
             if chunk_utils.isTerminalUpdate(update):
                 parent = pending_tasks.getParent(update.taskId)
