@@ -304,6 +304,13 @@ class TestSubTaskMessage(unittest.TestCase):
        deserialized = SubTaskUpdateMessage.payloadFromString(serialized)
        self.assertEqual(self.taskStatus, deserialized)
 
+    def test_endToEnd(self):
+        updateMessage = SubTaskUpdateMessage(self.taskStatus)
+        serialized = updateMessage.toString()
+        deserialized = SubTaskMessage.fromString(serialized)
+
+        self.assertEqual(updateMessage, deserialized)
+
 
 if __name__ == '__main__':
     unittest.main()
