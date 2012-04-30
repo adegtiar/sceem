@@ -65,7 +65,7 @@ class TestTaskChunks(unittest.TestCase):
 
 class TestTaskTable(unittest.TestCase):
     """
-    Tests for the TaskTable in chunk_utils.
+    Tests for the TaskTable.
     """
 
     def setUp(self):
@@ -238,7 +238,7 @@ class TestTaskTable(unittest.TestCase):
 
 class TestSubTaskMessage(unittest.TestCase):
     """
-    Tests for SubTaskMessage in chunk_utils.
+    Tests for SubTaskMessage.
     """
 
     def setUp(self):
@@ -279,6 +279,11 @@ class TestSubTaskMessage(unittest.TestCase):
     def test_getType(self):
         self.assertEqual(self.messageType, self.message.getType())
 
+
+class TestSubTaskMessage(unittest.TestCase):
+    """
+    Tests for SubTaskUpdateMessage.
+    """
 
 
 if __name__ == '__main__':
