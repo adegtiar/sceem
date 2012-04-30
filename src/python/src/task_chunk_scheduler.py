@@ -13,7 +13,7 @@ class TaskChunkScheduler(chunk_utils.SchedulerWrapper):
 
         """
         self.currentTaskChunks = chunk_utils.TaskTable()
-        
+
         #super(TaskChunkExecutor, self).__init__(self, executor)
         chunk_utils.SchedulerWrapper.__init__(self, scheduler)
 
