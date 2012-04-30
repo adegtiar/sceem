@@ -47,11 +47,14 @@ class TestChunkScheduler(unittest.TestCase):
         update = mesos_pb2.TaskStatus()
         update.task_id.value = self.taskChunk.task_id.value
         update.state = mesos_pb2.TASK_FINISHED
-        self.mScheduler.statusUpdate = Mock()
+
         updateMessage = chunk_utils.SubTaskUpdateMessage(update)
-        message = SubTaskMessage.fromString(updateMessage)
-        self.chunkScheduler.frameworkMessage(self.mSchedulerDriver, updateMessage)
-        self.mScheduler.statusUpdate.assert_called_once_with(self.mSchedulerDriver, update)
+
+        self.mScheduler.statusUpdate = Mock()
+        self.chunkScheduler.frameworkMessage(self.mSchedulerDriver,
+                updateMessage.toString())
+        self.mScheduler.statusUpdate.assert_called_once_with(
+                self.mSchedulerDriver, update)
 
     def test_frameworkMessage(self):
         self.chunkScheduler.frameworkMessage(self.mSchedulerDriver, "message")
