@@ -50,7 +50,7 @@ class TestScheduler(mesos.Scheduler):
     for offer in offers:
       tasks = []
       print "Got resource offer %s" % offer.id.value
-      if self.tasksLaunched < TOTAL_TASKS:
+      while self.tasksLaunched < TOTAL_TASKS:
         tid = self.tasksLaunched
         self.tasksLaunched += 1
 
@@ -81,7 +81,14 @@ class TestScheduler(mesos.Scheduler):
         mem.scalar.value = TASK_MEM
 
         tasks.append(task)
-        driver.launchTasks(offer.id, tasks)
+      taskChunk = chunk_utils.newTaskChunk(tasks)
+      taskChunk.task_id.value = "chunk_id"
+      taskChunk.slave_id.value = offer.slave_id.value
+      taskChunk.name = "taskChunk"
+      taskChunk.executor.MergeFrom(self.executor)
+
+      driver.launchTasks(offer.id, [taskChunk])
+      break
 
   def statusUpdate(self, driver, update):
     print "Task %s is in state %d" % (update.task_id.value, update.state)
