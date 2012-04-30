@@ -286,30 +286,41 @@ class TestSubTaskMessage(unittest.TestCase):
         self.assertEqual(self.message, message)
 
 
-class TestSubTaskUpdateMessage(unittest.TestCase):
+class TestSubTaskSerialization(object):
+
+    def setUp(self):
+        """
+        Implement this to store self.payload and self.serializationClass.
+        """
+        raise NotImplemented()
+
+    def test_serialization(self):
+        serialized = self.serializationClass.payloadToString(self.payload)
+        deserialized = self.serializationClass.payloadFromString(serialized)
+
+        self.assertEqual(self.payload, deserialized)
+
+    def test_endToEnd(self):
+        message = self.serializationClass(self.payload)
+        serialized = message.toString()
+        deserialized = SubTaskMessage.fromString(serialized)
+
+        self.assertEqual(message, deserialized)
+
+
+class TestSubTaskUpdateMessage(unittest.TestCase, TestSubTaskSerialization):
     """
     Tests for SubTaskUpdateMessage.
     """
 
     def setUp(self):
-       taskStatus = mesos_pb2.TaskStatus()
-       taskStatus.task_id.value = "id"
-       taskStatus.state = mesos_pb2.TASK_RUNNING
-       taskStatus.message = "foo message"
-       taskStatus.data = "foo data"
-       self.taskStatus = taskStatus
-
-    def test_serialization(self):
-       serialized = SubTaskUpdateMessage.payloadToString(self.taskStatus)
-       deserialized = SubTaskUpdateMessage.payloadFromString(serialized)
-       self.assertEqual(self.taskStatus, deserialized)
-
-    def test_endToEnd(self):
-        updateMessage = SubTaskUpdateMessage(self.taskStatus)
-        serialized = updateMessage.toString()
-        deserialized = SubTaskMessage.fromString(serialized)
-
-        self.assertEqual(updateMessage, deserialized)
+        taskStatus = mesos_pb2.TaskStatus()
+        taskStatus.task_id.value = "id"
+        taskStatus.state = mesos_pb2.TASK_RUNNING
+        taskStatus.message = "foo message"
+        taskStatus.data = "foo data"
+        self.payload = taskStatus
+        self.serializationClass = SubTaskUpdateMessage
 
 
 if __name__ == '__main__':
