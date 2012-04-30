@@ -115,7 +115,7 @@ class KillSubTasksMessage(SubTaskMessage):
 
     @staticmethod
     def payloadFromString(serializedPayload):
-        subTaskIdStrings = pickle.loads(subTaskIdStrings)
+        subTaskIdStrings = pickle.loads(serializedPayload)
         subTaskIds = []
         for serializedSubTaskId in subTaskIdStrings:
             taskId = mesos_pb2.TaskID()
