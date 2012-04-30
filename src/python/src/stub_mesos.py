@@ -90,7 +90,7 @@ class ExecutorDriver:
 # code, and there seems to be no point in doing it in a dynamic language.
 class MesosSchedulerDriver(SchedulerDriver):
   
-  def __init__(self, scheduler):
+  def __init__(self, scheduler, framework, master):
     self.scheduler = scheduler
     SchedulerDriver()
 
