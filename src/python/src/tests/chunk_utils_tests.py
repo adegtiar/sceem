@@ -279,22 +279,30 @@ class TestSubTaskMessage(unittest.TestCase):
     def test_getType(self):
         self.assertEqual(self.messageType, self.message.getType())
 
+    def test_eq(self):
+        payload = self.payload
+        messageType = self.messageType
+        message = SubTaskMessage(messageType, payload)
+        assertEqual(self.message, message)
+
 
 class TestSubTaskMessage(unittest.TestCase):
     """
     Tests for SubTaskUpdateMessage.
     """
 
-    def test_serialization(self):
+    def setUp(self):
        taskStatus = mesos_pb2.TaskStatus()
        taskStatus.task_id.value = "id"
        taskStatus.state = mesos_pb2.TASK_RUNNING
        taskStatus.message = "foo message"
        taskStatus.data = "foo data"
+       self.taskStatus = taskStatus
 
-       serialized = SubTaskUpdateMessage.payloadToString(taskStatus)
+    def test_serialization(self):
+       serialized = SubTaskUpdateMessage.payloadToString(self.taskStatus)
        deserialized = SubTaskUpdateMessage.payloadFromString(serialized)
-       self.assertEqual(taskStatus, deserialized)
+       self.assertEqual(self.taskStatus, deserialized)
 
 
 if __name__ == '__main__':

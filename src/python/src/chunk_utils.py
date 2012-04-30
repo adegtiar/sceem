@@ -31,6 +31,11 @@ class SubTaskMessage(object):
         self.__payload = payload
         self.__valid = valid
 
+    def __eq__(self, other):
+        (isinstance(other, SubTaskMessage) and self.__type == other.__type and
+                self.__payload == other.__payload and self.__valid == other.__valid)
+
+
     @staticmethod
     def fromString(serialized_message):
         """
