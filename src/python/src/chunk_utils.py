@@ -125,7 +125,7 @@ class KillSubTasksMessage(SubTaskMessage):
 
     @staticmethod
     def payloadToString(payload):
-        subTaskIdStrings = [subTaskId.SerializeToString for subTaskId in payload]
+        subTaskIdStrings = [subTaskId.SerializeToString() for subTaskId in payload]
         return pickle.dumps(subTaskIdStrings)
 
 
