@@ -52,7 +52,12 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
                         taskId = subTask.task_id
                         task = self.pendingTaskChunks[taskId]
                         break
-            del self.pendingTaskChunks[origTaskId]
+            update = mesos_pb2.TaskStatus()
+            update.task_id.value = origTaskId.value
+            update.state = mesos_pb2.TASK_KILLED
+            driver.sendStatusUpdate(update)
+            #del self.pendingTaskChunks[origTaskId]
+            
 
         chunk_utils.ExecutorWrapper.killTask(self, driver, taskId)
 
