@@ -3,17 +3,16 @@ import mesos_pb2
 import chunk_utils
 from chunk_utils import SubTaskMessage
 
-
 class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
 
-    def __init__(self, executor):
+    def __init__(self, executor, driver):
         """
         Initialize TaskTable and executorWrapper with executor.
 
         """
         self.pendingTaskChunks = chunk_utils.TaskTable()
         #super(TaskChunkExecutor, self).__init__(self, executor)
-        chunk_utils.ExecutorWrapper.__init__(self, executor)
+        chunk_utils.ExecutorWrapper.__init__(self, executor, driver)
 
     def launchTask(self, driver, task):
         """

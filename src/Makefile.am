@@ -528,6 +528,11 @@ TASK_CHUNK_TARGETS = python/src/task_chunk_executor.py	\
 		     python/src/chunk_utils.py
 
 
+TASK_CHUNK_SRC = $(srcdir)/python/src/task_chunk_executor.py	\
+		     $(srcdir)/python/src/task_chunk_scheduler.py	\
+		     $(srcdir)/python/src/chunk_utils.py
+
+
 # Python files listed outside HAS_PYTHON so they are included with the
 # distribution unconditionally.
 EXTRA_DIST += python/src/mesos.py				\
@@ -571,13 +576,13 @@ CLEANFILES += $(PROTOBUF_EGG)
 MESOS_EGG = python/dist/mesos-$(PACKAGE_VERSION)$(PYTHON_EGG_POSTFIX).egg
 
 $(MESOS_EGG): python/setup.py $(srcdir)/python/src/mesos.py	\
-	      $(TASK_CHUNK_TARGETS)				\
+	      $(TASK_CHUNK_SRC)				\
 	      $(PYTHON_PROTOS) libmesos_no_third_party.la	\
 	      $(PROTOBUF_EGG)
 	@echo "Building Mesos Python egg ..."
 	@if test "$(top_srcdir)" != "$(top_builddir)"; then \
 	  $(MKDIR_P) python/src; \
-	  cp -pf $(srcdir)/python/src/mesos.py $(TASK_CHUNK_TARGETS) python/src; \
+	  cp -pf $(srcdir)/python/src/mesos.py $(TASK_CHUNK_SRC) python/src; \
 	fi
 	@LIBS="$(LIBS)" PYTHONPATH=$(SETUPTOOLS) \
 	  $(PYTHON) python/setup.py bdist_egg
