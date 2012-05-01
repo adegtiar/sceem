@@ -73,7 +73,10 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
                 taskIdsToRun.add(parent.task_id.SerializeToString())
             else:
                 del self.pendingTaskChunks[subTaskId]
-
+                update = mesos_pb2.TaskStatus()
+                update.task_id.value = subTaskId
+                update.state = mesos_pb2.TASK_KILLED
+                driver.sendStatusUpdate(update)
 
         for taskChunkId in taskIdsToRun:
             taskID = mesos_pb2.TaskID()
