@@ -16,12 +16,13 @@ class TaskChunkScheduler(chunk_utils.SchedulerWrapper):
         #super(TaskChunkExecutor, self).__init__(self, executor)
         chunk_utils.SchedulerWrapper.__init__(self, scheduler, driver)
 
-    def frameworkMessage(self, driver, data):
+    def frameworkMessage(self, driver, executorId, slaveId, data):
         message = SubTaskMessage.fromString(data)
         if message.isValid() and message.getType() == SubTaskMessage.SUBTASK_UPDATE:
             self.statusUpdate(driver, message.getPayload())
         else:
-            chunk_utils.SchedulerWrapper.frameworkMessage(self, driver, data)
+            chunk_utils.SchedulerWrapper.frameworkMessage(self, driver,
+                    executorId, slaveId, data)
 
 class TaskChunkSchedulerDriver(chunk_utils.SchedulerDriverWrapper):
 

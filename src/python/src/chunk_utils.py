@@ -396,8 +396,8 @@ class SchedulerWrapper(mesos.Scheduler):
     def statusUpdate(self, driver, status):
         self.scheduler.statusUpdate(self.driver, status)
 
-    def frameworkMessage(self, driver, message):
-        self.scheduler.frameworkMessage(self.driver, message)
+    def frameworkMessage(self, driver, executorId, slaveId, message):
+        self.scheduler.frameworkMessage(self.driver, executorId, slaveId, message)
 
     def slaveLost(self, driver, slaveId):
         self.scheduler.slaveLost(self.driver, slaveId)
