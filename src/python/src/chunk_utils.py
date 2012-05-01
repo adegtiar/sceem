@@ -337,36 +337,70 @@ class TaskTable(object):
 
 class ExecutorWrapper(mesos.Executor):
     """
-    Delegates calls to the underlying executor with the passed-in driver.
+    Delegates calls to the underlying executor.
+    """
+
+    def __init__(self, executor):
+        self.executor = executor
+
+    def registered(self, driver, executorInfo, frameworkInfo, slaveInfo):
+        self.executor.registered(driver, executorInfo, frameworkInfo, slaveInfo)
+
+    def reregistered(self, driver, slaveInfo):
+        self.executor.reregistered(driver, slaveInfo)
+
+    def disconnected(self, driver):
+        self.executor.disconnected(driver)
+
+    def launchTask(self, driver, task):
+        self.executor.launchTask(driver, task)
+
+    def killTask(self, driver, taskId):
+        self.executor.killTask(driver, taskId)
+
+    def frameworkMessage(self, driver, message):
+        self.executor.frameworkMessage(driver, message)
+
+    def shutdown(self, driver):
+        self.executor.shutdown(driver)
+
+    def error(self, driver, message):
+        self.executor.error(driver, message)
+
+
+class DriverOverridingExecutor(ExecutorWrapper):
+    """
+    A wrapper that overrides the driver passed in to functions.
     """
 
     def __init__(self, executor, driver):
-        self.executor = executor
+        ExecutorWrapper.__init__(self, executor)
         self.driver = driver
 
     def registered(self, driver, executorInfo, frameworkInfo, slaveInfo):
-        self.executor.registered(self.driver, executorInfo, frameworkInfo, slaveInfo)
+        ExecutorWrapper.registered(self, self.driver, executorInfo, frameworkInfo, slaveInfo)
 
     def reregistered(self, driver, slaveInfo):
-        self.executor.reregistered(self.driver, slaveInfo)
+        ExecutorWrapper.reregistered(self, self.driver, slaveInfo)
 
     def disconnected(self, driver):
-        self.executor.disconnected(self.driver)
+        ExecutorWrapper.disconnected(self, self.driver)
 
     def launchTask(self, driver, task):
-        self.executor.launchTask(self.driver, task)
+        ExecutorWrapper.launchTask(self, self.driver, task)
 
     def killTask(self, driver, taskId):
-        self.executor.killTask(self.driver, taskId)
+        ExecutorWrapper.killTask(self, self.driver, taskId)
 
     def frameworkMessage(self, driver, message):
-        self.executor.frameworkMessage(self.driver, message)
+        ExecutorWrapper.frameworkMessage(self, self.driver, message)
 
     def shutdown(self, driver):
-        self.executor.shutdown(self.driver)
+        ExecutorWrapper.shutdown(self, self.driver)
 
     def error(self, driver, message):
-        self.executor.error(self.driver, message)
+        ExecutorWrapper.error(self, self.driver, message)
+
 
 
 class SchedulerWrapper(mesos.Scheduler):
@@ -374,40 +408,77 @@ class SchedulerWrapper(mesos.Scheduler):
     Delegates calls to the underlying scheduler with the passed-in driver.
     """
 
-    def __init__(self, scheduler, driver):
+    def __init__(self, scheduler):
         self.scheduler = scheduler
+
+    def registered(self, driver, frameworkId, masterInfo):
+        self.scheduler.registered(driver, frameworkId, masterInfo)
+
+    def reregistered(self, driver, masterInfo):
+        self.scheduler.reregistered(driver, masterInfo)
+
+    def disconnected(self, driver):
+        self.scheduler.disconnected(driver)
+
+    def resourceOffers(self, driver, offers):
+        self.scheduler.resourceOffers(driver, offers)
+
+    def offerRescinded(self, driver, offerId):
+        self.scheduler.offerRescinded(driver, offerId)
+
+    def statusUpdate(self, driver, status):
+        self.scheduler.statusUpdate(driver, status)
+
+    def frameworkMessage(self, driver, executorId, slaveId, message):
+        self.scheduler.frameworkMessage(driver, executorId, slaveId, message)
+
+    def slaveLost(self, driver, slaveId):
+        self.scheduler.slaveLost(driver, slaveId)
+
+    def executorLost(self, driver, executorId, slaveId, status):
+        self.scheduler.executorLost(driver, executorId, slaveId, status)
+
+    def error(self, driver, message):
+        self.scheduler.error(driver, message)
+
+
+class DriverOverridingScheduler(SchedulerWrapper):
+    """
+    A wrapper that overrides the driver passed in to functions.
+    """
+    def __init__(self, scheduler, driver):
+        SchedulerWrapper.__init__(self, scheduler)
         self.driver = driver
 
     def registered(self, driver, frameworkId, masterInfo):
-        self.scheduler.registered(self.driver, frameworkId, masterInfo)
+        SchedulerWrapper.registered(self, self.driver, frameworkId, masterInfo)
 
     def reregistered(self, driver, masterInfo):
-        self.scheduler.reregistered(self.driver, masterInfo)
+        SchedulerWrapper.reregistered(self, self.driver, masterInfo)
 
     def disconnected(self, driver):
-        self.scheduler.disconnected(self.driver)
+        SchedulerWrapper.disconnected(self, self.driver)
 
     def resourceOffers(self, driver, offers):
-        self.scheduler.resourceOffers(self.driver, offers)
+        SchedulerWrapper.resourceOffers(self, self.driver, offers)
 
     def offerRescinded(self, driver, offerId):
-        self.scheduler.offerRescinded(self.driver, offerId)
+        SchedulerWrapper.offerRescinded(self, self.driver, offerId)
 
     def statusUpdate(self, driver, status):
-        self.scheduler.statusUpdate(self.driver, status)
+        SchedulerWrapper.statusUpdate(self, self.driver, status)
 
     def frameworkMessage(self, driver, executorId, slaveId, message):
-        self.scheduler.frameworkMessage(self.driver, executorId, slaveId, message)
+        SchedulerWrapper.frameworkMessage(self, self.driver, executorId, slaveId, message)
 
     def slaveLost(self, driver, slaveId):
-        self.scheduler.slaveLost(self.driver, slaveId)
+        SchedulerWrapper.slaveLost(self, self.driver, slaveId)
 
     def executorLost(self, driver, executorId, slaveId, status):
-        self.scheduler.executorLost(self.driver, executorId, slaveId, status)
+        SchedulerWrapper.executorLost(self, self.driver, executorId, slaveId, status)
 
     def error(self, driver, message):
-        self.scheduler.error(self.driver, message)
-
+        SchedulerWrapper.error(self, self.driver, message)
 
 
 class ExecutorDriverWrapper(mesos.ExecutorDriver):

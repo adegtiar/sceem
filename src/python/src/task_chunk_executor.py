@@ -5,14 +5,14 @@ from chunk_utils import SubTaskMessage
 
 class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
 
-    def __init__(self, executor, driver):
+    def __init__(self, executor):
         """
         Initialize TaskTable and executorWrapper with executor.
 
         """
+        chunk_utils.ExecutorWrapper.__init__(self, executor)
         self.pendingTaskChunks = chunk_utils.TaskTable()
         #super(TaskChunkExecutor, self).__init__(self, executor)
-        chunk_utils.ExecutorWrapper.__init__(self, executor, driver)
 
     def launchTask(self, driver, task):
         """
@@ -119,8 +119,9 @@ class TaskChunkExecutorDriver(chunk_utils.ExecutorDriverWrapper):
         Initialize TaskTable and executorWrapper with executor
 
         """
-        self.chunkExecutor = TaskChunkExecutor(executor, self)
-        driver = mesos.MesosExecutorDriver(self.chunkExecutor)
+        self.chunkExecutor = TaskChunkExecutor(executor)
+        outerExecutor = chunk_utils.DriverOverridingExecutor(self.chunkExecutor, self)
+        driver = mesos.MesosExecutorDriver(outerExecutor)
         chunk_utils.ExecutorDriverWrapper.__init__(self, driver)
         #super(TaskChunkExecutor, self).__init__(self, executor)
 
