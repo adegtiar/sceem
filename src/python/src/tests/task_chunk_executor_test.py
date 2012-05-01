@@ -141,6 +141,7 @@ class TestChunkExecutor(unittest.TestCase):
 
     def test_frameworkMessage(self):
         addSubTask(self.taskChunk, self.task)
+        
         self.chunkExecutor.pendingTaskChunks.addTask(self.taskChunk)
         self.chunkExecutor.frameworkMessage(self.mExecutorDriver, "message")
         self.mExecutorDriver.getMessage.assert_called_once()

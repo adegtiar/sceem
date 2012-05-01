@@ -50,12 +50,12 @@ class TestChunkScheduler(unittest.TestCase):
         self.mScheduler.statusUpdate = Mock()
         updateMessage = chunk_utils.SubTaskUpdateMessage(update)
         message = SubTaskMessage.fromString(updateMessage.toString())
-        self.chunkScheduler.frameworkMessage(self.mSchedulerDriver, updateMessage.toString())
+        self.chunkScheduler.frameworkMessage(self.mSchedulerDriver, "exec_id", "slave_id", updateMessage.toString())
         self.mScheduler.statusUpdate.assert_called_once_with(self.mSchedulerDriver, update)
 
     def test_frameworkMessage(self):
-        self.chunkScheduler.frameworkMessage(self.mSchedulerDriver, "message")
-        self.mScheduler.frameworkMessage.assert_called_once_with(self.mSchedulerDriver, "message")
+        self.chunkScheduler.frameworkMessage(self.mSchedulerDriver, "exec_id", "slave_id", "message")
+        self.mScheduler.frameworkMessage.assert_called_once_with(self.mSchedulerDriver, "exec_id", "slave_id", "message")
 
 class TestChunkSchedulerDriver(unittest.TestCase):
 
@@ -123,7 +123,7 @@ class TestChunkSchedulerDriver(unittest.TestCase):
 
         message = chunk_utils.KillSubTasksMessage(subTaskIds)
 
-        self.chunkSchedulerDriver.killSubtasks(subTasks)
+        self.chunkSchedulerDriver.killSubTasks(subTasks)
         self.chunkSchedulerDriver.sendFrameworkMessage.assert_called_once_with(
                 executor1.executor_id, subTasks[0].slave_id, message.toString())
 
