@@ -118,8 +118,8 @@ class TaskChunkExecutorDriver(chunk_utils.ExecutorDriverWrapper):
 
         """
         self.chunkExecutor = TaskChunkExecutor(executor)
-        driver = mesos.MesosExecutorDriver(self.chunkExecutor)
-        chunk_utils.ExecutorDriverWrapper.__init__(self, driver)
+        self.driver = mesos.MesosExecutorDriver(self.chunkExecutor)
+        chunk_utils.ExecutorDriverWrapper.__init__(self, self.driver)
         #super(TaskChunkExecutor, self).__init__(self, executor)
 
     def sendStatusUpdate(self, update):
