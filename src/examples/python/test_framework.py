@@ -115,6 +115,8 @@ class TestScheduler(mesos.Scheduler):
         global TOTAL_TASKS
         TOTAL_TASKS -= 1
         driver.killSubTasks(self.subTasksToKill)
+    elif update.state == mesos_pb2.TASK_KILLED:
+        print "Ack of killed task with id={0}".format(update.task_id.value)
 
 if __name__ == "__main__":
   if len(sys.argv) != 2:
