@@ -74,7 +74,7 @@ class TestScheduler(mesos.Scheduler):
 
         tasks.append(task)
 
-        if task.task_id.value == "5":
+        if task.task_id.value in ("2", "3"):
             self.subTasksToKill.append(task)
 
       if tasks:
@@ -103,6 +103,7 @@ class TestScheduler(mesos.Scheduler):
 
   def statusUpdate(self, driver, update):
     print "Task %s is in state %d" % (update.task_id.value, update.state)
+    global TOTAL_TASKS
     if update.state == mesos_pb2.TASK_FINISHED:
       self.tasksFinished += 1
       if self.tasksFinished == TOTAL_TASKS + 1:
@@ -112,11 +113,10 @@ class TestScheduler(mesos.Scheduler):
             update.task_id.value == "chunk_id"):
         killedSubTaskIds = [subTask.task_id.value for subTask in self.subTasksToKill]
         print "Attempting to kill sub tasks: {0}".format(killedSubTaskIds)
-        global TOTAL_TASKS
-        TOTAL_TASKS -= 1
         driver.killSubTasks(self.subTasksToKill)
     elif update.state == mesos_pb2.TASK_KILLED:
         print "Ack of killed task with id={0}".format(update.task_id.value)
+        TOTAL_TASKS -= 1
 
 if __name__ == "__main__":
   if len(sys.argv) != 2:
