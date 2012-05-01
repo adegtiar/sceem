@@ -28,7 +28,7 @@ import task_chunk_scheduler
 
 import chunk_utils
 
-TOTAL_TASKS = 5
+TOTAL_TASKS = 8
 
 TASK_CPUS = 1
 TASK_MEM = 32
@@ -38,6 +38,7 @@ class TestScheduler(mesos.Scheduler):
     self.executor = executor
     self.tasksLaunched = 0
     self.tasksFinished = 0
+    self.subTasksToKill = []
 
   def getTaskId(self):
     tid = self.tasksLaunched
@@ -77,7 +78,10 @@ class TestScheduler(mesos.Scheduler):
         mem.scalar.value = TASK_MEM
 
         tasks.append(task)
-      
+
+        if task.task_id.value == "5":
+            self.subTasksToKill.append(task)
+
       if tasks:
         taskChunk = chunk_utils.newTaskChunk(tasks)
         taskChunk.task_id.value = "chunk_id"
@@ -109,6 +113,13 @@ class TestScheduler(mesos.Scheduler):
       if self.tasksFinished == TOTAL_TASKS + 1:
         print "All tasks done, exiting"
         driver.stop()
+    elif (update.state == mesos_pb2.TASK_RUNNING and
+            update.task_id.value == "chunk_id"):
+        killedSubTaskIds = [subTask.task_id.value for subTask in self.subTasksToKill]
+        print "Attempting to kill sub tasks: {0}".format(killedSubTaskIds)
+        global TOTAL_TASKS
+        TOTAL_TASKS -= 1
+        driver.killSubTasks(self.subTasksToKill)
 
 if __name__ == "__main__":
   if len(sys.argv) != 2:

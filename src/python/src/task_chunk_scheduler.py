@@ -35,7 +35,7 @@ class TaskChunkSchedulerDriver(chunk_utils.SchedulerDriverWrapper):
         self.driver = mesos.MesosSchedulerDriver(self.chunkScheduler, framework, master)
         chunk_utils.SchedulerDriverWrapper.__init__(self, self.driver)
 
-    def killSubtasks(self, subTasks):
+    def killSubTasks(self, subTasks):
         perExecutorTasks = defaultdict(list)
 
         for subTask in subTasks:
