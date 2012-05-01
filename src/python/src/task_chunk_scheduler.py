@@ -7,14 +7,14 @@ from collections import defaultdict
 class TaskChunkScheduler(chunk_utils.SchedulerWrapper):
 
 
-    def __init__(self, scheduler):
+    def __init__(self, scheduler, driver):
         """
         Initialize schedulerWrapper with executor.
 
         """
         self.currentTaskChunks = chunk_utils.TaskTable()
         #super(TaskChunkExecutor, self).__init__(self, executor)
-        chunk_utils.SchedulerWrapper.__init__(self, scheduler)
+        chunk_utils.SchedulerWrapper.__init__(self, scheduler, driver)
 
     def frameworkMessage(self, driver, data):
         message = SubTaskMessage.fromString(data)
@@ -30,7 +30,7 @@ class TaskChunkSchedulerDriver(chunk_utils.SchedulerDriverWrapper):
         Initialize scheduler wrapper with framework scheduler
 
         """
-        self.chunkScheduler = TaskChunkScheduler(scheduler)
+        self.chunkScheduler = TaskChunkScheduler(scheduler, self)
         self.driver = mesos.MesosSchedulerDriver(self.chunkScheduler, framework, master)
         chunk_utils.SchedulerDriverWrapper.__init__(self, self.driver)
 
