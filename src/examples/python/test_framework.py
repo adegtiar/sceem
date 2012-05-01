@@ -40,11 +40,6 @@ class TestScheduler(mesos.Scheduler):
     self.tasksFinished = 0
     self.subTasksToKill = []
 
-  def getTaskId(self):
-    tid = self.tasksLaunched
-    self.tasksLaunched +=1
-    return tid
-
   def registered(self, driver, frameworkId, masterInfo):
     print "Registered with framework ID %s" % frameworkId.value
 
