@@ -1,4 +1,5 @@
 import chunk_utils
+import task_stealing_utils
 
 class TaskStealingScheduler(chunk_utils.TaskChunkScheduler):
     """
@@ -8,24 +9,51 @@ class TaskStealingScheduler(chunk_utils.TaskChunkScheduler):
 
     def __init__(self, scheduler):
         chunk_utils.SchedulerWrapper.__init__(self, scheduler)
+        self.stolenTaskIds = set()
 
     def resourceOffers(self, driver, offers):
-        pass
+        if offer_order == TASK_STEALING_FIRST:
+                firstOffering = resourceOffersStealing
+                secondOffering = super().resourceOffers
+            else:
+                firstOffering = resourceOffersStealing
+                secondOffering = super().resourceOffers
+
+        firstOffering(driver, offers)
+            driver.updateOffers(offers)
+            secondOffering(driver, offers)
+            driver.clearConsumedResources(offers.id)
 
     def resourceOffersStealing(self, driver, offers):
-        pass
+        Map<offer,tasks> tasksToSteal = selectTasksToSteal(driver, offers, driver.getPendingTasks())
+        for offer, tasks in tasksToSteal.iteriterms():
+            stealSubtasks(tasks)
+            driver.updateTasks(offer, tasks)
+            driver.launchTasks(tasks)
 
     def selectTasksToSteal(self, driver, offers, pending_tasks):
-        pass
+        return task_stealing_utils.roundRobinStealing(driver, offers, pendingTasks)
 
     def stealSubtasks(self, tasks):
-        pass
+        stolenTasks = (task.executor.executor_id, task.task_id) for task in tasks)
+        self.stolenTasks.update(stolenTasks)
+        driver.killSubtasks(tasks)
 
     def frameworkMessage(self, executor_id, slave_id, driver, data):
-        pass
+        message = getMessage(data)
+        if (executor_id, message[1].task_id) in stolenTasks:
+            # TODO: log this and potentially remove from stolenTasks.
+        elif message and message[0] == SUBTASK_UPDATE:
+            super.statusUpdate(driver, message[1])
+        else:
+            super.frameworkMessage(driver, data)
 
 
 def TaskStealingSchedulerDriver(chunk_utils.TaskChunkSchedulerDriver):
+
+    def __init__(self, ...):
+        Map<OfferID, Resources> consumedResources;
+        TaskTable pendingTasks
 
     def updateTasks(tasks):
         #Have underlying subtasks inherit from TaskChunk
