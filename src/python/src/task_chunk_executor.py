@@ -72,7 +72,6 @@ class TaskChunkExecutor(chunk_utils.ExecutorWrapper):
             #    if not parent.task_id.SerializeToString() in taskIdsToRun:
                 taskIdsToRun.add(parent.task_id.SerializeToString())
             else:
-                del self.pendingTaskChunks[subTaskId]
                 update = mesos_pb2.TaskStatus()
                 update.task_id.value = subTaskId
                 update.state = mesos_pb2.TASK_KILLED
