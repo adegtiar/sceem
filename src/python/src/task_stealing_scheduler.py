@@ -1,5 +1,5 @@
 import chunk_utils
-import task_stealing_utils
+import steal_utils
 
 class TaskStealingScheduler(chunk_utils.TaskChunkScheduler):
     """
@@ -32,7 +32,7 @@ class TaskStealingScheduler(chunk_utils.TaskChunkScheduler):
             driver.launchTasks(tasks)
 
     def selectTasksToSteal(self, driver, offers, pending_tasks):
-        return task_stealing_utils.roundRobinStealing(driver, offers, pendingTasks)
+        return steal_utils.roundRobinStealing(driver, offers, pendingTasks)
 
     def stealSubtasks(self, tasks):
         stolenTasks = (task.executor.executor_id, task.task_id) for task in tasks)
