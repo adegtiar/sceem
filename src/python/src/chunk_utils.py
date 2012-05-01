@@ -450,7 +450,10 @@ class SchedulerDriverWrapper(mesos.SchedulerDriver):
         self.driver.start()
 
     def stop(self, failover=False):
-        self.driver.stop(failover)
+        if failover:
+            self.driver.stop(failover)
+        else:
+            self.driver.stop()
 
     def abort(self):
         self.driver.abort()
@@ -465,13 +468,19 @@ class SchedulerDriverWrapper(mesos.SchedulerDriver):
         self.driver.requestResources(requests)
 
     def launchTasks(self, offerId, tasks, filters=None):
-        self.driver.launchTasks(offerId, tasks, filters)
+        if filters:
+            self.driver.launchTasks(offerId, tasks, filters)
+        else:
+            self.driver.launchTasks(offerId, tasks)
 
     def killTask(self, taskId):
         self.driver.killTask(taskId)
 
     def declineOffer(self, offerId, filters=None):
-        self.driver.declineOffer(self, offerId, filters)
+        if filters:
+            self.driver.declineOffer(self, offerId, filters)
+        else:
+            self.driver.declineOffer(self, offerId)
 
     def reviveOffers(self):
         self.driver.reviveOffers()
