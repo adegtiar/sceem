@@ -92,6 +92,7 @@ class TaskStealingScheduler(TaskChunkScheduler):
             update = message.getPayload()
             if (executor_id.value, update.task_id.value) in self.stolenTaskIds:
                 # Potentially log this and remove from stolenTasks.
+                pass
             else:
                 TaskChunkScheduler.frameworkMessage(self, driver, data)
         else:
@@ -125,7 +126,7 @@ class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
         self.consumedResources = defaultdict(lambda: mesos_pb2.Offer().resources)
         self.pendingTasks = chunk_utils.TaskTable()
 
-    def launchTasks(self, offerId, tasks, filters)
+    def launchTasks(self, offerId, tasks, filters):
         """
         Keeps track of the task and its launched resources before launching.
         """
@@ -135,7 +136,7 @@ class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
             chunk_utils.resourcesIncrement(consumedResources, task.resources)
             # Add the task to the tracked tasked.
             pendingTasks.addTask(task)
-        TaskChunkSchedulerDriver.launchTasks(self, offerId, tasks filters)
+        TaskChunkSchedulerDriver.launchTasks(self, offerId, tasks, filters)
 
     def updateOffers(self, offers):
         """
