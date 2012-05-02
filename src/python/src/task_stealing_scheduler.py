@@ -82,7 +82,7 @@ class TaskStealingScheduler(TaskChunkScheduler):
                 if not chunk_utils.isOfferEmpty(offerCopy):
                     offerQueue.push(offerCopy)
 
-        return stolenTaskChunks
+        return stolenTasksChunks
 
     def stealSubTasks(self, stolenSubTaskIds):
         """
