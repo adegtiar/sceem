@@ -1,4 +1,5 @@
 import chunk_utils
+import itertools
 import mesos_pb2
 import steal_utils
 
@@ -17,6 +18,7 @@ class TaskStealingScheduler(TaskChunkScheduler):
         TaskChunkScheduler.__init__(self, scheduler)
         self.offerOrder = offerOrder
         self.stolenTaskIds = set()
+        self.counter = itertools.count()
 
     def resourceOffers(self, driver, offers):
         """
@@ -60,6 +62,9 @@ class TaskStealingScheduler(TaskChunkScheduler):
             offer = offerQueue.pop()
             stolenTasksChunk = taskQueue.stealTasks(offer)
             if stolenTasksChunk:
+                stoleTasksChunk.name = "Stolen task"
+                stolenTasksChunk.task_id.value = self.generateTaskId()
+
                 stolenTasksChunks[offer.id].append(stolenTasksChunk)
 
                 offerCopy = mesos_pb2.Offer()
@@ -106,6 +111,9 @@ class TaskStealingScheduler(TaskChunkScheduler):
                 chunk_utils.isTerminalUpdate(update)):
             del driver.pendingTasks[update.task_id]
         TaskChunkScheduler.statusUpdate(self, driver, update)
+
+    def generateTaskId(self):
+        return "task_chunk_id_{0}".format(next(self.counter))
 
 
 class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
