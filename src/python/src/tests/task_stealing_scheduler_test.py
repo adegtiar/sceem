@@ -6,6 +6,7 @@ sys.path.append(".")
 import stub_mesos
 sys.modules["mesos"] = stub_mesos
 
+import chunk_utils
 import itertools
 import mesos
 import mesos_pb2
@@ -18,6 +19,8 @@ class TestChunkScheduler(unittest.TestCase):
 
     def setUp(self):
         self.counter = defaultdict(itertools.count)
+        self.slave_id = mesos_pb2.SlaveID()
+        self.slave_id.value = "slave_id"
 
         self.driver = MagicMock(spec=TaskStealingSchedulerDriver)
         self.scheduler = MagicMock(spec=mesos.Scheduler)
@@ -26,13 +29,41 @@ class TestChunkScheduler(unittest.TestCase):
     def nextId(self, offer_type):
         return "{0}_id_{1}".format(offer_type, self.counter[offer_type].next())
 
-    def generateOffer(self):
+    def addResource(self, container, name, amount=1):
+        resource = container.resources.add()
+        resource.name = name
+        resource.type = mesos_pb2.Value.SCALAR
+        resource.scalar.value = amount
+
+    def generateOffer(self, resourceAmount=4):
         offer = mesos_pb2.Offer()
         offer.id.value = self.nextId("offer")
         offer.framework_id.value = self.nextId("framework")
         offer.slave_id.value = self.nextId("slave")
         offer.hostname = self.nextId("local")
+
+        self.addResource(offer, "cpus", resourceAmount)
+        self.addResource(offer, "mem", resourceAmount)
+
         return offer
+
+    def newTasks(self, num):
+        tasks = []
+        for i in range(num):
+            task = mesos_pb2.TaskInfo()
+            task.task_id.value = self.nextId("task")
+
+            self.addResource(task, "cpus", i+1)
+            self.addResource(task, "mem", i+1)
+
+            tasks.append(task)
+        return tasks
+
+    def newTaskChunk(self, numSubTasks):
+        taskChunk = chunk_utils.newTaskChunk(self.slave_id,
+                                 subTasks=self.newTasks(numSubTasks))
+        taskChunk.task_id.value = self.nextId("chunk")
+        return taskChunk
 
     # Test modifies a global variable, breaking other tests.
     # TODO: Re-add this when fixed.
@@ -73,7 +104,16 @@ class TestChunkScheduler(unittest.TestCase):
         self.driver.launchTasks.assert_called_once_with(offers[0].id, tasks)
 
     def test_selectTasksToSteal(self):
-        pass
+        offers = [self.generateOffer()]
+        pendingTasks = [self.newTaskChunk(4)]
+
+        self.stealingScheduler.generateTaskId = MagicMock()
+        self.stealingScheduler.generateTaskId.return_value = "chunk_id_0"
+
+        stolen = self.stealingScheduler.selectTasksToSteal(self.driver, offers, pendingTasks)
+
+        self.stealingScheduler.generateTaskId.assert_called_once()
+
 
 
 if __name__ == '__main__':
