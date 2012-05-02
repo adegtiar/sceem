@@ -24,7 +24,7 @@ import time
 
 import mesos
 import mesos_pb2
-import task_chunk_scheduler
+import task_stealing_scheduler
 
 import chunk_utils
 
@@ -116,7 +116,7 @@ if __name__ == "__main__":
   framework.name = "Test Framework (Python)"
 
 
-  driver = task_chunk_scheduler.TaskChunkSchedulerDriver(
+  driver = task_stealing_scheduler.TaskStealingSchedulerDriver(
     TestScheduler(executor),
     framework,
     sys.argv[1])
