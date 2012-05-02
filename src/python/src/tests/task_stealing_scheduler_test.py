@@ -19,8 +19,12 @@ class TestChunkScheduler(unittest.TestCase):
 
     def setUp(self):
         self.counter = defaultdict(itertools.count)
+
         self.slave_id = mesos_pb2.SlaveID()
         self.slave_id.value = "slave_id"
+
+        self.executor_id = mesos_pb2.ExecutorID()
+        self.executor_id.value = "executor_id"
 
         self.driver = MagicMock(spec=TaskStealingSchedulerDriver)
         self.scheduler = MagicMock(spec=mesos.Scheduler)
@@ -126,6 +130,46 @@ class TestChunkScheduler(unittest.TestCase):
 
         self.assertEqual("task_id_2", stolenTasks[0].task_id.value)
         self.assertEqual("task_id_3", stolenTasks[1].task_id.value)
+
+    def test_selectTasksToStealMultiOffer(self):
+        # TODO: add more tests!
+        pass
+
+    def test_frameworkMessageNormal(self):
+        oldMethod = TaskChunkScheduler.frameworkMessage
+
+        TaskChunkScheduler.frameworkMessage = MagicMock()
+
+        self.stealingScheduler.frameworkMessage(self.executor_id, self.slave_id,
+                self.driver, "not a SubTaskMessage")
+
+        TaskChunkScheduler.frameworkMessage.assert_called_once()
+
+        TaskChunkScheduler.frameworkMessage = oldMethod
+
+    def test_frameworkMessageStolen(self):
+        taskStatus = mesos_pb2.TaskStatus()
+        taskStatus.task_id.value = "id"
+        taskStatus.state = mesos_pb2.TASK_RUNNING
+        taskStatus.message = "foo message"
+        taskStatus.data = "foo data"
+
+        parentId = mesos_pb2.TaskID()
+        parentId.value = "task_chunk"
+
+        payload = (parentId, taskStatus)
+        subTaskMessage = chunk_utils.SubTaskUpdateMessage(payload)
+
+        oldMethod = TaskChunkScheduler.frameworkMessage
+
+        TaskChunkScheduler.frameworkMessage = MagicMock()
+
+        self.stealingScheduler.frameworkMessage(self.executor_id, self.slave_id,
+                self.driver, subTaskMessage.toString())
+
+        TaskChunkScheduler.frameworkMessage.assert_called_once()
+
+        TaskChunkScheduler.frameworkMessage = oldMethod
 
 
 if __name__ == '__main__':

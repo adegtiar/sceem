@@ -4,6 +4,7 @@ import mesos_pb2
 import steal_utils
 
 from collections import defaultdict
+from chunk_utils import SubTaskMessage
 from task_chunk_scheduler import TaskChunkScheduler, TaskChunkSchedulerDriver
 
 
