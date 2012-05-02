@@ -13,6 +13,8 @@ import mesos_pb2
 import unittest
 from mock import Mock
 
+isPython27 = (sys.version_info >= (2,7))
+
 class TestTaskChunks(unittest.TestCase):
     """
     Tests for the base task chunk utilities.
@@ -25,6 +27,11 @@ class TestTaskChunks(unittest.TestCase):
         self.subTask = mesos_pb2.TaskInfo()
         self.subTask.task_id.value = "subtask_1"
 
+    def test_withUtils(self):
+        if isPython27:
+            self.nextSubTask_error(self)
+            self.removeSubTask(self)
+            
     def test_isTaskChunk_true(self):
         self.assertTrue(isTaskChunk(self.chunk))
 
@@ -98,7 +105,12 @@ class TestTaskTable(unittest.TestCase):
             resource.scalar.value = sizeRes
             if dictRes!=None:
                 dictRes[resource.name] = operator(dictRes[resource.name], sizeRes)
-
+                
+    def test_with(self):
+        if isPython27:
+            self.addTask_error()
+        
+        
     def test_len(self):
         self.assertEqual(0, len(self.table))
 
@@ -329,6 +341,10 @@ class TestSubTaskMessage(unittest.TestCase):
         self.payload = 513948
         self.messageType = 3
         self.message = SubTaskMessage(self.messageType, self.payload)
+
+    def test_with(self):
+        if isPython27:
+            self.invalidMessage()
 
     def invalidMessage(self):
         invalidMessage = SubTaskMessage(valid = False)
