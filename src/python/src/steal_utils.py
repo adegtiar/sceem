@@ -28,6 +28,9 @@ class PriorityQueue(object):
   def hasNext(self):
     return len(self.__data) > 0
 
+  def __len__(self):
+    return len(self.__data)
+
 #The TaskQueue receives offers and returns tasks to give up to that offer.
 class TaskQueue:
   def __init__(self, pending_tasks):
@@ -80,7 +83,7 @@ class TaskQueue:
         popped_tasks.append(taskCopy)
         break
         
-      popped_tasks.append(taskCopy)
+      popped_tasks.append(task)
         
     for task in popped_tasks:
       self.queue.push(task)

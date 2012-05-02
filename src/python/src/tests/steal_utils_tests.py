@@ -24,11 +24,12 @@ class TestTaskQueue(unittest.TestCase):
         
         self.slave_id = Mock()
         self.slave_id.value = "slave_id"
+        self.counter = 0
         self.table = self.new_table()
         self.pending_tasks = [subtask for subtask in subTaskIterator(self.table)]
         self.queue = steal_utils.TaskQueue(self.pending_tasks)
-      
         self.offer = mesos_pb2.Offer()
+        
     
     def new_table(self):
         tasks = []
@@ -51,7 +52,8 @@ class TestTaskQueue(unittest.TestCase):
     def new_task_chunk(self, subTasksPerChunk, resSize=0, resNum=0):
         taskChunk = newTaskChunk(self.slave_id, subTasks=self.new_tasks(subTasksPerChunk,
                                                 resSize, resNum))
-        taskChunk.task_id.value = "chunk_id"
+        taskChunk.task_id.value = "chunk_id" + str(self.counter)
+        self.counter +=1
         return taskChunk
 
     def add_resources(self, taskChunk, sizeRes, numRes,
@@ -114,6 +116,37 @@ class TestTaskQueue(unittest.TestCase):
         
         for task in subTasks:
             self.assertFalse(task in subTasksRemaining)
+
+    def test_stealTasksTwo(self):
+        offer = mesos_pb2.Offer()
+        self.add_resources(offer, 10, 5)
+        newtaskChunk = self.new_task_chunk(20, 20, 5)
+        addSubTask(self.table, newtaskChunk)
+
+        self.pending_tasks = [subtask for subtask in subTaskIterator(self.table)]
+        self.queue = steal_utils.TaskQueue(self.pending_tasks)
+
+        self.assertTrue(len(self.queue.queue)== 2)
+        taskChunk = self.queue.stealTasks(offer)
+        
+        subTasks = [subTask for subTask in subTaskIterator(taskChunk)]
+        
+        self.assertTrue(self.queue.queue.hasNext())
+        origTaskChunk = self.queue.queue.pop()
+        origsubTasks = [subTask for subTask in subTaskIterator(origTaskChunk)]
+        self.assertTrue(len(origsubTasks) == 20)
+
+        
+        self.assertTrue(self.queue.queue.hasNext())
+        remainingTaskChunk = self.queue.queue.pop()
+
+        self.assertFalse(self.queue.queue.hasNext())
+        subTasksRemaining = [subTask for subTask in subTaskIterator(
+            remainingTaskChunk)]
+        
+        for task in subTasks:
+            self.assertFalse(task in subTasksRemaining)
+
         
 
 
