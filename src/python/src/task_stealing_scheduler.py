@@ -48,7 +48,7 @@ class TaskStealingScheduler(TaskChunkScheduler):
 
         for offer, tasks in tasksToSteal.iteriterms():
             self.stealSubtasks(tasks)
-            driver.launchTasks(tasks)
+            driver.launchTasks(offer.id, tasks)
 
     def selectTasksToSteal(self, driver, offers, pending_tasks):
         """
@@ -136,7 +136,7 @@ class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
         self.consumedResources = defaultdict(lambda: mesos_pb2.Offer().resources)
         self.pendingTasks = chunk_utils.TaskTable()
 
-    def launchTasks(self, offerId, tasks, filters):
+    def launchTasks(self, offerId, tasks, filters=None):
         """
         Keeps track of the task and its launched resources before launching.
         """
