@@ -46,9 +46,12 @@ class TaskStealingScheduler(TaskChunkScheduler):
         """
         tasksToSteal = self.selectTasksToSteal(driver, offers, driver.pendingTasks)
 
-        for offer, tasks in tasksToSteal.iteriterms():
+        for offerIdValue, tasks in tasksToSteal.iteriterms():
+            offerId = mesos_pb2.OfferID()
+            offerId.value = offerIdValue
+
             self.stealSubtasks(tasks)
-            driver.launchTasks(offer.id, tasks)
+            driver.launchTasks(offerId, tasks)
 
     def selectTasksToSteal(self, driver, offers, pending_tasks):
         """
@@ -67,7 +70,7 @@ class TaskStealingScheduler(TaskChunkScheduler):
                 stoleTasksChunk.name = "Stolen task"
                 stolenTasksChunk.task_id.value = self.generateTaskId()
 
-                stolenTasksChunks[offer.id].append(stolenTasksChunk)
+                stolenTasksChunks[offer.id.value].append(stolenTasksChunk)
 
                 offerCopy = mesos_pb2.Offer()
                 offerCopy.CopyFrom(offer)
