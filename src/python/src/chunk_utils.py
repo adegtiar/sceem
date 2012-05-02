@@ -157,38 +157,36 @@ def newTaskChunk(slaveId,executor=None, subTasks = ()):
 def getResourcesValue(resources):
     dictRes = defaultdict(int)
     for resource in resources:
-        dictRes[resource.name] = (resource.type, resource.scalar.value)
+        dictRes[resource.name] = (resource.scalar.value, resource)
     return dictRes
 
 def updateOfferResources(offer, taskChunk):
-  taskChunkRes = getResourcesValue(taskChunk.resources)
-  for resource_name, resource_value in taskChunkRes.iteritems():
-    for resource in offer.resources:
-      if resource.name == resource_name:
-        resource.scalar.value -= resource_value
+    taskChunkRes = getResourcesValue(taskChunk.resources)
+    for resource_name, (resource_value, resource) in taskChunkRes.iteritems():
+      for resource in offer.resources:
+        if resource.name == resource_name:
+          resource.scalar.value -= resource_value
 
 def isOfferEmpty(offer):
-  for resource in offer.resources:
-    if resource.type == mesos_pb2.Value.SCALAR:
-      if resource.scalar.value == 0:
-        return True
-  return False
+    for resource in offer.resources:
+      if resource.type == mesos_pb2.Value.SCALAR:
+        if resource.scalar.value == 0:
+          return True
+    return False
 
 def updateTaskResources(taskChunk, subTask):
-  subTaskRes = getResourcesValue(subTask.resources)
+    subTaskRes = getResourcesValue(subTask.resources)
 
-  for resource_name, (resource_type, resource_value) in subTaskRes.iteritems():
-    isPresent = False
-    for resource in taskChunk.resources:
-      if resource.name == resource_name:
-        isPresent = True
-        resource.scalar.value = resource_value
-    if not isPresent:
-      newResource = taskChunk.resources.add()
-      newResource.type = resource_type
-      newResource.name = resource_name
-      newResource.scalar.value = resource_value
-          
+    for resource_name, (resource_value, resource) in subTaskRes.iteritems():
+      isPresent = False
+      for resource in taskChunk.resources:
+        if resource.name == resource_name:
+          isPresent = True
+          resource.scalar.value = resource_value
+      if not isPresent:
+        newResource = taskChunk.resources.add()
+        newResource.CopyFrom(resource)
+
 def addSubTask(taskChunk, subTask):
     """
     Adds a copy of the given sub task to the task chunk.
