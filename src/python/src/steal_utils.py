@@ -1,14 +1,6 @@
-import mesos
 import chunk_utils
-import task_chunk_scheduler
 import mesos_pb2
-import pickle
 import heapq
-
-
-# TaskStates that indicate the task is done and can be cleaned up.
-TERMINAL_STATES = (mesos_pb2.TASK_FINISHED, mesos_pb2.TASK_FAILED,
-            mesos_pb2.TASK_KILLED, mesos_pb2.TASK_LOST)
 
 class PriortyQueue(object):
 
@@ -45,19 +37,20 @@ class TaskQueue:
       Checks if task resources are less than Offer resources
 
       """
-      taskRes = chunk_utils.getResourcesValue(task.resources)
-      offerRes = chunk_utils.getResourcesValue(task.offerRes)
-      for res_name, res_value in taskRes:
-        if res_value > offerRes[res_name]:
-          return False
-      return True
+      offerCopy = mesos_pb2.Offer()
+      offerCopy.CopyFrom(offer)
+
+      chunk_utils.decrementResources(offerCopy, task)
+      if chunk_utils.isOfferValid(offerCopy):
+        return True
+      return False
 
     def stealHalfSubTasks(task):
       """
-      Returns a list of stolenSubTasks and removes them from the task
+      Returns a list of stolenSubTasks and removes them from the taskChunk
       
       """
-      subTasks = [subTask for subTask in subTaskIterator(task)]
+      subTasks = [subTask for subTask in chunk_utils.subTaskIterator(task)]
       stolenTasks = subTasks[len(subTasks)/2:]
       for stolenTask in stolenTasks:
         chunk_utils.removeSubTask(task, stolenTask.task_id)
@@ -79,111 +72,16 @@ class TaskQueue:
         if (chunk_utils.numSubTasks(task) > 1 and self.fitsIn(task, offer)):
           taskCopy = mesos_pb2.TaskInfo()
           taskCopy.CopyFrom(task)
-          stolenTasks = stealHalfSubTasks(taskCopy)
+          stolenTasks = self.stealHalfSubTasks(taskCopy)
           stolenTasksChunk = chunk_utils.newTaskChunk(offer.slave_id,
-                                                  subTasks=stolenTasks)
-          stolenTasksChunk.name = "stolen chunk"
+                                                      subTasks=stolenTasks)
           popped_tasks.append(taskCopy)
           break
         
         popped_tasks.append(taskCopy)
-
-        for task in popped_tasks:
-          self.queue.push(task)
-
+        
+      for task in popped_tasks:
+        self.queue.push(task)
+        
       return stolenTasksChunk
 
-class TaskStealingSchedulerWrapper(task_chunk_scheduler.TaskChunkScheduler):
-    """
-    Delegates calls to the underlying scheduler.
-    """
-
-    def __init__(self, scheduler, driver):
-        self.scheduler = scheduler
-        self.driver = driver
-
-    def registered(self, driver, frameworkId, masterInfo):
-        self.scheduler.registered(self.driver, frameworkId, masterInfo)
-
-    def reregistered(self, driver, masterInfo):
-        self.scheduler.reregistered(self.driver, masterInfo)
-
-    def disconnected(self, driver):
-        self.scheduler.disconnected(self.driver)
-
-    def resourceOffers(self, driver, offers):
-        self.scheduler.resourceOffers(self.driver, offers)
-
-    def offerRescinded(self, driver, offerId):
-        self.scheduler.offerRescinded(self.driver, offerId)
-
-    def statusUpdate(self, driver, status):
-        self.scheduler.statusUpdate(self.driver, status)
-
-    def frameworkMessage(self, driver, executorId, slaveId, message):
-        self.scheduler.frameworkMessage(self.driver, executorId, slaveId, message)
-
-    def slaveLost(self, driver, slaveId):
-        self.scheduler.slaveLost(self.driver, slaveId)
-
-    def executorLost(self, driver, executorId, slaveId, status):
-        self.scheduler.executorLost(self.driver, executorId, slaveId, status)
-
-    def error(self, driver, message):
-        self.scheduler.error(self.driver, message)
-
-
-class TaskStealingSchedulerDriverWrapper(mesos.SchedulerDriver):
-    """
-    Delegates calls to the underlying MesosSchedulerDriver.
-    """
-    def __init__(self, driver):
-        self.driver = driver
-
-    def start(self):
-        self.driver.start()
-
-    def stop(self, failover=False):
-        if failover:
-            self.driver.stop(failover)
-        else:
-            self.driver.stop()
-
-    def abort(self):
-        self.driver.abort()
-
-    def join(self):
-        self.driver.join()
-
-    def run(self):
-        self.driver.run()
-
-    def requestResources(self, requests):
-        self.driver.requestResources(requests)
-
-    def launchTasks(self, offerId, tasks, filters=None):
-        if filters:
-            self.driver.launchTasks(offerId, tasks, filters)
-        else:
-            self.driver.launchTasks(offerId, tasks)
-
-    def killTask(self, taskId):
-        self.driver.killTask(taskId)
-
-    def declineOffer(self, offerId, filters=None):
-        if filters:
-            self.driver.declineOffer(self, offerId, filters)
-        else:
-            self.driver.declineOffer(self, offerId)
-
-    def reviveOffers(self):
-        self.driver.reviveOffers()
-
-    def sendFrameworkMessage(self, executorId, slaveId, data):
-        self.driver.sendFrameworkMessage(executorId, slaveId, data)
-
-
-
-#Task stealing methods
-def roundRobinTaskStealing(self, driver, offers, pending_tasks):
-    pass
