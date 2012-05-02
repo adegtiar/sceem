@@ -147,10 +147,10 @@ def newTaskChunk(slaveId,executor=None, subTasks = ()):
     if executor:
         taskChunk.executor.MergeFrom(executor)
     # Initialize the empty sub_tasks field.
-    #taskChunk.sub_tasks.tasks.extend(subTasks)
+    taskChunk.sub_tasks.task.extend(())
+
     for subTask in subTasks:
       addSubTask(taskChunk, subTask)
-      
     return taskChunk
 
 
