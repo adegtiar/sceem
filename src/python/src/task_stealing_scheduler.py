@@ -118,6 +118,9 @@ class TaskStealingScheduler(TaskChunkScheduler):
         TaskChunkScheduler.statusUpdate(self, driver, update)
 
     def generateTaskId(self):
+        """
+        Generates a unique task chunk id string via a counter.
+        """
         return "task_chunk_id_{0}".format(self.counter.next())
 
 
