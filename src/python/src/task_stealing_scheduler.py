@@ -92,7 +92,7 @@ class TaskStealingScheduler(TaskChunkScheduler):
         subTasks = driver.killSubTasks(subTaskIds)
         stolenTasks = ((task.executor.executor_id.value, task.task_id.value)
                 for task in subTasks)
-        self.stolenTasksIds.update(stolenTasks)
+        self.stolenTaskIds.update(stolenTasks)
 
     def frameworkMessage(self, executor_id, slave_id, driver, data):
         """
