@@ -1,6 +1,7 @@
 import mesos
 import mesos_pb2
 import pickle
+import operator
 from collections import defaultdict
 
 
@@ -162,22 +163,23 @@ def getResourcesValue(resources):
 
 
 def incrementResources(arg1, arg2):
-    resourceOperation(arg1, arg2, operator.add)
+    resourcesOperation(arg1, arg2, operator.add)
 
 def decrementResources(arg1, arg2):
-    resourceOperation(arg1, arg2, operator.sub)
+    resourcesOperation(arg1, arg2, operator.sub)
 
 def maxResources(arg1, arg2):
-    resourceOperation(arg1, arg2, max)
+    resourcesOperation(arg1, arg2, max)
 
 def resourcesOperation(arg1, arg2, operator):
-    isPresent = False
     for res_op_2 in arg2.resources:
+        isPresent = False
         for res_op_1 in arg1.resources:
-            isPresent = True
-            if res_op_2 == res_op_1:
-                res_op.scalar.value = operator(res_op_1.scaler.value,
-                                               res_op_2.scalar.value)
+            if res_op_2.name == res_op_1.name:
+                isPresent = True
+                if (res_op_2.type == mesos_pb2.Value.SCALAR):
+                    res_op_1.scalar.value = operator(res_op_1.scalar.value,
+                                                     res_op_2.scalar.value)
                 
         if not isPresent:
             if operator in [max, operator.add()]:
@@ -211,7 +213,7 @@ def addSubTask(taskChunk, subTask):
       raise ValueError("Sub tasks added to a task chunk must have an id.")
         
     subTask.slave_id.value = taskChunk.slave_id.value
-    updateTaskResources(taskChunk, subTask)
+    maxResources(taskChunk, subTask)
     if taskChunk.executor.IsInitialized():
         subTask.executor.MergeFrom(taskChunk.executor)
 
