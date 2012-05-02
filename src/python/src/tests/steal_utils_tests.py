@@ -8,10 +8,11 @@ sys.path.append(".")
 import stub_mesos
 sys.modules["mesos"] = stub_mesos
 
-from chunk_utils import *
 import mesos_pb2
-import unittest
 import steal_utils
+import unittest
+
+from chunk_utils import *
 from mock import Mock
 
 
@@ -24,8 +25,7 @@ class TestPriorityQueue(unittest.TestCase):
             listTup.append(tup)
             # (1, "a1") -> mapper = a1, item_key = (1, a1)
         self.pq = steal_utils.PriorityQueue(initial=listTup,
-                                           sort_key = lambda x: x[0],
-                                           mapper=lambda x: x[1])
+                sort_key = lambda x: x[0], mapper=lambda x: x[1])
 
     def test_push(self):
         tup = (-1, "a"+str(-1))
@@ -41,7 +41,6 @@ class TestPriorityQueue(unittest.TestCase):
             self.assertTrue(self.pq.hasNext())
             self.pq.pop()
         self.assertFalse(self.pq.hasNext())
-        
 
 
 class TestTaskQueue(unittest.TestCase):
@@ -50,7 +49,7 @@ class TestTaskQueue(unittest.TestCase):
     """
 
     def setUp(self):
-        
+
         self.slave_id = Mock()
         self.slave_id.value = "slave_id"
         self.counter = 0
@@ -58,13 +57,13 @@ class TestTaskQueue(unittest.TestCase):
         self.pending_tasks = [subtask for subtask in subTaskIterator(self.table)]
         self.queue = steal_utils.TaskQueue(self.pending_tasks)
         self.offer = mesos_pb2.Offer()
-            
+
     def new_table(self):
         tasks = []
         self.taskChunk = self.new_task_chunk(10, 10, 5)
         tasks.append(self.taskChunk)
         return newTaskChunk(self.slave_id, subTasks=tasks)
-      
+
     def new_tasks(self, num, resSize=0, resNum=0):
         tasks = []
         for i in range(num):
@@ -74,7 +73,7 @@ class TestTaskQueue(unittest.TestCase):
                 self.add_resources(task, resSize, resNum)
 
             tasks.append(task)
-            
+
         return tasks
 
     def new_task_chunk(self, subTasksPerChunk, resSize=0, resNum=0):
@@ -93,7 +92,7 @@ class TestTaskQueue(unittest.TestCase):
             resource.scalar.value = sizeRes
             if dictRes!=None:
                 dictRes[resource.name] = operator(dictRes[resource.name], sizeRes)
-                
+
     def test_fitsInTrue(self):
         subTasksPerChunk = 5
         task = newTaskChunk(self.slave_id, subTasks=self.new_tasks(subTasksPerChunk))
@@ -141,7 +140,7 @@ class TestTaskQueue(unittest.TestCase):
         remainingTaskChunk = self.queue.queue.pop()
         subTasksRemaining = [subTask for subTask in subTaskIterator(
             remainingTaskChunk)]
-        
+
         for task in subTasks:
             self.assertFalse(task in subTasksRemaining)
 
@@ -156,22 +155,22 @@ class TestTaskQueue(unittest.TestCase):
 
         self.assertTrue(len(self.queue.queue)== 2)
         taskChunk = self.queue.stealTasks(offer)
-        
+
         subTasks = [subTask for subTask in subTaskIterator(taskChunk)]
-        
+
         self.assertTrue(self.queue.queue.hasNext())
         origTaskChunk = self.queue.queue.pop()
         origsubTasks = [subTask for subTask in subTaskIterator(origTaskChunk)]
         self.assertTrue(len(origsubTasks) == 20)
 
-        
+
         self.assertTrue(self.queue.queue.hasNext())
         remainingTaskChunk = self.queue.queue.pop()
 
         self.assertFalse(self.queue.queue.hasNext())
         subTasksRemaining = [subTask for subTask in subTaskIterator(
             remainingTaskChunk)]
-        
+
         for task in subTasks:
             self.assertFalse(task in subTasksRemaining)
 
@@ -181,8 +180,6 @@ class TestTaskQueue(unittest.TestCase):
         self.add_resources(offer, 6, 10, dictOff, operator.add)
         tupExpected = tuple(item[1] for item in sorted(dictOff.items()))
         self.assertTrue(steal_utils.getOfferSize(offer) == tupExpected)
-        
-        
 
 
 if __name__ == '__main__':
