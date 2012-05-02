@@ -134,14 +134,14 @@ class TaskChunkExecutorDriver(chunk_utils.ExecutorDriverWrapper):
         pending_tasks = self.chunkExecutor.pendingTaskChunks
 
         if pending_tasks.isSubTask(update.task_id):
-            updateMessage = chunk_utils.SubTaskUpdateMessage(update)
+            parentTaskId = pending_tasks.getParent(update.task_id).task_id
+            updateMessage = chunk_utils.SubTaskUpdateMessage((parentTaskId, update))
             chunk_utils.ExecutorDriverWrapper.sendFrameworkMessage(self,
                     updateMessage.toString())
             if (chunk_utils.isTerminalUpdate(update) and
                     not update.state == mesos_pb2.TASK_KILLED):
-                parent = pending_tasks.getParent(update.task_id)
                 del pending_tasks[update.task_id]
-                self.chunkExecutor.runNextSubTask(self, parent.task_id)
+                self.chunkExecutor.runNextSubTask(self, parentTaskId)
         else:
             if update.task_id in pending_tasks and chunk_utils.isTerminalUpdate(update):
                 del pending_tasks[update.task_id]

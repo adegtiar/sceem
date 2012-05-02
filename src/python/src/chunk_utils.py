@@ -1,5 +1,6 @@
 import mesos
 import mesos_pb2
+import pdb
 import pickle
 import operator
 from collections import defaultdict
@@ -93,19 +94,30 @@ class SubTaskUpdateMessage(SubTaskMessage):
     A message that holds the TaskStatus for a sub task.
     """
 
-    def __init__(self, taskStatus):
+    def __init__(self, parentStatusTuple):
         super(SubTaskUpdateMessage, self).__init__(
-                SubTaskMessage.SUBTASK_UPDATE, taskStatus)
+                SubTaskMessage.SUBTASK_UPDATE, parentStatusTuple)
 
     @staticmethod
     def payloadFromString(serializedPayload):
+        parentIdString, statusString = pickle.loads(serializedPayload)
+
+        parentId = mesos_pb2.TaskID()
+        parentId.ParseFromString(parentIdString)
+
         taskStatus = mesos_pb2.TaskStatus()
-        taskStatus.ParseFromString(serializedPayload)
-        return taskStatus
+        taskStatus.ParseFromString(statusString)
+
+        return parentId, taskStatus
 
     @staticmethod
     def payloadToString(payload):
-        return payload.SerializeToString()
+        parentId, status = payload
+
+        parentIdString = parentId.SerializeToString()
+        statusString = status.SerializeToString()
+
+        return pickle.dumps((parentIdString, statusString))
 
 
 class KillSubTasksMessage(SubTaskMessage):

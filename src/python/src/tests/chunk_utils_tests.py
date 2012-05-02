@@ -420,7 +420,11 @@ class TestSubTaskUpdateMessage(unittest.TestCase, TestSubTaskSerialization):
         taskStatus.state = mesos_pb2.TASK_RUNNING
         taskStatus.message = "foo message"
         taskStatus.data = "foo data"
-        self.payload = taskStatus
+
+        parentId = mesos_pb2.TaskID()
+        parentId.value = "task_chunk"
+
+        self.payload = (parentId, taskStatus)
         self.serializationClass = SubTaskUpdateMessage
 
 

@@ -19,7 +19,7 @@ class TaskChunkScheduler(chunk_utils.SchedulerWrapper):
     def frameworkMessage(self, driver, executorId, slaveId, data):
         message = SubTaskMessage.fromString(data)
         if message.isValid() and message.getType() == SubTaskMessage.SUBTASK_UPDATE:
-            self.statusUpdate(driver, message.getPayload())
+            self.statusUpdate(driver, message.getPayload()[1])
         else:
             chunk_utils.SchedulerWrapper.frameworkMessage(self, driver,
                     executorId, slaveId, data)
