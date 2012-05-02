@@ -146,7 +146,7 @@ class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
         """
         Keeps track of the task and its launched resources before launching.
         """
-        consumedResources = self.consumedResource[offerId]
+        consumedResources = self.consumedResource[offerId.value]
         for task in tasks:
             # Update the resource offer with the task resources.
             chunk_utils.incrementResources(consumedResources, task.resources)
@@ -160,7 +160,7 @@ class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
         launched for this offer.
         """
         for offer in offers:
-            consumedResources = self.consumedResources[offer.id]
+            consumedResources = self.consumedResources[offer.id.value]
             chunk_utils.decrementResources(offer.resources, consumedResources)
 
     def clearConsumedResources(self, offers):
@@ -168,7 +168,7 @@ class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
         Clears the resources for offers tracked as a result of tasks launched.
         """
         for offer in offers:
-            del consumedResources[offer.id]
+            del consumedResources[offer.id.value]
 
     def killSubTasks(subTaskIds):
         """
