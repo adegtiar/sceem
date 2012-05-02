@@ -160,32 +160,48 @@ def getResourcesValue(resources):
         dictRes[resource.name] = (resource.scalar.value, resource)
     return dictRes
 
-def updateOfferResources(offer, taskChunk):
-    taskChunkRes = getResourcesValue(taskChunk.resources)
-    for resource_name, (resource_value, resource) in taskChunkRes.iteritems():
-      for resource in offer.resources:
-        if resource.name == resource_name:
-          resource.scalar.value -= resource_value
+
+def incrementResources(arg1, arg2):
+    resourceOperation(arg1, arg2, operator.add)
+
+def decrementResources(arg1, arg2):
+    resourceOperation(arg1, arg2, operator.sub)
+
+def maxResources(arg1, arg2):
+    resourceOperation(arg1, arg2, max)
+
+def resourcesOperation(arg1, arg2, operator):
+    isPresent = False
+    for res_op_2 in arg2.resources:
+        for res_op_1 in arg1.resources:
+            isPresent = True
+            if res_op_2 == res_op_1:
+                res_op.scalar.value = operator(res_op_1.scaler.value,
+                                               res_op_2.scalar.value)
+                
+        if not isPresent:
+            if operator in [max, operator.add()]:
+                resNew = arg1.resources.add()
+                resNew.CopyFrom(res_op_2)
+            elif operator == operator.sub:
+                resNew = arg1.resources.add()
+                resNew.CopyFrom(res_op_2)
+                resNew.scalar.value = -res_op_2.scalar.value       
+
+def isOfferValid(offer):
+    for resource in offer.resources:
+        if resource.type == mesos_pb2.Value.SCALAR:
+            if resource.scalar.value < 0:
+                return False
+    return True
 
 def isOfferEmpty(offer):
     for resource in offer.resources:
-      if resource.type == mesos_pb2.Value.SCALAR:
-        if resource.scalar.value == 0:
-          return True
-    return False
-
-def updateTaskResources(taskChunk, subTask):
-    subTaskRes = getResourcesValue(subTask.resources)
-
-    for resource_name, (resource_value, resource) in subTaskRes.iteritems():
-      isPresent = False
-      for resource in taskChunk.resources:
-        if resource.name == resource_name:
-          isPresent = True
-          resource.scalar.value = resource_value
-      if not isPresent:
-        newResource = taskChunk.resources.add()
-        newResource.CopyFrom(resource)
+        if resource.type == mesos_pb2.Value.SCALAR:
+            if resource.scalar.value > 0:
+                return False
+        
+    return True
 
 def addSubTask(taskChunk, subTask):
     """
@@ -197,7 +213,8 @@ def addSubTask(taskChunk, subTask):
     subTask.slave_id.value = taskChunk.slave_id.value
     updateTaskResources(taskChunk, subTask)
     if taskChunk.executor.IsInitialized():
-      subTask.executor.MergeFrom(taskChunk.executor)
+        subTask.executor.MergeFrom(taskChunk.executor)
+
     taskChunk.sub_tasks.tasks.extend((subTask,))
 
 def isTaskChunk(task):
