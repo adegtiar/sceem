@@ -113,7 +113,19 @@ class TestChunkScheduler(unittest.TestCase):
         stolen = self.stealingScheduler.selectTasksToSteal(self.driver, offers, pendingTasks)
 
         self.stealingScheduler.generateTaskId.assert_called_once()
+        self.assertEqual(1, len(stolen))
+        self.assertTrue(offers[0].id.value in stolen)
 
+        taskChunks = stolen[offers[0].id.value]
+        self.assertEqual(1, len(taskChunks))
+
+        taskChunk = taskChunks[0]
+        self.assertEqual(2, chunk_utils.numSubTasks(taskChunk))
+
+        stolenTasks = [subTask for subTask in chunk_utils.subTaskIterator(taskChunk)]
+
+        self.assertEqual("task_id_2", stolenTasks[0].task_id.value)
+        self.assertEqual("task_id_3", stolenTasks[1].task_id.value)
 
 
 if __name__ == '__main__':
