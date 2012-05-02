@@ -55,7 +55,6 @@ class TaskQueue:
   def fitsIn(self, task, offer):
     """
     Checks if task resources are less than Offer resources
-
     """
     offerCopy = mesos_pb2.Offer()
     offerCopy.CopyFrom(offer)
@@ -68,7 +67,6 @@ class TaskQueue:
   def stealHalfSubTasks(self, task):
     """
     Returns a list of stolenSubTasks and removes them from the taskChunk
-
     """
     subTasks = [subTask for subTask in chunk_utils.subTaskIterator(task)]
     stolenTasks = subTasks[len(subTasks)/2:]
@@ -82,7 +80,6 @@ class TaskQueue:
     Give an offer to the queue. If accepted, it will return a
     new task chunk containing the subTasks it stole.
     If rejected, returns None
-
     """
     popped_tasks = []
     stolenTasksChunk = None
@@ -93,10 +90,10 @@ class TaskQueue:
         taskCopy = mesos_pb2.TaskInfo()
         taskCopy.CopyFrom(task)
         stolenTasks = self.stealHalfSubTasks(taskCopy)
-        # TODO: can we really used the other task's executor? This fixed
-        # it, but something about executors/executor IDs doesn't add up.
+
         stolenTasksChunk = chunk_utils.newTaskChunk(offer.slave_id,
                 executor=taskCopy.executor, subTasks=stolenTasks)
+
         popped_tasks.append(taskCopy)
         break
 

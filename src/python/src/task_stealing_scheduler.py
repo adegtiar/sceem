@@ -189,12 +189,7 @@ class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
             # Backwards compatibility for passing sub tasks instead of IDs.
             if isinstance(subTaskId, mesos_pb2.TaskInfo):
                 subTaskId = subTaskId.task_id
-            try:
-                parent = self.pendingTasks.getParent(subTaskId)
-            except KeyError:
-                # TODO: weird things happen here.
-                print "\tSub task might already have finished: {0}".format(subTaskId.value)
-                continue
+            parent = self.pendingTasks.getParent(subTaskId)
             parentIds.append(parent.task_id)
             subTasks.append(self.pendingTasks[subTaskId])
             del self.pendingTasks[subTaskId]
