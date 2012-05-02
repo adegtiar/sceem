@@ -52,8 +52,10 @@ class TaskStealingScheduler(TaskChunkScheduler):
             offerId.value = offerIdValue
 
             for taskChunk in taskChunks:
-                subTaskIds = (task.task_id for task in subTaskIterator(taskChunk))
+                subTaskIds = [task.task_id for task in subTaskIterator(taskChunk)]
                 self.stealSubTasks(driver, subTaskIds)
+                print "Stolen tasks to be run in new task chunk: {0}".format(
+                        taskChunk.task_id.value)
             driver.launchTasks(offerId, taskChunks)
 
     def selectTasksToSteal(self, driver, offers, pendingTasks):
@@ -93,6 +95,7 @@ class TaskStealingScheduler(TaskChunkScheduler):
         local metadata.
         """
         for parentId, subTask in driver.killSubTasks(stolenSubTaskIds):
+            print "\tStealing {0} from {1}".format(subTask.task_id.value, parentId.value)
             self.stolenTaskIds.add((parentId.value, subTask.task_id.value))
 
     def frameworkMessage(self, driver, executor_id, slave_id, data):
@@ -105,7 +108,8 @@ class TaskStealingScheduler(TaskChunkScheduler):
             parentTaskId, update = message.getPayload()
             if (parentTaskId.value, update.task_id.value) in self.stolenTaskIds:
                 # Potentially log this and remove from stolenTasks.
-                pass
+                print "Squelched update from stolen task '{0}' in task chunk '{1}'".format(
+                        update.task_id.value, parentTaskId.value)
             else:
                 TaskChunkScheduler.frameworkMessage(self, driver, executor_id,
                         slave_id, data)
