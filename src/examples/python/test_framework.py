@@ -33,6 +33,8 @@ TOTAL_TASKS = 8
 TASK_CPUS = 1
 TASK_MEM = 32
 
+TASK_IDS = set(str(i) for i in range(TOTAL_TASKS))
+
 class TestScheduler(mesos.Scheduler):
   def __init__(self, executor):
     self.executor = executor
@@ -87,10 +89,13 @@ class TestScheduler(mesos.Scheduler):
     print "Task %s is in state %d" % (update.task_id.value, update.state)
     global TOTAL_TASKS
     if update.state == mesos_pb2.TASK_FINISHED:
-      self.tasksFinished += 1
-      if self.tasksFinished == TOTAL_TASKS + 1:
-        print "All tasks done, exiting"
-        driver.stop()
+      if update.task_id.value in TASK_IDS:
+        self.tasksFinished += 1
+        if self.tasksFinished == TOTAL_TASKS:
+          print "All tasks done, exiting"
+          driver.stop()
+      else:
+        print "Task chunk finished: {0}".format(update.task_id.value)
     elif (update.state == mesos_pb2.TASK_RUNNING and
             update.task_id.value == "chunk_id"):
         killedSubTaskIds = [subTask.task_id.value for subTask in self.subTasksToKill]
