@@ -368,10 +368,10 @@ class TaskTable(object):
 
     def __iter__(self):
         """
-        Returns an iterator over all tasks (including sub tasks) in the table.
+        Returns an iterator over the top-level tasks (sub tasks of the root).
         """
-        for taskNode in self.all_task_nodes.itervalues():
-            yield taskNode.task
+        for task in subTaskIterator(self.rootTask):
+            yield task
 
     def setActive(self, taskId):
         """
