@@ -2,7 +2,7 @@ import chunk_utils
 import mesos_pb2
 import heapq
 
-class PriortyQueue(object):
+class PriorityQueue(object):
   
   def __init__(self, initial=None, sort_key=(lambda x: x), mapper=(lambda x: x)):
     self.sort_key = sort_key
@@ -29,9 +29,9 @@ class PriortyQueue(object):
 class TaskQueue:
   def __init__(self, pending_tasks):
     self.queue = PriorityQueue(pending_tasks,
-                               sort_key = lambda task: -chunk_utils.numSubTasks(task), mapper = lambda offer: offer.id.value)
+                               sort_key = lambda task: -chunk_utils.numSubTasks(task), mapper = lambda offer: offer.task_id.value)
 
-  def fitsIn(task, offer):
+  def fitsIn(self, task, offer):
     """
     Checks if task resources are less than Offer resources
     
@@ -44,7 +44,7 @@ class TaskQueue:
       return True
     return False
   
-  def stealHalfSubTasks(task):
+  def stealHalfSubTasks(self, task):
     """
     Returns a list of stolenSubTasks and removes them from the taskChunk
     
