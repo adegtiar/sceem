@@ -54,7 +54,7 @@ class TaskStealingScheduler(TaskChunkScheduler):
             for taskChunk in taskChunks:
                 subTaskIds = [task.task_id for task in subTaskIterator(taskChunk)]
                 self.stealSubTasks(driver, subTaskIds)
-                print "Stolen tasks to be run in new task chunk: {0}".format(
+                print "\tStolen tasks to be run in new task chunk: {0}".format(
                         taskChunk.task_id.value)
             driver.launchTasks(offerId, taskChunks)
 
@@ -108,7 +108,7 @@ class TaskStealingScheduler(TaskChunkScheduler):
             parentTaskId, update = message.getPayload()
             if (parentTaskId.value, update.task_id.value) in self.stolenTaskIds:
                 # Potentially log this and remove from stolenTasks.
-                print "Squelched update from stolen task '{0}' in task chunk '{1}'".format(
+                print "\tSquelched update from stolen task '{0}' in task chunk '{1}'".format(
                         update.task_id.value, parentTaskId.value)
             else:
                 TaskChunkScheduler.frameworkMessage(self, driver, executor_id,
@@ -189,7 +189,13 @@ class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
             # Backwards compatibility for passing sub tasks instead of IDs.
             if isinstance(subTaskId, mesos_pb2.TaskInfo):
                 subTaskId = subTaskId.task_id
-            parentIds.append(self.pendingTasks.getParent(subTaskId).task_id)
+            try:
+                parent = self.pendingTasks.getParent(subTaskId)
+            except KeyError:
+                # TODO: weird things happen here.
+                print "\tSub task might already have finished: {0}".format(subTaskId.value)
+                continue
+            parentIds.append(parent.task_id)
             subTasks.append(self.pendingTasks[subTaskId])
             del self.pendingTasks[subTaskId]
 
