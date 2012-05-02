@@ -163,7 +163,7 @@ def newTaskChunk(slaveId,executor=None, subTasks = ()):
     taskChunk.sub_tasks.tasks.extend(())
 
     for subTask in subTasks:
-      addSubTask(taskChunk, subTask)
+        addSubTask(taskChunk, subTask)
     return taskChunk
 
 
@@ -177,11 +177,14 @@ def getResourcesValue(resources):
 def incrementResources(arg1, arg2):
     resourcesOperation(arg1, arg2, operator.add)
 
+
 def decrementResources(arg1, arg2):
     resourcesOperation(arg1, arg2, operator.sub)
 
+
 def maxResources(arg1, arg2):
     resourcesOperation(arg1, arg2, max)
+
 
 def resourcesOperation(resArg1, resArg2, func):
     for res_op_2 in resArg2:
@@ -191,7 +194,7 @@ def resourcesOperation(resArg1, resArg2, func):
                 isPresent = True
                 if (res_op_2.type == mesos_pb2.Value.SCALAR):
                     res_op_1.scalar.value = func(res_op_1.scalar.value,
-                                                     res_op_2.scalar.value)
+                            res_op_2.scalar.value)
 
         if not isPresent:
             if func in [max, operator.add]:
@@ -202,6 +205,7 @@ def resourcesOperation(resArg1, resArg2, func):
                 resNew.CopyFrom(res_op_2)
                 resNew.scalar.value = -res_op_2.scalar.value
 
+
 def isOfferValid(offer):
     for resource in offer.resources:
         if resource.type == mesos_pb2.Value.SCALAR:
@@ -209,13 +213,14 @@ def isOfferValid(offer):
                 return False
     return True
 
+
 def isOfferEmpty(offer):
     for resource in offer.resources:
         if resource.type == mesos_pb2.Value.SCALAR:
             if resource.scalar.value > 0:
                 return False
-
     return True
+
 
 def addSubTask(taskChunk, subTask, inherit=True):
     """
@@ -231,6 +236,7 @@ def addSubTask(taskChunk, subTask, inherit=True):
             subTask.executor.MergeFrom(taskChunk.executor)
 
     taskChunk.sub_tasks.tasks.extend((subTask,))
+
 
 def isTaskChunk(task):
     """
