@@ -17,14 +17,14 @@ from task_stealing_scheduler import *
 class TestChunkScheduler(unittest.TestCase):
 
     def setUp(self):
-        self.counter = itertools.count()
+        self.counter = defaultdict(itertools.count)
 
         self.driver = MagicMock(spec=TaskStealingSchedulerDriver)
         self.scheduler = MagicMock(spec=mesos.Scheduler)
         self.stealingScheduler = TaskStealingScheduler(self.scheduler)
 
     def nextId(self, offer_type):
-        return "{0}_id_{1}".format(offer_type, self.counter.next())
+        return "{0}_id_{1}".format(offer_type, self.counter[offer_type].next())
 
     def test_resourceOffers(self):
         offer = mesos_pb2.Offer()
