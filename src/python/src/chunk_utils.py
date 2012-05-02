@@ -370,8 +370,7 @@ class TaskTable(object):
         """
         Returns an iterator over the top-level tasks (sub tasks of the root).
         """
-        for task in subTaskIterator(self.rootTask):
-            yield task
+        return subTaskIterator(self.rootTask)
 
     def setActive(self, taskId):
         """
