@@ -53,6 +53,23 @@ class TestChunkScheduler(unittest.TestCase):
         TaskChunkScheduler.resourceOffers.assert_called_once_with(
                 self.stealingScheduler, self.driver, offers)
 
+    def test_resourceOffersStealing(self):
+        offers = [self.generateOffer()]
+        tasks = "tasks"
+        self.driver.pendingTasks = MagicMock()
+
+        scheduler = self.stealingScheduler
+
+        scheduler.selectTasksToSteal = MagicMock()
+        scheduler.selectTasksToSteal.return_value = {offers[0].id.value: tasks}
+        scheduler.stealSubTasks = MagicMock()
+
+        scheduler.resourceOffersStealing(self.driver, offers)
+
+        scheduler.selectTasksToSteal.assert_called_once()
+        scheduler.stealSubTasks.assert_called_once_with(tasks)
+        self.driver.launchTasks.assert_called_once_with(offers[0].id, tasks)
+
 
 if __name__ == '__main__':
     unittest.main()
