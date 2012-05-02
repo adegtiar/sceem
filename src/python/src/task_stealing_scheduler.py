@@ -170,7 +170,7 @@ class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
         for offer in offers:
             del consumedResources[offer.id.value]
 
-    def killSubTasks(subTaskIds):
+    def killSubTasks(self, subTaskIds):
         """
         Kills the sub tasks with the given IDs, and clears them from the table.
         """
