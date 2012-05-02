@@ -149,12 +149,12 @@ class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
         """
         Keeps track of the task and its launched resources before launching.
         """
-        consumedResources = self.consumedResource[offerId.value]
+        consumedResources = self.consumedResources[offerId.value]
         for task in tasks:
             # Update the resource offer with the task resources.
             chunk_utils.incrementResources(consumedResources, task.resources)
             # Add the task to the tracked tasked.
-            pendingTasks.addTask(task)
+            self.pendingTasks.addTask(task)
         TaskChunkSchedulerDriver.launchTasks(self, offerId, tasks, filters)
 
     def updateOffers(self, offers):
