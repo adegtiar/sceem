@@ -178,8 +178,8 @@ class TestChunkScheduler(unittest.TestCase):
 
         TaskChunkScheduler.frameworkMessage = MagicMock()
 
-        self.stealingScheduler.frameworkMessage(self.executor_id, self.slave_id,
-                self.driver, "not a SubTaskMessage")
+        self.stealingScheduler.frameworkMessage(self.driver, self.executor_id,
+                self.slave_id, "not a SubTaskMessage")
 
         TaskChunkScheduler.frameworkMessage.assert_called_once()
 
@@ -192,12 +192,12 @@ class TestChunkScheduler(unittest.TestCase):
 
         TaskChunkScheduler.frameworkMessage = MagicMock()
 
-        self.stealingScheduler.frameworkMessage(self.executor_id, self.slave_id,
-                self.driver, data)
+        self.stealingScheduler.frameworkMessage(self.driver, self.executor_id,
+                self.slave_id, data)
 
         TaskChunkScheduler.frameworkMessage.assert_called_once_with(
-                self.stealingScheduler, self.executor_id, self.slave_id,
-                self.driver, data)
+                self.stealingScheduler, self.driver, self.executor_id,
+                self.slave_id, data)
 
         TaskChunkScheduler.frameworkMessage = oldMethod
 
@@ -210,12 +210,18 @@ class TestChunkScheduler(unittest.TestCase):
 
         TaskChunkScheduler.frameworkMessage = MagicMock()
 
-        self.stealingScheduler.frameworkMessage(self.executor_id, self.slave_id,
-                self.driver, data)
+        self.stealingScheduler.frameworkMessage(self.driver, self.executor_id,
+                self.slave_id, data)
 
         self.assertEqual(0, len(TaskChunkScheduler.frameworkMessage.mock_calls))
 
         TaskChunkScheduler.frameworkMessage = oldMethod
+
+    def test_frameworkMessageE2E(self):
+        data = self.newSubTaskUpdate()
+
+        self.stealingScheduler.frameworkMessage(self.driver, self.executor_id,
+                self.slave_id, data)
 
 
 if __name__ == '__main__':

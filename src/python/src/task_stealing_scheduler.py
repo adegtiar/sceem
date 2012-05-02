@@ -93,7 +93,7 @@ class TaskStealingScheduler(TaskChunkScheduler):
         for parentId, subTask in driver.killSubTasks(subTaskIds):
             self.stolenTaskIds.add((parentId.value, subTask.task_id.value))
 
-    def frameworkMessage(self, executor_id, slave_id, driver, data):
+    def frameworkMessage(self, driver, executor_id, slave_id, data):
         """
         Receives a framework message. Squelches stolen task updates and
         updates the table on subtask updates.
@@ -105,11 +105,11 @@ class TaskStealingScheduler(TaskChunkScheduler):
                 # Potentially log this and remove from stolenTasks.
                 pass
             else:
-                TaskChunkScheduler.frameworkMessage(self, executor_id,
-                        slave_id, driver, data)
+                TaskChunkScheduler.frameworkMessage(self, driver, executor_id,
+                        slave_id, data)
         else:
-            TaskChunkScheduler.frameworkMessage(self, executor_id,
-                    slave_id, driver, data)
+            TaskChunkScheduler.frameworkMessage(self, driver, executor_id,
+                    slave_id, data)
 
     def statusUpdate(self, driver, update):
         """
