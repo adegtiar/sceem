@@ -65,6 +65,7 @@ class TaskStealingScheduler(TaskChunkScheduler):
         stolenTasksChunks = defaultdict(list)
         while offerQueue.hasNext():
             offer = offerQueue.pop()
+
             stolenTasksChunk = taskQueue.stealTasks(offer)
             if stolenTasksChunk:
                 stolenTasksChunk.name = "Stolen task"

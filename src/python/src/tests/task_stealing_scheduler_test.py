@@ -72,6 +72,9 @@ class TestChunkScheduler(unittest.TestCase):
         scheduler.stealSubTasks.assert_called_once_with(tasks)
         self.driver.launchTasks.assert_called_once_with(offers[0].id, tasks)
 
+    def test_selectTasksToSteal(self):
+        pass
+
 
 if __name__ == '__main__':
     unittest.main()
