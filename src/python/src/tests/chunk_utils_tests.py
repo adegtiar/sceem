@@ -124,7 +124,7 @@ class TestTaskTable(unittest.TestCase):
         taskChunk2 = newTaskChunk(self.slave_id)
         self.add_resources(taskChunk2, 10, numResPerTask, dictRes, operator.add)
 
-        incrementResources(taskChunk, taskChunk2)
+        incrementResources(taskChunk.resources, taskChunk2.resources)
         for resource in taskChunk.resources:
             self.assertTrue(dictRes[resource.name] == resource.scalar.value)
 
@@ -138,7 +138,7 @@ class TestTaskTable(unittest.TestCase):
         taskChunk2 = newTaskChunk(self.slave_id)
         self.add_resources(taskChunk2, 10, numResPerTask, dictRes, operator.sub)
 
-        decrementResources(taskChunk, taskChunk2)
+        decrementResources(taskChunk.resources, taskChunk2.resources)
         for resource in taskChunk.resources:
             self.assertTrue(dictRes[resource.name] == resource.scalar.value)
 
@@ -153,7 +153,7 @@ class TestTaskTable(unittest.TestCase):
         taskChunk2 = newTaskChunk(self.slave_id)
         self.add_resources(taskChunk2, 10, numResPerTask, dictRes, max)
 
-        maxResources(taskChunk, taskChunk2)
+        maxResources(taskChunk.resources, taskChunk2.resources)
         for resource in taskChunk.resources:
             self.assertTrue(dictRes[resource.name] == resource.scalar.value)
 
