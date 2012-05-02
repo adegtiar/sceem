@@ -136,25 +136,57 @@ SubTaskMessage.messageClasses[SubTaskMessage.SUBTASK_UPDATE] = SubTaskUpdateMess
 SubTaskMessage.messageClasses[SubTaskMessage.KILL_SUBTASKS] = KillSubTasksMessage
 
 
-def newTaskChunk(subTasks = ()):
+def newTaskChunk(slaveId,executor=None, subTasks = ()):
     """
     Creates a new empty chunk of tasks.
     Any given sub tasks are copied into the chunk.
     """
     taskChunk = mesos_pb2.TaskInfo()
+    taskChunk.slave_id.value = slaveId.value
+    if executor:
+        taskChunk.executor.MergeFrom(executor)
     # Initialize the empty sub_tasks field.
-    taskChunk.sub_tasks.tasks.extend(subTasks)
+    #taskChunk.sub_tasks.tasks.extend(subTasks)
+    for subTask in subTasks:
+        addSubTask(taskChunk, subTask)
+            
     return taskChunk
 
 
+def getResourcesValue(resources):
+    dictRes = defaultdict(int)
+    for resource in resources:
+        dictRes[resource.name] = resource.scalar.value
+    return dictRes
+
+def updateTaskResources(taskChunk, resourceDict):
+    for resource_name, resource_value in resourceDict.iteritems():
+        for resource in taskChunk.resources:
+            if resource.name == resource_name:
+                resource.scalar.value = resource_value
+          
 def addSubTask(taskChunk, subTask):
     """
     Adds a copy of the given sub task to the task chunk.
     """
     if not subTask.task_id.IsInitialized():
         raise ValueError("Sub tasks added to a task chunk must have an id.")
-    taskChunk.sub_tasks.tasks.extend((subTask,))
+    subTaskRes = getResourcesValue(subTask.resources)
+    taskChunkRes = getResourcesValue(taskChunk.resources)
 
+    isUpdated = False
+    for resource_name, resource_value in subTaskRes.iteritems():
+        if resource_value > taskChunkRes[resource_name]:
+            taskChunkRes[resource_name] = resource_value
+            isUpdated = True
+
+    if isUpdated:
+        updateTaskResources(taskChunk, taskChunkRes)
+        
+    subTask.slave_id.value = taskChunk.slave_id.value
+    if taskChunk.executor.IsInitialized():
+        subTask.executor.MergeFrom(taskChunk.executor)
+    taskChunk.sub_tasks.tasks.extend((subTask,))
 
 def isTaskChunk(task):
     """
