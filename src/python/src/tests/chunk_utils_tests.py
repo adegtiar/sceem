@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python2.6
 
 # Add the cwd to the lookup path for modules.
 import sys
@@ -43,11 +43,11 @@ class TestTaskChunks(unittest.TestCase):
         addSubTask(self.chunk, self.subTask)
         self.assertEqual(self.subTask, nextSubTask(self.chunk))
 
-    def test_nextSubTask_error(self):
+    def nextSubTask_error(self):
         with self.assertRaises(ValueError):
             nextSubTask(self.chunk)
 
-    def test_removeSubTask(self):
+    def removeSubTask(self):
         addSubTask(self.chunk, self.subTask)
         removeSubTask(self.chunk, self.subTask.task_id)
         self.assertEqual(0, numSubTasks(self.chunk))
@@ -84,12 +84,80 @@ class TestTaskTable(unittest.TestCase):
         return tasks
 
     def new_task_chunk(self, subTasksPerChunk):
-        taskChunk = newTaskChunk(self.slave_id, subTasks=self.new_tasks(subTasksPerChunk))
+        taskChunk = newTaskChunk(self.slave_id,
+                                 subTasks=self.new_tasks(subTasksPerChunk))
         taskChunk.task_id.value = "chunk_id"
         return taskChunk
 
+    def add_resource(self, taskChunk, name, size):
+        resource = taskChunk.resources.add()
+        resource.name = name
+        resource.type = mesos_pb2.Value.SCALAR
+        resource.scalar.value = size
+
     def test_len(self):
         self.assertEqual(0, len(self.table))
+
+    """
+    def test_getResourceValue(self):
+        taskChunk = newTaskChunk(self.slave_id)
+        add_resource(taskChunk, "", 3)
+        add_resource(taskChunk, "",4)
+        dictRes = chunk_utils.getResourcesValue(taskChunk.resources)
+        dictExp = defaultdict(int)
+        dictExp[""] = (3, taskChunk.resources[0])
+        dictExp[""] = (4, taskChunk.resources[1])
+        self.assertTrue(dictExp == dictRes)
+    def test_updateOfferResources(self):
+        taskChunk = newTaskChunk(self.slave_id)
+        add_resource(taskChunk, "", 3)
+    """
+    def test_incrementResources(self):
+        dictRes = defaultdict(int)
+        taskChunk = newTaskChunk(self.slave_id)
+        self.add_resource(taskChunk, "mem", 3)
+        self.add_resource(taskChunk, "cpus", 4)
+        dictRes["mem"] += 3
+        dictRes["cpus"] += 4
+        taskChunk2 = newTaskChunk(self.slave_id)
+        self.add_resource(taskChunk2, "mem", 10)
+        self.add_resource(taskChunk2, "cpus", 10)
+        dictRes["mem"] += 10
+        dictRes["cpus"] += 10
+        incrementResources(taskChunk, taskChunk2)
+        for resource in taskChunk.resources:
+            self.assertTrue(dictRes[resource.name] == resource.scalar.value)
+
+    def test_decrementResources(self):
+        dictRes = defaultdict(int)
+        taskChunk = newTaskChunk(self.slave_id)
+        self.add_resource(taskChunk, "mem", 10)
+        self.add_resource(taskChunk, "cpus", 10)
+        dictRes["mem"] += 10
+        dictRes["cpus"] += 10
+        taskChunk2 = newTaskChunk(self.slave_id)
+        self.add_resource(taskChunk2, "mem", 3)
+        self.add_resource(taskChunk2, "cpus", 4)
+        dictRes["mem"] -=3
+        dictRes["cpus"] -= 4
+        decrementResources(taskChunk, taskChunk2)
+        for resource in taskChunk.resources:
+            self.assertTrue(dictRes[resource.name] == resource.scalar.value)
+
+    
+    def test_maxResources(self):
+        dictRes = defaultdict(int)
+        taskChunk = newTaskChunk(self.slave_id)
+        self.add_resource(taskChunk, "mem", 3)
+        self.add_resource(taskChunk, "cpus", 4)
+        taskChunk2 = newTaskChunk(self.slave_id)
+        self.add_resource(taskChunk2, "mem", 10)
+        self.add_resource(taskChunk2, "cpus", 10)
+        dictRes["mem"] += 10
+        dictRes["cpus"] += 10
+        maxResources(taskChunk, taskChunk2)
+        for resource in taskChunk.resources:
+            self.assertTrue(dictRes[resource.name] == resource.scalar.value)
 
     def test_addTask(self):
         for task in self.new_tasks(2):
@@ -97,7 +165,7 @@ class TestTaskTable(unittest.TestCase):
 
         self.assertEqual(2, len(self.table))
 
-    def test_addTask_error(self):
+    def addTask_error(self):
         with self.assertRaises(ValueError):
             self.table.addTask(mesos_pb2.TaskInfo())
 
@@ -252,7 +320,7 @@ class TestSubTaskMessage(unittest.TestCase):
         self.messageType = 3
         self.message = SubTaskMessage(self.messageType, self.payload)
 
-    def test_invalidMessage(self):
+    def invalidMessage(self):
         invalidMessage = SubTaskMessage(valid = False)
 
         self.assertFalse(invalidMessage.isValid())
