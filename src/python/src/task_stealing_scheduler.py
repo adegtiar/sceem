@@ -67,7 +67,7 @@ class TaskStealingScheduler(TaskChunkScheduler):
             offer = offerQueue.pop()
             stolenTasksChunk = taskQueue.stealTasks(offer)
             if stolenTasksChunk:
-                stoleTasksChunk.name = "Stolen task"
+                stolenTasksChunk.name = "Stolen task"
                 stolenTasksChunk.task_id.value = self.generateTaskId()
 
                 stolenTasksChunks[offer.id.value].append(stolenTasksChunk)
@@ -76,7 +76,7 @@ class TaskStealingScheduler(TaskChunkScheduler):
                 offerCopy.CopyFrom(offer)
 
                 chunk_utils.decrementResources(offerCopy.resources,
-                        stolenTaskChunk.resources)
+                        stolenTasksChunk.resources)
                 if not chunk_utils.isOfferEmpty(offerCopy):
                     offerQueue.push(offerCopy)
 
