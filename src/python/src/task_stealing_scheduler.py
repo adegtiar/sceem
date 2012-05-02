@@ -118,7 +118,7 @@ class TaskStealingScheduler(TaskChunkScheduler):
         TaskChunkScheduler.statusUpdate(self, driver, update)
 
     def generateTaskId(self):
-        return "task_chunk_id_{0}".format(next(self.counter))
+        return "task_chunk_id_{0}".format(self.counter.next())
 
 
 class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
