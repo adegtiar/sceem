@@ -196,7 +196,8 @@ class TestChunkScheduler(unittest.TestCase):
                 self.driver, data)
 
         TaskChunkScheduler.frameworkMessage.assert_called_once_with(
-                self.stealingScheduler, self.driver, data)
+                self.stealingScheduler, self.executor_id, self.slave_id,
+                self.driver, data)
 
         TaskChunkScheduler.frameworkMessage = oldMethod
 

@@ -105,9 +105,11 @@ class TaskStealingScheduler(TaskChunkScheduler):
                 # Potentially log this and remove from stolenTasks.
                 pass
             else:
-                TaskChunkScheduler.frameworkMessage(self, driver, data)
+                TaskChunkScheduler.frameworkMessage(self, executor_id,
+                        slave_id, driver, data)
         else:
-            TaskChunkScheduler.frameworkMessage(self, driver, data)
+            TaskChunkScheduler.frameworkMessage(self, executor_id,
+                    slave_id, driver, data)
 
     def statusUpdate(self, driver, update):
         """
