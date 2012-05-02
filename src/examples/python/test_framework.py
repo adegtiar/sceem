@@ -30,7 +30,7 @@ import chunk_utils
 
 TOTAL_TASKS = 8
 
-TASK_CPUS = 1
+TASK_CPUS = 2
 TASK_MEM = 32
 
 class TestScheduler(mesos.Scheduler):
