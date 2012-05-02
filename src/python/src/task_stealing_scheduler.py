@@ -180,6 +180,9 @@ class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
         subTasks = []
         parentIds = []
         for subTaskId in subTaskIds:
+            # Backwards compatibility for passing sub tasks instead of IDs.
+            if isinstance(subTaskId, mesos_pb2.TaskInfo):
+                subTaskId = subTaskId.task_id
             parentIds.append(self.pendingTasks.getParent(subTaskId).task_id)
             subTasks.append(self.pendingTasks[subTaskId])
             del self.pendingTasks[subTaskId]
