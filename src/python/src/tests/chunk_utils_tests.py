@@ -89,57 +89,43 @@ class TestTaskTable(unittest.TestCase):
         taskChunk.task_id.value = "chunk_id"
         return taskChunk
 
-    def add_resource(self, taskChunk, name, size):
-        resource = taskChunk.resources.add()
-        resource.name = name
-        resource.type = mesos_pb2.Value.SCALAR
-        resource.scalar.value = size
+    def add_resources(self, taskChunk, sizeRes, numRes,
+                      dictRes=None, operator=None):
+        for i in xrange(numRes):
+            resource = taskChunk.resources.add()
+            resource.name = str(i)
+            resource.type = mesos_pb2.Value.SCALAR
+            resource.scalar.value = sizeRes
+            if dictRes!=None:
+                dictRes[resource.name] = operator(dictRes[resource.name], sizeRes)
 
     def test_len(self):
         self.assertEqual(0, len(self.table))
 
-    """
-    def test_getResourceValue(self):
-        taskChunk = newTaskChunk(self.slave_id)
-        add_resource(taskChunk, "", 3)
-        add_resource(taskChunk, "",4)
-        dictRes = chunk_utils.getResourcesValue(taskChunk.resources)
-        dictExp = defaultdict(int)
-        dictExp[""] = (3, taskChunk.resources[0])
-        dictExp[""] = (4, taskChunk.resources[1])
-        self.assertTrue(dictExp == dictRes)
-    def test_updateOfferResources(self):
-        taskChunk = newTaskChunk(self.slave_id)
-        add_resource(taskChunk, "", 3)
-    """
     def test_incrementResources(self):
         dictRes = defaultdict(int)
+        numResPerTask = 5
+
         taskChunk = newTaskChunk(self.slave_id)
-        self.add_resource(taskChunk, "mem", 3)
-        self.add_resource(taskChunk, "cpus", 4)
-        dictRes["mem"] += 3
-        dictRes["cpus"] += 4
+        self.add_resources(taskChunk, 5, numResPerTask, dictRes,operator.add)
+
         taskChunk2 = newTaskChunk(self.slave_id)
-        self.add_resource(taskChunk2, "mem", 10)
-        self.add_resource(taskChunk2, "cpus", 10)
-        dictRes["mem"] += 10
-        dictRes["cpus"] += 10
+        self.add_resources(taskChunk2, 10, numResPerTask, dictRes, operator.add)
+        
         incrementResources(taskChunk, taskChunk2)
         for resource in taskChunk.resources:
             self.assertTrue(dictRes[resource.name] == resource.scalar.value)
 
     def test_decrementResources(self):
         dictRes = defaultdict(int)
+        numResPerTask = 5
+        
         taskChunk = newTaskChunk(self.slave_id)
-        self.add_resource(taskChunk, "mem", 10)
-        self.add_resource(taskChunk, "cpus", 10)
-        dictRes["mem"] += 10
-        dictRes["cpus"] += 10
+        self.add_resources(taskChunk, 5, numResPerTask, dictRes, operator.add)
+        
         taskChunk2 = newTaskChunk(self.slave_id)
-        self.add_resource(taskChunk2, "mem", 3)
-        self.add_resource(taskChunk2, "cpus", 4)
-        dictRes["mem"] -=3
-        dictRes["cpus"] -= 4
+        self.add_resources(taskChunk2, 10, numResPerTask, dictRes, operator.sub)
+        
         decrementResources(taskChunk, taskChunk2)
         for resource in taskChunk.resources:
             self.assertTrue(dictRes[resource.name] == resource.scalar.value)
@@ -147,18 +133,42 @@ class TestTaskTable(unittest.TestCase):
     
     def test_maxResources(self):
         dictRes = defaultdict(int)
+        numResPerTask = 5
+
         taskChunk = newTaskChunk(self.slave_id)
-        self.add_resource(taskChunk, "mem", 3)
-        self.add_resource(taskChunk, "cpus", 4)
+        self.add_resources(taskChunk, 5, numResPerTask, dictRes, max)
+
         taskChunk2 = newTaskChunk(self.slave_id)
-        self.add_resource(taskChunk2, "mem", 10)
-        self.add_resource(taskChunk2, "cpus", 10)
-        dictRes["mem"] += 10
-        dictRes["cpus"] += 10
+        self.add_resources(taskChunk2, 10, numResPerTask, dictRes, max)
+        
         maxResources(taskChunk, taskChunk2)
         for resource in taskChunk.resources:
             self.assertTrue(dictRes[resource.name] == resource.scalar.value)
 
+    def test_isOfferValid(self):
+        offer = mesos_pb2.Offer()
+        self.add_resources(offer, -1, 1)
+        self.assertFalse(isOfferValid(offer))
+
+        offer = mesos_pb2.Offer()
+        self.add_resources(offer, 2, 3)
+        self.assertTrue(isOfferValid(offer))
+
+        self.add_resources(offer, -2, 1)
+        self.assertFalse(isOfferValid(offer))
+
+    def test_isOfferEmpty(self):
+        offer = mesos_pb2.Offer()
+        self.add_resources(offer, 5, 5)
+        self.assertFalse(isOfferEmpty(offer))
+        
+        self.add_resources(offer, 0, 1)
+        self.assertFalse(isOfferEmpty(offer))
+
+        offer = mesos_pb2.Offer()
+        self.add_resources(offer, 0, 5)
+        self.assertTrue(isOfferEmpty(offer))
+        
     def test_addTask(self):
         for task in self.new_tasks(2):
             self.table.addTask(task)
