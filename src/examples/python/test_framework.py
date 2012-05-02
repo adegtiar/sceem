@@ -58,10 +58,6 @@ class TestScheduler(mesos.Scheduler):
         task.task_id.value = str(tid)
         task.name = "task %d" % tid
 
-        # TODO: slave and executor should be set by addSubTask.
-        task.slave_id.value = offer.slave_id.value
-        task.executor.MergeFrom(self.executor)
-
         cpus = task.resources.add()
         cpus.name = "cpus"
         cpus.type = mesos_pb2.Value.SCALAR
@@ -80,12 +76,10 @@ class TestScheduler(mesos.Scheduler):
       if tasks:
         taskChunk = chunk_utils.newTaskChunk(offer.slave_id, executor=self.executor, subTasks=tasks)
         taskChunk.task_id.value = "chunk_id"
-        taskChunk.slave_id.value = offer.slave_id.value
         taskChunk.name = "taskChunk"
-        taskChunk.executor.MergeFrom(self.executor)
         self.taskChunkId = taskChunk.task_id
 
-        # TODO: this should be set by addSubTask.
+        """
         cpus = taskChunk.resources.add()
         cpus.name = "cpus"
         cpus.type = mesos_pb2.Value.SCALAR
@@ -96,9 +90,8 @@ class TestScheduler(mesos.Scheduler):
         mem.name = "mem"
         mem.type = mesos_pb2.Value.SCALAR
         mem.scalar.value = TASK_MEM
-
+        """
         print "Accepting offer on %s to start task chunk" % offer.hostname
-
         driver.launchTasks(offer.id, [taskChunk])
       break
 
@@ -114,12 +107,12 @@ class TestScheduler(mesos.Scheduler):
             update.task_id.value == "chunk_id"):
         killedSubTaskIds = [subTask.task_id.value for subTask in self.subTasksToKill]
         print "Attempting to kill task chunk"
-        #driver.killSubTasks(self.subTasksToKill)
-        driver.killTask(self.taskChunkId)
+        driver.killSubTasks(self.subTasksToKill)
+        #driver.killTask(self.taskChunkId)
     elif update.state == mesos_pb2.TASK_KILLED:
         print "Killed the task chunk. Done"
-        driver.stop()
-        #TOTAL_TASKS -= 1
+        #driver.stop()
+        TOTAL_TASKS -= 1
 
 if __name__ == "__main__":
   if len(sys.argv) != 2:
