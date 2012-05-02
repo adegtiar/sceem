@@ -175,6 +175,13 @@ class TestTaskQueue(unittest.TestCase):
         for task in subTasks:
             self.assertFalse(task in subTasksRemaining)
 
+    def test_getOfferSize(self):
+        offer  = mesos_pb2.Offer()
+        dictOff = defaultdict(int)
+        self.add_resources(offer, 6, 10, dictOff, operator.add)
+        tupExpected = tuple(item[1] for item in sorted(dictOff.items()))
+        self.assertTrue(steal_utils.getOfferSize(offer) == tupExpected)
+        
         
 
 

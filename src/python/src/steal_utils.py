@@ -2,6 +2,16 @@ import chunk_utils
 import mesos_pb2
 import heapq
 
+
+def getOfferSize(offer):
+  listResources = []
+  for resource in offer.resources:
+    if resource.type == mesos_pb2.Value.SCALAR:
+      listResources.append((resource.name, resource.scalar.value))
+  listResources = sorted(listResources)
+  return tuple(res[1] for res in listResources)
+    
+
 class PriorityQueue(object):
   
   def __init__(self, initial=None, sort_key=(lambda x: x), mapper=(lambda x: x)):
