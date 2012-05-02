@@ -29,8 +29,8 @@ class TestTaskChunks(unittest.TestCase):
 
     def test_withUtils(self):
         if isPython27:
-            self.nextSubTask_error(self)
-            self.removeSubTask(self)
+            self.nextSubTask_error()
+            self.removeSubTask()
             
     def test_isTaskChunk_true(self):
         self.assertTrue(isTaskChunk(self.chunk))
