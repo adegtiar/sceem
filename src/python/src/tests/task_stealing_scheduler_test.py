@@ -159,15 +159,17 @@ class TestChunkScheduler(unittest.TestCase):
 
         payload = (parentId, taskStatus)
         subTaskMessage = chunk_utils.SubTaskUpdateMessage(payload)
+        data = subTaskMessage.toString()
 
         oldMethod = TaskChunkScheduler.frameworkMessage
 
         TaskChunkScheduler.frameworkMessage = MagicMock()
 
         self.stealingScheduler.frameworkMessage(self.executor_id, self.slave_id,
-                self.driver, subTaskMessage.toString())
+                self.driver, data)
 
-        TaskChunkScheduler.frameworkMessage.assert_called_once()
+        TaskChunkScheduler.frameworkMessage.assert_called_once_with(
+                self.stealingScheduler, self.driver, data)
 
         TaskChunkScheduler.frameworkMessage = oldMethod
 
@@ -193,7 +195,7 @@ class TestChunkScheduler(unittest.TestCase):
         self.stealingScheduler.frameworkMessage(self.executor_id, self.slave_id,
                 self.driver, subTaskMessage.toString())
 
-        TaskChunkScheduler.frameworkMessage.assert_called_once()
+        self.assertEqual(0, len(TaskChunkScheduler.frameworkMessage.mock_calls))
 
         TaskChunkScheduler.frameworkMessage = oldMethod
 
