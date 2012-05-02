@@ -72,7 +72,7 @@ class TaskStealingScheduler(TaskChunkScheduler):
                 offerCopy = mesos_pb2.Offer()
                 offerCopy.CopyFrom(offer)
 
-                chunk_utils.resourcesDecrement(offerCopy.resources,
+                chunk_utils.decrementResources(offerCopy.resources,
                         stolenTaskChunk.resources)
                 if not chunk_utils.isOfferEmpty(offerCopy):
                     offerQueue.push(offerCopy)
@@ -143,7 +143,7 @@ class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
         consumedResources = self.consumedResource[offerId]
         for task in tasks:
             # Update the resource offer with the task resources.
-            chunk_utils.resourcesIncrement(consumedResources, task.resources)
+            chunk_utils.incrementResources(consumedResources, task.resources)
             # Add the task to the tracked tasked.
             pendingTasks.addTask(task)
         TaskChunkSchedulerDriver.launchTasks(self, offerId, tasks, filters)
