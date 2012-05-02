@@ -31,7 +31,7 @@ class TestTaskChunks(unittest.TestCase):
         if isPython27:
             self.nextSubTask_error()
             self.removeSubTask()
-            
+
     def test_isTaskChunk_true(self):
         self.assertTrue(isTaskChunk(self.chunk))
 
@@ -105,12 +105,12 @@ class TestTaskTable(unittest.TestCase):
             resource.scalar.value = sizeRes
             if dictRes!=None:
                 dictRes[resource.name] = operator(dictRes[resource.name], sizeRes)
-                
+
     def test_with(self):
         if isPython27:
             self.addTask_error()
-        
-        
+
+
     def test_len(self):
         self.assertEqual(0, len(self.table))
 
@@ -123,7 +123,7 @@ class TestTaskTable(unittest.TestCase):
 
         taskChunk2 = newTaskChunk(self.slave_id)
         self.add_resources(taskChunk2, 10, numResPerTask, dictRes, operator.add)
-        
+
         incrementResources(taskChunk, taskChunk2)
         for resource in taskChunk.resources:
             self.assertTrue(dictRes[resource.name] == resource.scalar.value)
@@ -131,18 +131,18 @@ class TestTaskTable(unittest.TestCase):
     def test_decrementResources(self):
         dictRes = defaultdict(int)
         numResPerTask = 5
-        
+
         taskChunk = newTaskChunk(self.slave_id)
         self.add_resources(taskChunk, 5, numResPerTask, dictRes, operator.add)
-        
+
         taskChunk2 = newTaskChunk(self.slave_id)
         self.add_resources(taskChunk2, 10, numResPerTask, dictRes, operator.sub)
-        
+
         decrementResources(taskChunk, taskChunk2)
         for resource in taskChunk.resources:
             self.assertTrue(dictRes[resource.name] == resource.scalar.value)
 
-    
+
     def test_maxResources(self):
         dictRes = defaultdict(int)
         numResPerTask = 5
@@ -152,7 +152,7 @@ class TestTaskTable(unittest.TestCase):
 
         taskChunk2 = newTaskChunk(self.slave_id)
         self.add_resources(taskChunk2, 10, numResPerTask, dictRes, max)
-        
+
         maxResources(taskChunk, taskChunk2)
         for resource in taskChunk.resources:
             self.assertTrue(dictRes[resource.name] == resource.scalar.value)
@@ -173,14 +173,14 @@ class TestTaskTable(unittest.TestCase):
         offer = mesos_pb2.Offer()
         self.add_resources(offer, 5, 5)
         self.assertFalse(isOfferEmpty(offer))
-        
+
         self.add_resources(offer, 0, 1)
         self.assertFalse(isOfferEmpty(offer))
 
         offer = mesos_pb2.Offer()
         self.add_resources(offer, 0, 5)
         self.assertTrue(isOfferEmpty(offer))
-        
+
     def test_addTask(self):
         for task in self.new_tasks(2):
             self.table.addTask(task)

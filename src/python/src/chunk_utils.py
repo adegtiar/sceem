@@ -180,7 +180,7 @@ def resourcesOperation(arg1, arg2, func):
                 if (res_op_2.type == mesos_pb2.Value.SCALAR):
                     res_op_1.scalar.value = func(res_op_1.scalar.value,
                                                      res_op_2.scalar.value)
-                
+
         if not isPresent:
             if func in [max, operator.add]:
                 resNew = arg1.resources.add()
@@ -188,7 +188,7 @@ def resourcesOperation(arg1, arg2, func):
             elif func == operator.sub:
                 resNew = arg1.resources.add()
                 resNew.CopyFrom(res_op_2)
-                resNew.scalar.value = -res_op_2.scalar.value       
+                resNew.scalar.value = -res_op_2.scalar.value
 
 def isOfferValid(offer):
     for resource in offer.resources:
@@ -202,7 +202,7 @@ def isOfferEmpty(offer):
         if resource.type == mesos_pb2.Value.SCALAR:
             if resource.scalar.value > 0:
                 return False
-        
+
     return True
 
 def addSubTask(taskChunk, subTask):
@@ -211,7 +211,7 @@ def addSubTask(taskChunk, subTask):
     """
     if not subTask.task_id.IsInitialized():
       raise ValueError("Sub tasks added to a task chunk must have an id.")
-        
+
     subTask.slave_id.value = taskChunk.slave_id.value
     maxResources(taskChunk, subTask)
     if taskChunk.executor.IsInitialized():
