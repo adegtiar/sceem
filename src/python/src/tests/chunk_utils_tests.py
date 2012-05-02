@@ -11,7 +11,7 @@ sys.modules["mesos"] = stub_mesos
 from chunk_utils import *
 import mesos_pb2
 import unittest
-
+from mock import Mock
 
 class TestTaskChunks(unittest.TestCase):
     """
