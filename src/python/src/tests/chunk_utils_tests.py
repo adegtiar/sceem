@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 
 # Add the cwd to the lookup path for modules.
 import sys
