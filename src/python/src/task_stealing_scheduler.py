@@ -1,6 +1,9 @@
 import chunk_utils
-from chunk_utils import TaskChunkScheduler, TaskChunkSchedulerDriver
+import mesos_pb2
 import steal_utils
+
+from chunk_utils import TaskChunkScheduler, TaskChunkSchedulerDriver
+
 
 class TaskStealingScheduler(TaskChunkScheduler):
     """
@@ -98,12 +101,12 @@ class TaskStealingScheduler(TaskChunkScheduler):
         Updates internal state before passing on to the underlying framework.
         """
         if (update.task_id in driver.pendingTasks and
-                chunk_utils.isTerminalUpdate(update):
+                chunk_utils.isTerminalUpdate(update)):
             del driver.pendingTasks[update.task_id]
         TaskChunkScheduler.statusUpdate(self, driver, update)
 
 
-def TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
+class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
 
     def __init__(self, scheduler, framework, master, mesos_driver=None):
         if not isinstance(scheduler, TaskStealingScheduler):
