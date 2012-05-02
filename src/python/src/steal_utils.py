@@ -3,16 +3,16 @@ import mesos_pb2
 import heapq
 
 class PriortyQueue(object):
-
-  def __init__(self, initial=None, sort_key=lambda x: x, mapper=lambda x: x):
+  
+  def __init__(self, initial=None, sort_key=(lambda x: x), mapper=(lambda x: x)):
     self.sort_key = sort_key
     self.mapper = mapper
-		self.mapping = {}
-		self.__data = []
+    self.mapping = {}
+    self.__data = []
 		
-		if initial:
-			for item in initial:
-				self.push(item)
+    if initial:
+      for item in initial:
+        self.push(item)
         
   def push(self, item):
     item_key = self.mapper(item)
@@ -28,60 +28,59 @@ class PriortyQueue(object):
 #The TaskQueue receives offers and returns tasks to give up to that offer.
 class TaskQueue:
   def __init__(self, pending_tasks):
-    self.queue = PriorityQueue(pending_tasks, 
-                   sort_key = lambda task: -chunk_utils.numSubTasks(task),
-                   mapper = lambda offer: offer.id.value)
+    self.queue = PriorityQueue(pending_tasks,
+                               sort_key = lambda task: -chunk_utils.numSubTasks(task), mapper = lambda offer: offer.id.value)
 
-    def fitsIn(task, offer):
-      """
-      Checks if task resources are less than Offer resources
-
-      """
-      offerCopy = mesos_pb2.Offer()
-      offerCopy.CopyFrom(offer)
-
-      chunk_utils.decrementResources(offerCopy, task)
-      if chunk_utils.isOfferValid(offerCopy):
-        return True
-      return False
-
-    def stealHalfSubTasks(task):
-      """
-      Returns a list of stolenSubTasks and removes them from the taskChunk
+  def fitsIn(task, offer):
+    """
+    Checks if task resources are less than Offer resources
+    
+    """
+    offerCopy = mesos_pb2.Offer()
+    offerCopy.CopyFrom(offer)
+    
+    chunk_utils.decrementResources(offerCopy, task)
+    if chunk_utils.isOfferValid(offerCopy):
+      return True
+    return False
+  
+  def stealHalfSubTasks(task):
+    """
+    Returns a list of stolenSubTasks and removes them from the taskChunk
+    
+    """
+    subTasks = [subTask for subTask in chunk_utils.subTaskIterator(task)]
+    stolenTasks = subTasks[len(subTasks)/2:]
+    for stolenTask in stolenTasks:
+      chunk_utils.removeSubTask(task, stolenTask.task_id)
       
-      """
-      subTasks = [subTask for subTask in chunk_utils.subTaskIterator(task)]
-      stolenTasks = subTasks[len(subTasks)/2:]
-      for stolenTask in stolenTasks:
-        chunk_utils.removeSubTask(task, stolenTask.task_id)
-        
-      return stolenTasks
+    return stolenTasks
 
-    def stealTasks(self, offer):
-      """
-      Give an offer to the queue. If accepted, it will return a
-      new task chunk containing the subTasks it stole. 
-      If rejected, returns None
-
-      """
-      popped_tasks = []
-      stolenTasksChunk = None
-      
-      while self.queue.hasNext():
-        task = self.queue.pop()
-        if (chunk_utils.numSubTasks(task) > 1 and self.fitsIn(task, offer)):
-          taskCopy = mesos_pb2.TaskInfo()
-          taskCopy.CopyFrom(task)
-          stolenTasks = self.stealHalfSubTasks(taskCopy)
-          stolenTasksChunk = chunk_utils.newTaskChunk(offer.slave_id,
-                                                      subTasks=stolenTasks)
-          popped_tasks.append(taskCopy)
-          break
-        
+  def stealTasks(self, offer):
+    """
+    Give an offer to the queue. If accepted, it will return a
+    new task chunk containing the subTasks it stole. 
+    If rejected, returns None
+    
+    """
+    popped_tasks = []
+    stolenTasksChunk = None
+    
+    while self.queue.hasNext():
+      task = self.queue.pop()
+      if (chunk_utils.numSubTasks(task) > 1 and self.fitsIn(task, offer)):
+        taskCopy = mesos_pb2.TaskInfo()
+        taskCopy.CopyFrom(task)
+        stolenTasks = self.stealHalfSubTasks(taskCopy)
+        stolenTasksChunk = chunk_utils.newTaskChunk(offer.slave_id,
+                                                    subTasks=stolenTasks)
         popped_tasks.append(taskCopy)
+        break
         
-      for task in popped_tasks:
-        self.queue.push(task)
+      popped_tasks.append(taskCopy)
         
-      return stolenTasksChunk
+    for task in popped_tasks:
+      self.queue.push(task)
+      
+    return stolenTasksChunk
 
