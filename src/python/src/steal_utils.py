@@ -20,10 +20,13 @@ class PriorityQueue(object):
     heapq.heappush(self.__data, (self.sort_key(item), item_key))
     
   def pop(self):
-    item_key = heapq.heappop(self._data)[1]
+    item_key = heapq.heappop(self.__data)[1]
     item_value = self.mapping[item_key]
     del self.mapping[item_key]
     return item_value
+
+  def hasNext(self):
+    return len(self.__data) > 0
 
 #The TaskQueue receives offers and returns tasks to give up to that offer.
 class TaskQueue:

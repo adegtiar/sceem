@@ -24,16 +24,16 @@ class TestTaskQueue(unittest.TestCase):
         
         self.slave_id = Mock()
         self.slave_id.value = "slave_id"
-        self.pending_tasks = [subtask for subtask in subTaskIterator(self.new_table())]
+        self.table = self.new_table()
+        self.pending_tasks = [subtask for subtask in subTaskIterator(self.table)]
         self.queue = steal_utils.TaskQueue(self.pending_tasks)
       
         self.offer = mesos_pb2.Offer()
     
     def new_table(self):
         tasks = []
-        for i in xrange(5):
-            taskChunk = self.new_task_chunk(10, 10, 5)
-            tasks.append(taskChunk)
+        self.taskChunk = self.new_task_chunk(10, 10, 5)
+        tasks.append(self.taskChunk)
         return newTaskChunk(self.slave_id, subTasks=tasks)
       
     def new_tasks(self, num, resSize=0, resNum=0):
@@ -95,16 +95,27 @@ class TestTaskQueue(unittest.TestCase):
         stolenTasksExpected = subTasks[len(subTasks)/2:]
 
         stolenTasks = self.queue.stealHalfSubTasks(task)
-        newSubTasks = subTasks = [subTask for subTask in subTaskIterator(task)]
+        newSubTasks = [subTask for subTask in subTaskIterator(task)]
         for task in stolenTasks:
             self.assertTrue(task in stolenTasksExpected)
             self.assertFalse(task in newSubTasks)
 
-    def stealTasks(self):
+    def test_stealTasks(self):
         offer = mesos_pb2.Offer()
         self.add_resources(offer, 10, 5)
 
-        self.queue.stealTasks(offer)
+        taskChunk = self.queue.stealTasks(offer)
+        subTasks = [subTask for subTask in subTaskIterator(taskChunk)]
+
+        self.assertTrue(self.queue.queue.hasNext())
+        remainingTaskChunk = self.queue.queue.pop()
+        subTasksRemaining = [subTask for subTask in subTaskIterator(
+            remainingTaskChunk)]
+        
+        for task in subTasks:
+            self.assertFalse(task in subTasksRemaining)
+        
+
 
 if __name__ == '__main__':
     unittest.main()
