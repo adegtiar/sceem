@@ -9,9 +9,6 @@ import pickle
 TERMINAL_STATES = (mesos_pb2.TASK_FINISHED, mesos_pb2.TASK_FAILED,
             mesos_pb2.TASK_KILLED, mesos_pb2.TASK_LOST)
 
-#Task stealing methods
-
-
 class TaskCollator:
     
     def __init__(self, pending_tasks):
@@ -137,5 +134,7 @@ class TaskStealingSchedulerDriverWrapper(mesos.SchedulerDriver):
         self.driver.sendFrameworkMessage(executorId, slaveId, data)
 
 
+
+#Task stealing methods
 def roundRobinTaskStealing(self, driver, offers, pending_tasks):
     pass
