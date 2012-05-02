@@ -55,7 +55,7 @@ class TaskQueue:
     offerCopy = mesos_pb2.Offer()
     offerCopy.CopyFrom(offer)
     
-    chunk_utils.decrementResources(offerCopy, task)
+    chunk_utils.decrementResources(offerCopy.resources, task.resources)
     if chunk_utils.isOfferValid(offerCopy):
       return True
     return False
