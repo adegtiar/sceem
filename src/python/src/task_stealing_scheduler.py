@@ -90,7 +90,7 @@ class TaskStealingScheduler(TaskChunkScheduler):
         Informs the executors who owned the stolen tasks, and updates
         local metadata.
         """
-        for parentId, subTask in driver.killSubTasks(subTaskIds):
+        for parentId, subTask in driver.killSubTasks(stolenSubTaskIds):
             self.stolenTaskIds.add((parentId.value, subTask.task_id.value))
 
     def frameworkMessage(self, driver, executor_id, slave_id, data):
