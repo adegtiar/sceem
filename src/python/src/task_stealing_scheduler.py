@@ -4,7 +4,7 @@ import mesos_pb2
 import steal_utils
 
 from collections import defaultdict
-from chunk_utils import TaskChunkScheduler, TaskChunkSchedulerDriver
+from task_chunk_scheduler import TaskChunkScheduler, TaskChunkSchedulerDriver
 
 
 class TaskStealingScheduler(TaskChunkScheduler):
@@ -14,9 +14,10 @@ class TaskStealingScheduler(TaskChunkScheduler):
     """
     TASK_STEALING_FIRST, RESOURCE_OFFERS_FIRST = range(2)
 
-    def __init__(self, scheduler,
-            offerOrder = TaskStealingScheduler.TASK_STEALING_FIRST):
+    def __init__(self, scheduler, offerOrder = None):
         TaskChunkScheduler.__init__(self, scheduler)
+        if offerOrder is None:
+            offerOrder = TaskStealingScheduler.TASK_STEALING_FIRST
         self.offerOrder = offerOrder
         self.stolenTaskIds = set()
         self.counter = itertools.count()
