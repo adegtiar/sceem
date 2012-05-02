@@ -89,7 +89,9 @@ class TaskQueue:
 
     while self.queue.hasNext():
       task = self.queue.pop()
-      if (chunk_utils.numSubTasks(task) > 1 and self.fitsIn(task, offer)):
+      # TODO: change back to 1? This is a hack to prevent a race
+      # condition.
+      if (chunk_utils.numSubTasks(task) > 2 and self.fitsIn(task, offer)):
         taskCopy = mesos_pb2.TaskInfo()
         taskCopy.CopyFrom(task)
         stolenTasks = self.stealHalfSubTasks(taskCopy)
