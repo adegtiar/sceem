@@ -171,7 +171,7 @@ class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
         Clears the resources for offers tracked as a result of tasks launched.
         """
         for offer in offers:
-            del consumedResources[offer.id.value]
+            del self.consumedResources[offer.id.value]
 
     def killSubTasks(self, subTaskIds):
         """
