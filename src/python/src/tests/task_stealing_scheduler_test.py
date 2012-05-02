@@ -144,9 +144,34 @@ class TestChunkScheduler(unittest.TestCase):
         self.assertEqual("task_id_2", stolenTasks[0].task_id.value)
         self.assertEqual("task_id_3", stolenTasks[1].task_id.value)
 
-    def test_selectTasksToStealMultiOffer(self):
-        # TODO: add more tests!
-        pass
+    def test_selectTasksToStealOfferSplitting(self):
+        offers = [self.generateOffer(8)]
+        pendingTasks = [self.newTaskChunk(4)]
+
+        stolen = self.stealingScheduler.selectTasksToSteal(self.driver, offers, pendingTasks)
+
+        self.assertEqual(1, len(stolen))
+        self.assertTrue(offers[0].id.value in stolen)
+
+        taskChunks = stolen[offers[0].id.value]
+        self.assertEqual(2, len(taskChunks))
+
+        # First stolen chunk.
+        taskChunk = taskChunks[0]
+        self.assertEqual(2, chunk_utils.numSubTasks(taskChunk))
+
+        stolenTasks = [subTask for subTask in chunk_utils.subTaskIterator(taskChunk)]
+
+        self.assertEqual("task_id_2", stolenTasks[0].task_id.value)
+        self.assertEqual("task_id_3", stolenTasks[1].task_id.value)
+
+        # Second stolen chunk.
+        taskChunk = taskChunks[1]
+        self.assertEqual(1, chunk_utils.numSubTasks(taskChunk))
+
+        stolenTasks = [subTask for subTask in chunk_utils.subTaskIterator(taskChunk)]
+
+        self.assertEqual("task_id_1", stolenTasks[0].task_id.value)
 
     def test_frameworkMessageNormal(self):
         oldMethod = TaskChunkScheduler.frameworkMessage
