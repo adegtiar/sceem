@@ -65,7 +65,8 @@ class TaskStealingScheduler(TaskChunkScheduler):
                 offerCopy = mesos_pb2.Offer()
                 offerCopy.CopyFrom(offer)
 
-                chunk_utils.updateOfferResources(offerCopy, stolenTasksChunk)
+                chunk_utils.resourcesDecrement(offerCopy.resources,
+                        stolenTaskChunk.resources)
                 if not chunk_utils.isOfferEmpty(offerCopy):
                     offerQueue.push(offerCopy)
 
@@ -107,6 +108,10 @@ class TaskStealingScheduler(TaskChunkScheduler):
 
 
 class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
+    """
+    A scheduler driver wrapper that allows sub tasks of task chunks to be
+    stolen by other offers.
+    """
 
     def __init__(self, scheduler, framework, master, outerScheduler=None):
         if not isinstance(scheduler, TaskStealingScheduler):
@@ -117,31 +122,45 @@ class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
 
         TaskChunkSchedulerDriver.__init__(self, scheduler, framework, master, outerScheduler)
 
-        self.consumedResources = {}
+        self.consumedResources = defaultdict(lambda: mesos_pb2.Offer().resources)
         self.pendingTasks = chunk_utils.TaskTable()
 
-    def updateResourceOffer(self, offerId, tasks):
-        consumedResources[offerId] += sum(task.resources for task in tasks)
-
-    # Updates the resources and calls the super method
     def launchTasks(self, offerId, tasks, filters)
-        updateResourceOffer(offerId, tasks)
+        """
+        Keeps track of the task and its launched resources before launching.
+        """
+        consumedResources = self.consumedResource[offerId]
         for task in tasks:
+            # Update the resource offer with the task resources.
+            chunk_utils.resourcesIncrement(consumedResources, task.resources)
+            # Add the task to the tracked tasked.
             pendingTasks.addTask(task)
-        super.launchTasks(offerId, tasks filters)
+        TaskChunkSchedulerDriver.launchTasks(self, offerId, tasks filters)
 
-    def updateOffers(offers):
+    def updateOffers(self, offers):
+        """
+        Reduces the given offers by the resources consumed by the tasks
+        launched for this offer.
+        """
         for offer in offers:
-            offer.resources -= consumedResources[offer.id]
+            consumedResources = self.consumedResources[offer.id]
+            chunk_utils.decrementResources(offer.resources, consumedResources)
 
-    def clearConsumedResources(offers_id):
-        del consumedResources[offer.id]
+    def clearConsumedResources(self, offers):
+        """
+        Clears the resources for offers tracked as a result of tasks launched.
+        """
+        for offer in offers:
+            del consumedResources[offer.id]
 
     def killSubTasks(subTaskIds):
+        """
+        Kills the sub tasks with the given IDs, and clears them from the table.
+        """
         subTasks = []
         for subTaskId in subTaskIds:
             subTasks.append(self.pendingTasks[subTaskId])
             del self.pendingTasks[subTaskId]
 
-        super.killSubTasks(subTasks)
+        TaskChunkSchedulerDriver.killSubTasks(self, subTasks)
         return subTasks
