@@ -147,6 +147,30 @@ class TestChunkScheduler(unittest.TestCase):
 
         TaskChunkScheduler.frameworkMessage = oldMethod
 
+    def test_frameworkMessageNotStolen(self):
+        taskStatus = mesos_pb2.TaskStatus()
+        taskStatus.task_id.value = "id"
+        taskStatus.state = mesos_pb2.TASK_RUNNING
+        taskStatus.message = "foo message"
+        taskStatus.data = "foo data"
+
+        parentId = mesos_pb2.TaskID()
+        parentId.value = "task_chunk"
+
+        payload = (parentId, taskStatus)
+        subTaskMessage = chunk_utils.SubTaskUpdateMessage(payload)
+
+        oldMethod = TaskChunkScheduler.frameworkMessage
+
+        TaskChunkScheduler.frameworkMessage = MagicMock()
+
+        self.stealingScheduler.frameworkMessage(self.executor_id, self.slave_id,
+                self.driver, subTaskMessage.toString())
+
+        TaskChunkScheduler.frameworkMessage.assert_called_once()
+
+        TaskChunkScheduler.frameworkMessage = oldMethod
+
     def test_frameworkMessageStolen(self):
         taskStatus = mesos_pb2.TaskStatus()
         taskStatus.task_id.value = "id"
@@ -159,6 +183,8 @@ class TestChunkScheduler(unittest.TestCase):
 
         payload = (parentId, taskStatus)
         subTaskMessage = chunk_utils.SubTaskUpdateMessage(payload)
+
+        self.stealingScheduler.stolenTaskIds = [(parentId.value, taskStatus.task_id.value)]
 
         oldMethod = TaskChunkScheduler.frameworkMessage
 
