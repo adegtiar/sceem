@@ -105,7 +105,14 @@ class TaskStealingScheduler(TaskChunkScheduler):
 
 def TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
 
-    def __init__(self, ...):
+    def __init__(self, scheduler, framework, master, mesos_driver=None):
+        if not isinstance(scheduler, TaskStealingScheduler):
+            scheduler = TaskStealingScheduler(scheduler)
+        # Only launch the mesos driver at the outer level.
+        if not mesos_driver:
+            outerScheduler = chunk_utils.DriverOverridingScheduler(scheduler, self)
+            mesos_driver = mesos.MesosSchedulerDriver(outerScheduler, framework, master)
+        TaskChunkSchedulerDriver.__init__(self, scheduler, framework, master, mesos_driver)
         self.consumedResources = {}
         self.pendingTasks = chunk_utils.TaskTable()
 

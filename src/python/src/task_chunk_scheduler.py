@@ -26,15 +26,18 @@ class TaskChunkScheduler(chunk_utils.SchedulerWrapper):
 
 class TaskChunkSchedulerDriver(chunk_utils.SchedulerDriverWrapper):
 
-    def __init__(self, scheduler, framework, master):
+    def __init__(self, scheduler, framework, master, mesos_driver=None):
         """
         Initialize scheduler wrapper with framework scheduler
 
         """
-        self.chunkScheduler = TaskChunkScheduler(scheduler)
-        outerScheduler = chunk_utils.DriverOverridingScheduler(self.chunkScheduler, self)
-        driver = mesos.MesosSchedulerDriver(outerScheduler, framework, master)
-        chunk_utils.SchedulerDriverWrapper.__init__(self, driver)
+        if not isinstance(scheduler, TaskChunkScheduler):
+            scheduler = TaskChunkScheduler(scheduler)
+        self.chunkScheduler = scheduler
+        if not mesos_driver:
+            outerScheduler = chunk_utils.DriverOverridingScheduler(scheduler, self)
+            mesos_driver = mesos.MesosSchedulerDriver(outerScheduler, framework, master)
+        chunk_utils.SchedulerDriverWrapper.__init__(self, mesos_driver)
 
     def killSubTasks(self, subTasks):
         perExecutorTasks = defaultdict(list)
