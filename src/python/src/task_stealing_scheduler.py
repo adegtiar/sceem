@@ -59,8 +59,9 @@ class TaskStealingScheduler(TaskChunkScheduler):
         steal. Returns a mapping of offerId to the list of task (chunks) to run.
         """
         taskQueue = steal_utils.TaskQueue(pendingTasks)
-        offerQueue = steal_utils.PriorityQueue(offers, sort_key=offerSize,
-                mapper=lambda offer: offer.id.value)
+        offerQueue = steal_utils.PriorityQueue(offers,
+                sort_key = steal_utils.getOfferSize,
+                mapper = lambda offer: offer.id.value)
 
         stolenTasksChunks = defaultdict(list)
         while offerQueue.hasNext():
