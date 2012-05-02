@@ -4,7 +4,7 @@ import mesos_pb2
 import steal_utils
 
 from collections import defaultdict
-from chunk_utils import SubTaskMessage
+from chunk_utils import SubTaskMessage, subTaskIterator
 from task_chunk_scheduler import TaskChunkScheduler, TaskChunkSchedulerDriver
 
 
@@ -47,12 +47,14 @@ class TaskStealingScheduler(TaskChunkScheduler):
         """
         tasksToSteal = self.selectTasksToSteal(driver, offers, driver.pendingTasks)
 
-        for offerIdValue, tasks in tasksToSteal.iteritems():
+        for offerIdValue, taskChunks in tasksToSteal.iteritems():
             offerId = mesos_pb2.OfferID()
             offerId.value = offerIdValue
 
-            self.stealSubTasks(driver, tasks)
-            driver.launchTasks(offerId, tasks)
+            for taskChunk in taskChunks:
+                subTaskIds = (task.task_id for task in subTaskIterator(taskChunk))
+                self.stealSubTasks(driver, subTaskIds)
+            driver.launchTasks(offerId, taskChunks)
 
     def selectTasksToSteal(self, driver, offers, pendingTasks):
         """

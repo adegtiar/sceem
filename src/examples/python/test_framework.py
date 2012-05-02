@@ -94,8 +94,8 @@ class TestScheduler(mesos.Scheduler):
     elif (update.state == mesos_pb2.TASK_RUNNING and
             update.task_id.value == "chunk_id"):
         killedSubTaskIds = [subTask.task_id.value for subTask in self.subTasksToKill]
-        print "Attempting to kill task chunk"
-        driver.killSubTasks(self.subTasksToKill)
+        #print "Attempting to kill task chunk"
+        #driver.killSubTasks(self.subTasksToKill)
         #driver.killTask(self.taskChunkId)
     elif update.state == mesos_pb2.TASK_KILLED:
         print "Killed the task chunk. Done"
