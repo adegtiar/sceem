@@ -53,12 +53,12 @@ class TaskStealingScheduler(TaskChunkScheduler):
             self.stealSubTasks(tasks)
             driver.launchTasks(offerId, tasks)
 
-    def selectTasksToSteal(self, driver, offers, pending_tasks):
+    def selectTasksToSteal(self, driver, offers, pendingTasks):
         """
         Selects from the table of pending tasks a number of sub tasks to
         steal. Returns a mapping of offerId to the list of task (chunks) to run.
         """
-        taskQueue = steal_utils.TaskQueue(pending_tasks)
+        taskQueue = steal_utils.TaskQueue(pendingTasks)
         offerQueue = steal_utils.PriorityQueue(offers, sort_key=offerSize,
                 mapper=lambda offer: offer.id.value)
 
