@@ -93,8 +93,10 @@ class TaskQueue:
         taskCopy = mesos_pb2.TaskInfo()
         taskCopy.CopyFrom(task)
         stolenTasks = self.stealHalfSubTasks(taskCopy)
+        # TODO: can we really used the other task's executor? This fixed
+        # it, but something about executors/executor IDs doesn't add up.
         stolenTasksChunk = chunk_utils.newTaskChunk(offer.slave_id,
-                subTasks=stolenTasks)
+                executor=taskCopy.executor, subTasks=stolenTasks)
         popped_tasks.append(taskCopy)
         break
 
