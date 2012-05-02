@@ -30,7 +30,7 @@ import chunk_utils
 
 TOTAL_TASKS = 8
 
-TASK_CPUS = 2
+TASK_CPUS = 1
 TASK_MEM = 32
 
 class TestScheduler(mesos.Scheduler):
@@ -70,8 +70,8 @@ class TestScheduler(mesos.Scheduler):
 
         tasks.append(task)
 
-        if task.task_id.value in ("2", "3"):
-            self.subTasksToKill.append(task)
+        #if task.task_id.value in ("2", "3"):
+        #    self.subTasksToKill.append(task)
 
       if tasks:
         taskChunk = chunk_utils.newTaskChunk(offer.slave_id, executor=self.executor, subTasks=tasks)
