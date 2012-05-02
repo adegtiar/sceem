@@ -21,7 +21,9 @@ class TestChunkExecutor(unittest.TestCase):
     def setUp(self):
         self.tid = 0
         self.launchedTask = 0
-        self.taskChunk = newTaskChunk()
+        self.slave_id = Mock()
+        self.slave_id.value = "slave_id"
+        self.taskChunk = newTaskChunk(self.slave_id)
         self.taskChunk.task_id.value = str(self.getTaskId())
         self.task = self.getNewSubtask()
         self.mExecutor = self.getMockExecutor()
@@ -111,16 +113,19 @@ class TestChunkExecutor(unittest.TestCase):
             task = self.getNewSubtask()
             subtaskIds.append(task.task_id)
             addSubTask(self.taskChunk, task)
+        addSubTask(self.taskChunk, self.task)
+        subtaskIds.append(self.task.task_id)
         self.chunkExecutor.pendingTaskChunks.addTask(self.taskChunk)
         self.chunkExecutor.pendingTaskChunks.setActive(self.taskChunk.task_id)
-        self.chunkExecutor.pendingTaskChunks.setActive(subtaskIds[0])
+        self.chunkExecutor.pendingTaskChunks.setActive(self.task.task_id)
         self.chunkExecutor.killSubTasks(self.mExecutorDriver, subtaskIds)
-
+        
         for taskid in subtaskIds:
+          if not taskid == self.task.task_id:
             self.assertFalse(taskid in self.chunkExecutor.pendingTaskChunks)
 
         self.mExecutor.killTask.assert_called_once_with(self.mExecutorDriver,
-                                                        subtaskIds[0])
+                                                        self.task.task_id)
 
     def test_runNextSubtask(self):
         subTask = self.getNewSubtask()
@@ -181,7 +186,9 @@ class TestChunkExecutorDriver(unittest.TestCase):
     def setUp(self):
         self.tid = 0
         self.launchedTask = 0
-        self.taskChunk = newTaskChunk()
+        self.slave_id = Mock()
+        self.slave_id.value = "slave_id"
+        self.taskChunk = newTaskChunk(self.slave_id)
         self.taskChunk.task_id.value = str(self.getTaskId())
         self.task = self.getNewSubtask()
         self.mExecutor = Mock(spec=mesos.Executor)
