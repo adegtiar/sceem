@@ -79,18 +79,6 @@ class TestScheduler(mesos.Scheduler):
         taskChunk.name = "taskChunk"
         self.taskChunkId = taskChunk.task_id
 
-        """
-        cpus = taskChunk.resources.add()
-        cpus.name = "cpus"
-        cpus.type = mesos_pb2.Value.SCALAR
-        cpus.scalar.value = TASK_CPUS
-
-        # TODO: this should be set by addSubTask.
-        mem = taskChunk.resources.add()
-        mem.name = "mem"
-        mem.type = mesos_pb2.Value.SCALAR
-        mem.scalar.value = TASK_MEM
-        """
         print "Accepting offer on %s to start task chunk" % offer.hostname
         driver.launchTasks(offer.id, [taskChunk])
       break
