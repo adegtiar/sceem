@@ -22,7 +22,9 @@ class TestChunkScheduler(unittest.TestCase):
     def setUp(self):
         self.tid = 0
         self.launchedTask = 0
-        self.taskChunk = newTaskChunk()
+        self.slave_id = Mock()
+        self.slave_id.value = "slave_id"
+        self.taskChunk = newTaskChunk(self.slave_id)
         self.taskChunk.task_id.value = str(self.getTaskId())
         self.task = self.getNewSubtask()
         self.mSchedulerDriver = Mock(spec=mesos.SchedulerDriver())
@@ -64,7 +66,9 @@ class TestChunkSchedulerDriver(unittest.TestCase):
         self.launchedTask = 0
         self.numExecutor = 0
         self.currExecutor = 0
-        self.taskChunk = newTaskChunk()
+        self.slave_id = Mock()
+        self.slave_id.value = "slave_id"
+        self.taskChunk = newTaskChunk(self.slave_id)
         self.taskChunk.task_id.value = str(self.getTaskId())
         self.task = self.getNewSubTask()
         self.mSchedulerDriver = Mock(spec=mesos.SchedulerDriver())
