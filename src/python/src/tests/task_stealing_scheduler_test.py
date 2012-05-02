@@ -105,7 +105,7 @@ class TestChunkScheduler(unittest.TestCase):
 
     def test_resourceOffersStealing(self):
         offers = [self.generateOffer()]
-        tasks = "tasks"
+        tasks = [self.newTaskChunk(2)]
         self.driver.pendingTasks = MagicMock()
 
         scheduler = self.stealingScheduler
