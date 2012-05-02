@@ -90,6 +90,19 @@ class TestChunkScheduler(unittest.TestCase):
         TaskChunkScheduler.resourceOffers.assert_called_once_with(
                 self.stealingScheduler, self.driver, offers)
 
+    def newSubTaskUpdate(self):
+        self.taskStatus = mesos_pb2.TaskStatus()
+        self.taskStatus.task_id.value = "id"
+        self.taskStatus.state = mesos_pb2.TASK_RUNNING
+        self.taskStatus.message = "foo message"
+        self.taskStatus.data = "foo data"
+
+        self.parentId = mesos_pb2.TaskID()
+        self.parentId.value = "task_chunk"
+
+        payload = (self.parentId, self.taskStatus)
+        return chunk_utils.SubTaskUpdateMessage(payload).toString()
+
     def test_resourceOffersStealing(self):
         offers = [self.generateOffer()]
         tasks = "tasks"
@@ -148,18 +161,7 @@ class TestChunkScheduler(unittest.TestCase):
         TaskChunkScheduler.frameworkMessage = oldMethod
 
     def test_frameworkMessageNotStolen(self):
-        taskStatus = mesos_pb2.TaskStatus()
-        taskStatus.task_id.value = "id"
-        taskStatus.state = mesos_pb2.TASK_RUNNING
-        taskStatus.message = "foo message"
-        taskStatus.data = "foo data"
-
-        parentId = mesos_pb2.TaskID()
-        parentId.value = "task_chunk"
-
-        payload = (parentId, taskStatus)
-        subTaskMessage = chunk_utils.SubTaskUpdateMessage(payload)
-        data = subTaskMessage.toString()
+        data = self.newSubTaskUpdate()
 
         oldMethod = TaskChunkScheduler.frameworkMessage
 
@@ -174,26 +176,16 @@ class TestChunkScheduler(unittest.TestCase):
         TaskChunkScheduler.frameworkMessage = oldMethod
 
     def test_frameworkMessageStolen(self):
-        taskStatus = mesos_pb2.TaskStatus()
-        taskStatus.task_id.value = "id"
-        taskStatus.state = mesos_pb2.TASK_RUNNING
-        taskStatus.message = "foo message"
-        taskStatus.data = "foo data"
-
-        parentId = mesos_pb2.TaskID()
-        parentId.value = "task_chunk"
-
-        payload = (parentId, taskStatus)
-        subTaskMessage = chunk_utils.SubTaskUpdateMessage(payload)
-
-        self.stealingScheduler.stolenTaskIds = [(parentId.value, taskStatus.task_id.value)]
+        data = self.newSubTaskUpdate()
+        stolenTaskIdEntry = (self.parentId.value, self.taskStatus.task_id.value)
+        self.stealingScheduler.stolenTaskIds = [stolenTaskIdEntry]
 
         oldMethod = TaskChunkScheduler.frameworkMessage
 
         TaskChunkScheduler.frameworkMessage = MagicMock()
 
         self.stealingScheduler.frameworkMessage(self.executor_id, self.slave_id,
-                self.driver, subTaskMessage.toString())
+                self.driver, data)
 
         self.assertEqual(0, len(TaskChunkScheduler.frameworkMessage.mock_calls))
 
