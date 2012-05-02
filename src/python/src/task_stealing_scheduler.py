@@ -89,10 +89,8 @@ class TaskStealingScheduler(TaskChunkScheduler):
         Informs the executors who owned the stolen tasks, and updates
         local metadata.
         """
-        subTasks = driver.killSubTasks(subTaskIds)
-        stolenTasks = ((task.executor.executor_id.value, task.task_id.value)
-                for task in subTasks)
-        self.stolenTaskIds.update(stolenTasks)
+        for parentId, subTask in driver.killSubTasks(subTaskIds):
+            self.stolenTaskIds.add((parentId.value, subTask.task_id.value))
 
     def frameworkMessage(self, executor_id, slave_id, driver, data):
         """
@@ -101,8 +99,8 @@ class TaskStealingScheduler(TaskChunkScheduler):
         """
         message = SubTaskMessage.fromString(data)
         if message.isValid() and message.getType() == SubTaskMessage.SUBTASK_UPDATE:
-            update = message.getPayload()
-            if (executor_id.value, update.task_id.value) in self.stolenTaskIds:
+            parentTaskId, update = message.getPayload()
+            if (parentTaskId.value, update.task_id.value) in self.stolenTaskIds:
                 # Potentially log this and remove from stolenTasks.
                 pass
             else:
@@ -177,9 +175,11 @@ class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
         Kills the sub tasks with the given IDs, and clears them from the table.
         """
         subTasks = []
+        parentIds = []
         for subTaskId in subTaskIds:
+            parentIds.append(self.pendingTasks.getParent(subTaskId).task_id)
             subTasks.append(self.pendingTasks[subTaskId])
             del self.pendingTasks[subTaskId]
 
         TaskChunkSchedulerDriver.killSubTasks(self, subTasks)
-        return subTasks
+        return zip(parentIds, subTasks)
