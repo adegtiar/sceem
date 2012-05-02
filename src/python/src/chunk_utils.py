@@ -217,17 +217,18 @@ def isOfferEmpty(offer):
 
     return True
 
-def addSubTask(taskChunk, subTask):
+def addSubTask(taskChunk, subTask, inherit=True):
     """
     Adds a copy of the given sub task to the task chunk.
     """
     if not subTask.task_id.IsInitialized():
       raise ValueError("Sub tasks added to a task chunk must have an id.")
 
-    subTask.slave_id.value = taskChunk.slave_id.value
-    maxResources(taskChunk.resources, subTask.resources)
-    if taskChunk.executor.IsInitialized():
-        subTask.executor.MergeFrom(taskChunk.executor)
+    if inherit:
+        subTask.slave_id.value = taskChunk.slave_id.value
+        maxResources(taskChunk.resources, subTask.resources)
+        if taskChunk.executor.IsInitialized():
+            subTask.executor.MergeFrom(taskChunk.executor)
 
     taskChunk.sub_tasks.tasks.extend((subTask,))
 
@@ -343,7 +344,7 @@ class TaskTable(object):
             return
         if not parent:
             parent = self.rootTask
-            addSubTask(parent, task)
+            addSubTask(parent, task, inherit=False)
         self.all_task_nodes[task.task_id] = TaskTable.TaskNode(parent, task)
         for subTask in subTaskIterator(task):
             self.addTask(subTask, task)
