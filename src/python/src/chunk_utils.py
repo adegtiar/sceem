@@ -367,11 +367,26 @@ class TaskTable(object):
         """
         taskNode = self.all_task_nodes[taskId]
         removeSubTask(taskNode.parent, taskId)
+        self.propogateToRoot(taskNode.parent)
         # Generate a list of sub tasks to avoid concurrent modification.
         subTasks = [subTask for subTask in subTaskIterator(taskNode.task)]
         for subTask in subTasks:
             del self[subTask.task_id]
         del self.all_task_nodes[taskId]
+
+    def propogateToRoot(self, task):
+        """
+        Call this when the given task is update, and changes need to
+        propogate to the root.
+        """
+        # TODO: We probably shouldn't use TaskChunks directly in the
+        # table.
+        if task is not self.rootTask:
+            parent = self.all_task_nodes[task.task_id].parent
+            for subTask in subTaskIterator(parent):
+                if subTask.task_id == task.task_id:
+                    subTask.CopyFrom(task)
+                    return self.propogateToRoot(parent)
 
     def __contains__(self, taskId):
         """
