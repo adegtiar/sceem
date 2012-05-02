@@ -171,21 +171,21 @@ def decrementResources(arg1, arg2):
 def maxResources(arg1, arg2):
     resourcesOperation(arg1, arg2, max)
 
-def resourcesOperation(arg1, arg2, operator):
+def resourcesOperation(arg1, arg2, func):
     for res_op_2 in arg2.resources:
         isPresent = False
         for res_op_1 in arg1.resources:
             if res_op_2.name == res_op_1.name:
                 isPresent = True
                 if (res_op_2.type == mesos_pb2.Value.SCALAR):
-                    res_op_1.scalar.value = operator(res_op_1.scalar.value,
+                    res_op_1.scalar.value = func(res_op_1.scalar.value,
                                                      res_op_2.scalar.value)
                 
         if not isPresent:
-            if operator in [max, operator.add()]:
+            if func in [max, operator.add]:
                 resNew = arg1.resources.add()
                 resNew.CopyFrom(res_op_2)
-            elif operator == operator.sub:
+            elif func == operator.sub:
                 resNew = arg1.resources.add()
                 resNew.CopyFrom(res_op_2)
                 resNew.scalar.value = -res_op_2.scalar.value       
