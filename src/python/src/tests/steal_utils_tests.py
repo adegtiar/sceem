@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 
 # Add the cwd to the lookup path for modules.
 import sys
@@ -15,6 +15,35 @@ import steal_utils
 from mock import Mock
 
 
+class TestPriorityQueue(unittest.TestCase):
+
+    def setUp(self):
+        listTup = []
+        for i in xrange(10):
+            tup = (i, "a"+str(i))
+            listTup.append(tup)
+            # (1, "a1") -> mapper = a1, item_key = (1, a1)
+        self.pq = steal_utils.PriorityQueue(initial=listTup,
+                                           sort_key = lambda x: x[0],
+                                           mapper=lambda x: x[1])
+
+    def test_push(self):
+        tup = (-1, "a"+str(-1))
+        self.pq.push(tup)
+        self.assertTrue(self.pq.pop() == tup)
+
+    def test_pop(self):
+        for i in xrange(10):
+            self.assertTrue(self.pq.pop() == (i,"a"+str(i)))
+
+    def test_hasNext(self):
+        for i in xrange(10):
+            self.assertTrue(self.pq.hasNext())
+            self.pq.pop()
+        self.assertFalse(self.pq.hasNext())
+        
+
+
 class TestTaskQueue(unittest.TestCase):
     """
     Tests for the TaskQueue.
@@ -29,8 +58,7 @@ class TestTaskQueue(unittest.TestCase):
         self.pending_tasks = [subtask for subtask in subTaskIterator(self.table)]
         self.queue = steal_utils.TaskQueue(self.pending_tasks)
         self.offer = mesos_pb2.Offer()
-        
-    
+            
     def new_table(self):
         tasks = []
         self.taskChunk = self.new_task_chunk(10, 10, 5)
