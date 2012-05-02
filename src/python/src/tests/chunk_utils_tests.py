@@ -20,7 +20,7 @@ class TestTaskChunks(unittest.TestCase):
 
     def setUp(self):
         self.slave_id = Mock()
-        self.slave_id.value = Mock()
+        self.slave_id.value = "slave_id"
         self.chunk = newTaskChunk(self.slave_id)
         self.subTask = mesos_pb2.TaskInfo()
         self.subTask.task_id.value = "subtask_1"
@@ -84,7 +84,7 @@ class TestTaskTable(unittest.TestCase):
         return tasks
 
     def new_task_chunk(self, subTasksPerChunk):
-        taskChunk = newTaskChunk(self.slave_id, self.new_tasks(subTasksPerChunk))
+        taskChunk = newTaskChunk(self.slave_id, subTasks=self.new_tasks(subTasksPerChunk))
         taskChunk.task_id.value = "chunk_id"
         return taskChunk
 
@@ -108,7 +108,7 @@ class TestTaskTable(unittest.TestCase):
     def test_addTask_deep_task_chunk(self):
         innerTaskChunk = self.new_task_chunk(2)
 
-        outerTaskChunk = newTaskChunk(self.slave_id, (innerTaskChunk,))
+        outerTaskChunk = newTaskChunk(self.slave_id,subTasks=(innerTaskChunk,))
         outerTaskChunk.task_id.value = "chunk_id_outer"
 
         self.table.addTask(outerTaskChunk)
@@ -149,7 +149,7 @@ class TestTaskTable(unittest.TestCase):
 
     def test_del_sub_task(self):
         tasks = self.new_tasks(2)
-        taskChunk = newTaskChunk(self.slave_id, tasks)
+        taskChunk = newTaskChunk(self.slave_id, subTasks=tasks)
         taskChunk.task_id.value = "chunk_id"
 
         self.table.addTask(taskChunk)
@@ -179,7 +179,7 @@ class TestTaskTable(unittest.TestCase):
         for subTask in subTaskIterator(innerTaskChunk):
             all_tasks.append(subTask)
 
-        outerTaskChunk = newTaskChunk(self.slave_id, (innerTaskChunk,))
+        outerTaskChunk = newTaskChunk(self.slave_id, subTasks=(innerTaskChunk,))
         outerTaskChunk.task_id.value = "chunk_id_outer"
 
         all_tasks.append(outerTaskChunk)
@@ -229,7 +229,7 @@ class TestTaskTable(unittest.TestCase):
         taskChunk = newTaskChunk(self.slave_id, subTasks=tasks[:2])
         taskChunk.task_id.value = "chunk_id"
 
-        outerTaskChunk = newTaskChunk(self.slave_id, (taskChunk,))
+        outerTaskChunk = newTaskChunk(self.slave_id, subTasks=(taskChunk,))
         outerTaskChunk.task_id.value = "chunk_id_outer"
 
         self.table.addTask(outerTaskChunk)
