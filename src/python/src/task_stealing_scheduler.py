@@ -27,16 +27,16 @@ class TaskStealingScheduler(TaskChunkScheduler):
         Responds to a resource offer by stealing tasks and/or forwarding
         the offer to the underlying framework.
         """
-        firstOffering = self.resourceOffersStealing
-        secondOffering = super(TaskStealingScheduler, self).resourceOffers
+        firstOffering = TaskStealingScheduler.resourceOffersStealing
+        secondOffering = TaskChunkScheduler.resourceOffers
 
-        if offer_order == TaskStealingScheduler.RESOURCE_OFFERS_FIRST:
+        if self.offerOrder == TaskStealingScheduler.RESOURCE_OFFERS_FIRST:
             firstOffering, secondOffering = secondOffering, firstOffering
 
-        firstOffering(driver, offers)
+        firstOffering(self, driver, offers)
         # Update the offer resources by the amount the tasks consumed.
         driver.updateOffers(offers)
-        secondOffering(driver, offers)
+        secondOffering(self, driver, offers)
 
         driver.clearConsumedResources(offers)
 
