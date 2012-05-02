@@ -1,6 +1,7 @@
 import mesos
 import mesos_pb2
 import pickle
+from collections import defaultdict
 
 
 # TaskStates that indicate the task is done and can be cleaned up.

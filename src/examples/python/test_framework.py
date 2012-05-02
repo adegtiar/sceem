@@ -78,7 +78,7 @@ class TestScheduler(mesos.Scheduler):
             self.subTasksToKill.append(task)
 
       if tasks:
-        taskChunk = chunk_utils.newTaskChunk(tasks)
+        taskChunk = chunk_utils.newTaskChunk(offer.slave_id, executor=self.executor, subTasks=tasks)
         taskChunk.task_id.value = "chunk_id"
         taskChunk.slave_id.value = offer.slave_id.value
         taskChunk.name = "taskChunk"
