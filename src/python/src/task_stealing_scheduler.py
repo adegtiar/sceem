@@ -51,7 +51,7 @@ class TaskStealingScheduler(TaskChunkScheduler):
             offerId = mesos_pb2.OfferID()
             offerId.value = offerIdValue
 
-            self.stealSubTasks(tasks)
+            self.stealSubTasks(driver, tasks)
             driver.launchTasks(offerId, tasks)
 
     def selectTasksToSteal(self, driver, offers, pendingTasks):
@@ -85,7 +85,7 @@ class TaskStealingScheduler(TaskChunkScheduler):
 
         return stolenTasksChunks
 
-    def stealSubTasks(self, stolenSubTaskIds):
+    def stealSubTasks(self, driver, stolenSubTaskIds):
         """
         Informs the executors who owned the stolen tasks, and updates
         local metadata.
