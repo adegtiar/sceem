@@ -220,8 +220,12 @@ class TestChunkScheduler(unittest.TestCase):
     def test_frameworkMessageE2E(self):
         data = self.newSubTaskUpdate()
 
-        self.stealingScheduler.frameworkMessage(self.driver, self.executor_id,
-                self.slave_id, data)
+        try:
+            self.stealingScheduler.frameworkMessage(self.driver, self.executor_id,
+                    self.slave_id, data)
+            self.assertTrue(False)
+        except AttributeError:
+            pass
 
 
 if __name__ == '__main__':
