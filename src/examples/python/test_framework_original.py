@@ -23,9 +23,9 @@ import time
 import mesos
 import mesos_pb2
 
-TOTAL_TASKS = 5
+TOTAL_TASKS = 256
 
-TASK_CPUS = 1
+TASK_CPUS = 2
 TASK_MEM = 32
 
 class TestScheduler(mesos.Scheduler):
