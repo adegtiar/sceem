@@ -65,18 +65,6 @@ class TaskQueue:
             sort_key = lambda task: -chunk_utils.numSubTasks(task),
             mapper = lambda offer: offer.task_id.value)
 
-  def fitsIn(self, task, offer):
-    """
-    Checks if task resources are less than Offer resources
-    """
-    offerCopy = mesos_pb2.Offer()
-    offerCopy.CopyFrom(offer)
-
-    chunk_utils.decrementResources(offerCopy.resources, task.resources)
-    if chunk_utils.isOfferValid(offerCopy):
-      return True
-    return False
-
   def stealHalfSubTasks(self, task, stealRatio=0):
     """
     Returns a list of stolenSubTasks and removes them from the taskChunk
