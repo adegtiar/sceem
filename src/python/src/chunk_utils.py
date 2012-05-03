@@ -404,7 +404,9 @@ class TaskTable(object):
         """
         Returns an iterator over the top-level tasks (sub tasks of the root).
         """
-        return subTaskIterator(self.rootTask)
+        for subTask in subTaskIterator(self.rootTask):
+            if self.isActive(subTask.task_id):
+                yield subTask
 
     def setActive(self, taskId):
         """

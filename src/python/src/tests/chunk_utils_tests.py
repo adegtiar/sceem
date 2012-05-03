@@ -276,6 +276,7 @@ class TestTaskTable(unittest.TestCase):
         all_tasks.append(outerTaskChunk)
 
         self.table.addTask(outerTaskChunk)
+        self.table.setActive(outerTaskChunk.task_id)
 
         num_iter_tasks = 0
         for task in self.table:
