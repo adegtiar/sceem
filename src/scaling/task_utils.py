@@ -2,12 +2,15 @@ import mesos
 import mesos_pb2
 import chunk_utils
 import steal_utils
-
+import random
+import pickle
+import numpy
 
 Distribution = enum(UNIFORM=1, SPLIT=2, NORMAL=3)
 
-def selectTasksforOffers(offers, tasks, taskChunk, ratio):
-  taskQueue = steal_utils.TaskQueue(pendingTasks)
+
+def selectTasksforOffers(offers, tasks, ratio, isTaskChunk=False):
+  taskQueue = steal_utils.TaskQueue(tasks)
   offerQueue = steal_utils.PriorityQueue(offers,
                           sort_key = steal_utils.getOfferSize,
                           mapper = lambda offer: offer.id.value)
