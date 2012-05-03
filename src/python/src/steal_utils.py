@@ -93,7 +93,7 @@ class TaskQueue:
 
     while self.queue.hasNext():
       task = self.queue.pop()
-      if (chunk_utils.numSubTasks(task) > 1 and fitsIn(task, offer)):
+      if (chunk_utils.numSubTasks(task) > 2 and fitsIn(task, offer)):
         taskCopy = mesos_pb2.TaskInfo()
         taskCopy.CopyFrom(task)
         stolenTasks = self.stealHalfSubTasks(taskCopy, stealRatio)
