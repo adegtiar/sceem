@@ -25,6 +25,7 @@ import sys
 import mesos
 import mesos_pb2
 import task_chunk_executor
+import pickle
 
 
 class MyExecutor(mesos.Executor):
