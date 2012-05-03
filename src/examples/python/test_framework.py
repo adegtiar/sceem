@@ -28,9 +28,9 @@ import task_stealing_scheduler
 
 import chunk_utils
 
-TOTAL_TASKS = 8
+TOTAL_TASKS = 16
 
-TASK_CPUS = 1
+TASK_CPUS = 2
 TASK_MEM = 32
 
 TASK_IDS = set(str(i) for i in range(TOTAL_TASKS))
@@ -71,19 +71,18 @@ class TestScheduler(mesos.Scheduler):
         mem.scalar.value = TASK_MEM
 
         tasks.append(task)
-
-        #if task.task_id.value in ("2", "3"):
-        #    self.subTasksToKill.append(task)
+        if len(tasks) > TOTAL_TASKS * 3 / 4:
+            break
 
       if tasks:
-        taskChunk = chunk_utils.newTaskChunk(offer.slave_id, executor=self.executor, subTasks=tasks)
-        taskChunk.task_id.value = "chunk_id"
+        taskChunk = chunk_utils.newTaskChunk(offer.slave_id,
+                executor=self.executor, subTasks=tasks)
+        taskChunk.task_id.value = "chunk_id_{0}".format(self.tasksLaunched)
         taskChunk.name = "taskChunk"
         self.taskChunkId = taskChunk.task_id
 
         print "Accepting offer on %s to start task chunk" % offer.hostname
         driver.launchTasks(offer.id, [taskChunk])
-      break
 
   def statusUpdate(self, driver, update):
     print "Task %s is in state %d" % (update.task_id.value, update.state)
