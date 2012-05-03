@@ -116,8 +116,9 @@ class TestChunkScheduler(unittest.TestCase):
 
         scheduler.resourceOffersStealing(self.driver, offers)
 
+        taskIds = [task.task_id for task in subTaskIterator(tasks[0])]
         scheduler.selectTasksToSteal.assert_called_once()
-        scheduler.stealSubTasks.assert_called_once_with(self.driver, tasks)
+        scheduler.stealSubTasks.assert_called_once_with(self.driver, taskIds)
         self.driver.launchTasks.assert_called_once_with(offers[0].id, tasks)
 
     def test_selectTasksToSteal(self):
