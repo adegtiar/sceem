@@ -89,6 +89,9 @@ class TestScheduler(mesos.Scheduler):
 
         print "Accepting offer on %s to start task chunk" % offer.hostname
         driver.launchTasks(offer.id, [taskChunk])
+      else:
+        print "Rejecting offer {0}".format(offer.id.value)
+        driver.launchTasks(offer.id, [])
 
   def statusUpdate(self, driver, update):
     print "Task %s is in state %d" % (update.task_id.value, update.state)
