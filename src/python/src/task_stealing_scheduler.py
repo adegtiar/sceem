@@ -126,9 +126,12 @@ class TaskStealingScheduler(TaskChunkScheduler):
         """
         Updates internal state before passing on to the underlying framework.
         """
-        if (update.task_id in driver.pendingTasks and
-                chunk_utils.isTerminalUpdate(update)):
-            del driver.pendingTasks[update.task_id]
+        if update.task_id in driver.pendingTasks:
+            if chunk_utils.isTerminalUpdate(update):
+                del driver.pendingTasks[update.task_id]
+            else:
+                driver.pendingTasks.setActive(update.task_id)
+
         TaskChunkScheduler.statusUpdate(self, driver, update)
 
     def generateTaskId(self):
@@ -190,14 +193,19 @@ class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
         """
         subTasks = []
         parentIds = []
+
         for subTaskId in subTaskIds:
             # Backwards compatibility for passing sub tasks instead of IDs.
             if isinstance(subTaskId, mesos_pb2.TaskInfo):
                 subTaskId = subTaskId.task_id
+
             parent = self.pendingTasks.getParent(subTaskId)
             parentIds.append(parent.task_id)
-            subTasks.append(self.pendingTasks[subTaskId])
+            subTask = self.pendingTasks[subTaskId]
+            subTasks.append(subTask)
+
             del self.pendingTasks[subTaskId]
 
         TaskChunkSchedulerDriver.killSubTasks(self, subTasks)
+
         return zip(parentIds, subTasks)
