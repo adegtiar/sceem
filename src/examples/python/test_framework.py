@@ -29,9 +29,9 @@ import steal_utils
 import task_stealing_scheduler
 
 
-TOTAL_TASKS = 32
+TOTAL_TASKS = 256
 
-TASK_CPUS = 1
+TASK_CPUS = 2
 TASK_MEM = 32
 
 TASK_IDS = set(str(i) for i in range(TOTAL_TASKS))
@@ -77,7 +77,7 @@ class TestScheduler(mesos.Scheduler):
         print "Adding subtask %d to chunk" % tid
 
         tasks.append(task)
-        if len(tasks) > TOTAL_TASKS * 3 / 4:
+        if len(tasks) > TOTAL_TASKS / 2:
             break
 
       if tasks:
@@ -104,16 +104,6 @@ class TestScheduler(mesos.Scheduler):
           driver.stop()
       else:
         print "Task chunk finished: {0}".format(update.task_id.value)
-    elif (update.state == mesos_pb2.TASK_RUNNING and
-            update.task_id.value == "chunk_id"):
-        killedSubTaskIds = [subTask.task_id.value for subTask in self.subTasksToKill]
-        #print "Attempting to kill task chunk"
-        #driver.killSubTasks(self.subTasksToKill)
-        #driver.killTask(self.taskChunkId)
-    elif update.state == mesos_pb2.TASK_KILLED:
-        print "Killed the task chunk. Done"
-        #driver.stop()
-        TOTAL_TASKS -= 1
 
 if __name__ == "__main__":
   if len(sys.argv) != 2:
