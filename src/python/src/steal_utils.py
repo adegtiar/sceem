@@ -65,18 +65,36 @@ class TaskQueue:
             sort_key = lambda task: -chunk_utils.numSubTasks(task),
             mapper = lambda offer: offer.task_id.value)
 
-  def stealHalfSubTasks(self, task):
+  def fitsIn(self, task, offer):
+    """
+    Checks if task resources are less than Offer resources
+    """
+    offerCopy = mesos_pb2.Offer()
+    offerCopy.CopyFrom(offer)
+
+    chunk_utils.decrementResources(offerCopy.resources, task.resources)
+    if chunk_utils.isOfferValid(offerCopy):
+      return True
+    return False
+
+  def stealHalfSubTasks(self, task, stealRatio=0):
     """
     Returns a list of stolenSubTasks and removes them from the taskChunk
     """
     subTasks = [subTask for subTask in chunk_utils.subTaskIterator(task)]
-    stolenTasks = subTasks[len(subTasks)/2:]
+    if stealRatio ==0:
+      startIndex = len(subTasks)/2
+    else:
+      startIndex = max(0, len(subTasks) - stealRatio)
+    stolenTasks = subTasks[startIndex:]
+    
+    #stolenTasks = subTasks[max(0,len(subTasks)-numTasks):]
     for stolenTask in stolenTasks:
       chunk_utils.removeSubTask(task, stolenTask.task_id)
 
     return stolenTasks
 
-  def stealTasks(self, offer):
+  def stealTasks(self, offer, stealRatio=0):
     """
     Give an offer to the queue. If accepted, it will return a
     new task chunk containing the subTasks it stole.
@@ -90,7 +108,7 @@ class TaskQueue:
       if (chunk_utils.numSubTasks(task) > 1 and fitsIn(task, offer)):
         taskCopy = mesos_pb2.TaskInfo()
         taskCopy.CopyFrom(task)
-        stolenTasks = self.stealHalfSubTasks(taskCopy)
+        stolenTasks = self.stealHalfSubTasks(taskCopy, stealRatio)
 
         stolenTasksChunk = chunk_utils.newTaskChunk(offer.slave_id,
                 executor=taskCopy.executor, subTasks=stolenTasks)
