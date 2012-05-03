@@ -92,5 +92,9 @@ def getTaskTimes(numTasks, time, distribution=Distribution.UNIFORM, time2 =0):
     taskTime = [time if (i>numTasks/2) else time2 for i in xrange(numTasks)]
 
   if distribution==Distribution.NORMAL:
-    taskTime = [abs(distribution(0,1))*sizeMem for i in xrange(numTasks)]
+    #TODO: clip instead of using abs
+    taskTime = [abs(random.normalvariate(0,1))*time for i in xrange(numTasks)]
+
+  return taskTime
+
 
