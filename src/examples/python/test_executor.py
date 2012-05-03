@@ -32,6 +32,12 @@ class MyExecutor(mesos.Executor):
     # Create a thread to run the task. Tasks should always be run in new
     # threads or processes, rather than inside launchTask itself.
     def run_task():
+
+      
+      duration = pickle.loads(task.arg)
+      # TODO(benh): Don't sleep, this blocks the event loop!
+      time.sleep(duration)
+
       print "Running task %s" % task.task_id.value
       update = mesos_pb2.TaskStatus()
       update.task_id.value = task.task_id.value
