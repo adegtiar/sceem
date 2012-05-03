@@ -22,6 +22,7 @@ class TaskChunkScheduler(chunk_utils.SchedulerWrapper):
             chunk_utils.SchedulerWrapper.frameworkMessage(self, driver,
                     executorId, slaveId, data)
 
+
 class TaskChunkSchedulerDriver(chunk_utils.SchedulerDriverWrapper):
 
     def __init__(self, scheduler, framework, master, outerScheduler=None):
@@ -39,17 +40,22 @@ class TaskChunkSchedulerDriver(chunk_utils.SchedulerDriverWrapper):
         chunk_utils.SchedulerDriverWrapper.__init__(self, mesos_driver)
 
     def killSubTasks(self, subTasks):
-        perExecutorTasks = defaultdict(list)
+        perSlaveExecTasks = defaultdict(list)
 
         for subTask in subTasks:
             executorIdString = subTask.executor.executor_id.SerializeToString()
-            perExecutorTasks[executorIdString].append(subTask.task_id)
+            slaveIdString = subTask.slave_id.SerializeToString()
+            perSlaveExecTasks[(slaveIdString, executorIdString)].append(subTask.task_id)
 
-        for executorIdString, subTaskIds in perExecutorTasks.iteritems():
-            message = chunk_utils.KillSubTasksMessage(subTaskIds)
+        for slaveExecId, subTaskIds in perSlaveExecTasks.iteritems():
+            slaveIdString, executorIdString = slaveExecId
 
             executorId = mesos_pb2.ExecutorID()
             executorId.ParseFromString(executorIdString)
 
-            self.sendFrameworkMessage(executorId, subTasks[0].slave_id,
-                    message.toString())
+            slaveId = mesos_pb2.SlaveID()
+            slaveId.ParseFromString(slaveIdString)
+
+            message = chunk_utils.KillSubTasksMessage(subTaskIds)
+
+            self.sendFrameworkMessage(executorId, slaveId, message.toString())
