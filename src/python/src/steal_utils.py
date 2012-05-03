@@ -42,6 +42,19 @@ class PriorityQueue(object):
     return len(self.__data)
 
 
+def fitsIn(task, offer):
+  """
+  Checks if task resources are less than Offer resources
+  """
+  offerCopy = mesos_pb2.Offer()
+  offerCopy.CopyFrom(offer)
+
+  chunk_utils.decrementResources(offerCopy.resources, task.resources)
+  if chunk_utils.isOfferValid(offerCopy):
+    return True
+  return False
+
+
 class TaskQueue:
   """
   The TaskQueue receives offers and returns tasks to give up to that offer.
@@ -51,18 +64,6 @@ class TaskQueue:
     self.queue = PriorityQueue(pending_tasks,
             sort_key = lambda task: -chunk_utils.numSubTasks(task),
             mapper = lambda offer: offer.task_id.value)
-
-  def fitsIn(self, task, offer):
-    """
-    Checks if task resources are less than Offer resources
-    """
-    offerCopy = mesos_pb2.Offer()
-    offerCopy.CopyFrom(offer)
-
-    chunk_utils.decrementResources(offerCopy.resources, task.resources)
-    if chunk_utils.isOfferValid(offerCopy):
-      return True
-    return False
 
   def stealHalfSubTasks(self, task):
     """
@@ -86,7 +87,7 @@ class TaskQueue:
 
     while self.queue.hasNext():
       task = self.queue.pop()
-      if (chunk_utils.numSubTasks(task) > 1 and self.fitsIn(task, offer)):
+      if (chunk_utils.numSubTasks(task) > 1 and fitsIn(task, offer)):
         taskCopy = mesos_pb2.TaskInfo()
         taskCopy.CopyFrom(task)
         stolenTasks = self.stealHalfSubTasks(taskCopy)

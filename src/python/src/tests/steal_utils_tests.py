@@ -99,7 +99,7 @@ class TestTaskQueue(unittest.TestCase):
         self.add_resources(task, 10, 2)
         offer = mesos_pb2.Offer()
         self.add_resources(offer, 5, 2)
-        self.assertFalse(self.queue.fitsIn(task, offer))
+        self.assertFalse(steal_utils.fitsIn(task, offer))
 
     def test_fitsInFalse(self):
         subTasksPerChunk = 5
@@ -107,7 +107,7 @@ class TestTaskQueue(unittest.TestCase):
         self.add_resources(task, 3, 2)
         offer = mesos_pb2.Offer()
         self.add_resources(offer, 5, 2)
-        self.assertTrue(self.queue.fitsIn(task, offer))
+        self.assertTrue(steal_utils.fitsIn(task, offer))
 
     def test_fitsInMissing(self):
         subTasksPerChunk = 5
@@ -115,7 +115,7 @@ class TestTaskQueue(unittest.TestCase):
         self.add_resources(task, 3, 3)
         offer = mesos_pb2.Offer()
         self.add_resources(offer, 5, 2)
-        self.assertFalse(self.queue.fitsIn(task, offer))
+        self.assertFalse(steal_utils.fitsIn(task, offer))
 
     def test_stealHalfSubTasks(self):
         subTasksPerChunk = 5

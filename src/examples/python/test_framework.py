@@ -22,11 +22,12 @@ import pdb
 import sys
 import time
 
+import chunk_utils
 import mesos
 import mesos_pb2
+import steal_utils
 import task_stealing_scheduler
 
-import chunk_utils
 
 TOTAL_TASKS = 32
 
@@ -53,9 +54,6 @@ class TestScheduler(mesos.Scheduler):
       print "Got resource offer %s" % offer.id.value
       while self.tasksLaunched < TOTAL_TASKS:
         tid = self.tasksLaunched
-        self.tasksLaunched += 1
-
-        print "Adding subtask %d to chunk" % tid
 
         task = mesos_pb2.TaskInfo()
         task.task_id.value = str(tid)
@@ -70,6 +68,13 @@ class TestScheduler(mesos.Scheduler):
         mem.name = "mem"
         mem.type = mesos_pb2.Value.SCALAR
         mem.scalar.value = TASK_MEM
+
+        if not steal_utils.fitsIn(task, offer):
+            print "Offer isn't enough to run task. Ignoring."
+            break
+
+        self.tasksLaunched += 1
+        print "Adding subtask %d to chunk" % tid
 
         tasks.append(task)
         if len(tasks) > TOTAL_TASKS * 3 / 4:
