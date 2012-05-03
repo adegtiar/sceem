@@ -33,18 +33,15 @@ class MyExecutor(mesos.Executor):
     # threads or processes, rather than inside launchTask itself.
     def run_task():
 
-      
       duration = pickle.loads(task.arg)
       # TODO(benh): Don't sleep, this blocks the event loop!
-      time.sleep(duration)
-
       print "Running task %s" % task.task_id.value
       update = mesos_pb2.TaskStatus()
       update.task_id.value = task.task_id.value
       update.state = mesos_pb2.TASK_RUNNING
       driver.sendStatusUpdate(update)
 
-      time.sleep(0.1)
+      time.sleep(duration)
 
       print "Sending status update..."
       update = mesos_pb2.TaskStatus()
