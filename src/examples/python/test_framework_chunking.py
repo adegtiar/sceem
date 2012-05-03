@@ -22,16 +22,19 @@ import pdb
 import sys
 import time
 
+import chunk_utils
 import mesos
 import mesos_pb2
+import steal_utils
 import task_chunk_scheduler
 
-import chunk_utils
 
-TOTAL_TASKS = 8
+TOTAL_TASKS = 256
 
-TASK_CPUS = 1
+TASK_CPUS = 2
 TASK_MEM = 32
+
+TASK_IDS = set(str(i) for i in range(TOTAL_TASKS))
 
 class TestScheduler(mesos.Scheduler):
   def __init__(self, executor):
@@ -46,13 +49,11 @@ class TestScheduler(mesos.Scheduler):
   def resourceOffers(self, driver, offers):
     print "Got %d resource offers" % len(offers)
     for offer in offers:
+
       tasks = []
       print "Got resource offer %s" % offer.id.value
       while self.tasksLaunched < TOTAL_TASKS:
         tid = self.tasksLaunched
-        self.tasksLaunched += 1
-
-        print "Adding subtask %d to chunk" % tid
 
         task = mesos_pb2.TaskInfo()
         task.task_id.value = str(tid)
@@ -68,51 +69,41 @@ class TestScheduler(mesos.Scheduler):
         mem.type = mesos_pb2.Value.SCALAR
         mem.scalar.value = TASK_MEM
 
-        tasks.append(task)
+        if not steal_utils.fitsIn(task, offer):
+            print "Offer isn't enough to run task. Ignoring."
+            break
 
-        if task.task_id.value in ("2", "3"):
-            self.subTasksToKill.append(task)
+        self.tasksLaunched += 1
+        print "Adding subtask %d to chunk" % tid
+
+        tasks.append(task)
+        if len(tasks) > TOTAL_TASKS / 2:
+            break
 
       if tasks:
-        taskChunk = chunk_utils.newTaskChunk(offer.slave_id, executor=self.executor, subTasks=tasks)
-        taskChunk.task_id.value = "chunk_id"
+        taskChunk = chunk_utils.newTaskChunk(offer.slave_id,
+                executor=self.executor, subTasks=tasks)
+        taskChunk.task_id.value = "chunk_id_{0}".format(self.tasksLaunched)
         taskChunk.name = "taskChunk"
         self.taskChunkId = taskChunk.task_id
 
-        """
-        cpus = taskChunk.resources.add()
-        cpus.name = "cpus"
-        cpus.type = mesos_pb2.Value.SCALAR
-        cpus.scalar.value = TASK_CPUS
-
-        # TODO: this should be set by addSubTask.
-        mem = taskChunk.resources.add()
-        mem.name = "mem"
-        mem.type = mesos_pb2.Value.SCALAR
-        mem.scalar.value = TASK_MEM
-        """
         print "Accepting offer on %s to start task chunk" % offer.hostname
         driver.launchTasks(offer.id, [taskChunk])
-      break
+      else:
+        print "Rejecting offer {0}".format(offer.id.value)
+        driver.launchTasks(offer.id, [])
 
   def statusUpdate(self, driver, update):
     print "Task %s is in state %d" % (update.task_id.value, update.state)
     global TOTAL_TASKS
     if update.state == mesos_pb2.TASK_FINISHED:
-      self.tasksFinished += 1
-      if self.tasksFinished == TOTAL_TASKS + 1:
-        print "All tasks done, exiting"
-        driver.stop()
-    elif (update.state == mesos_pb2.TASK_RUNNING and
-            update.task_id.value == "chunk_id"):
-        killedSubTaskIds = [subTask.task_id.value for subTask in self.subTasksToKill]
-        print "Attempting to kill task chunk"
-        driver.killSubTasks(self.subTasksToKill)
-        #driver.killTask(self.taskChunkId)
-    elif update.state == mesos_pb2.TASK_KILLED:
-        print "Killed the task chunk. Done"
-        #driver.stop()
-        TOTAL_TASKS -= 1
+      if update.task_id.value in TASK_IDS:
+        self.tasksFinished += 1
+        if self.tasksFinished == TOTAL_TASKS:
+          print "All tasks done, exiting"
+          driver.stop()
+      else:
+        print "Task chunk finished: {0}".format(update.task_id.value)
 
 if __name__ == "__main__":
   if len(sys.argv) != 2:
