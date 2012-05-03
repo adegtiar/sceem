@@ -28,9 +28,9 @@ import task_stealing_scheduler
 
 import chunk_utils
 
-TOTAL_TASKS = 16
+TOTAL_TASKS = 32
 
-TASK_CPUS = 2
+TASK_CPUS = 1
 TASK_MEM = 32
 
 TASK_IDS = set(str(i) for i in range(TOTAL_TASKS))
@@ -48,6 +48,7 @@ class TestScheduler(mesos.Scheduler):
   def resourceOffers(self, driver, offers):
     print "Got %d resource offers" % len(offers)
     for offer in offers:
+
       tasks = []
       print "Got resource offer %s" % offer.id.value
       while self.tasksLaunched < TOTAL_TASKS:
