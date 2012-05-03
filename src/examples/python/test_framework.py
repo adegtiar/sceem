@@ -29,7 +29,7 @@ import steal_utils
 import task_stealing_scheduler
 
 
-TOTAL_TASKS = 32
+TOTAL_TASKS = 16
 
 TASK_CPUS = 1
 TASK_MEM = 32
