@@ -2,14 +2,26 @@ import mesos
 import mesos_pb2
 import chunk_utils
 import steal_utils
+import itertools
 import random
 import pickle
 import numpy
 
 Distribution = enum(UNIFORM=1, SPLIT=2, NORMAL=3)
 
+COUNTER = itertools.count()
+
+def generateTaskId(self):
+        """
+        Generates a unique task chunk id string via a counter.
+        """
+        return "stolen_task_chunk_id_{0}".format(COUNTER.next())
+
 
 def selectTasksforOffers(offers, tasks, ratio, isTaskChunk=False):
+  """
+  Maps tasks to Offers and returns a dict of <offer, taskChunks>
+  """
   taskQueue = steal_utils.TaskQueue(tasks)
   offerQueue = steal_utils.PriorityQueue(offers,
                           sort_key = steal_utils.getOfferSize,
@@ -34,15 +46,19 @@ def selectTasksforOffers(offers, tasks, ratio, isTaskChunk=False):
 
       chunk_utils.decrementResources(offerCopy.resources,
                                      stolenTasksChunk.resources)
+
       if not chunk_utils.isOfferEmpty(offerCopy):
         offerQueue.push(offerCopy)
         
-  return stolenTasksChunks
+    return stolenTasksChunks
         
     
 
 def getTaskList(numTasks, sizeMem, sizeCpu, taskTime,
                 distribution=None, taskTime2=0):
+  """
+  Creates new tasks specified by config
+  """
   taskTimes = getTaskTimes(numTasks, taskTime, distribution, taskTime2)
   tasks = []
   for i in xrange(numTasks):
@@ -65,8 +81,10 @@ def getTaskList(numTasks, sizeMem, sizeCpu, taskTime,
   return tasks
 
 
-def getTaskTimes(numTasks, time, distribution=None, time2 =0):
-  #Generate Tasks
+def getTaskTimes(numTasks, time, distribution=Distribution.UNIFORM, time2 =0):
+  """
+  Generate TaskTimes based on given distribution
+  """
   if distribution==Distribution.UNIFORM:
     taskTime = [time for i in xrange(numTasks)]
     
