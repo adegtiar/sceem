@@ -45,6 +45,7 @@ class TaskStealingScheduler(TaskChunkScheduler):
         """
         Steals currently pending tasks and launches them on the new offer.
         """
+        print "\tTrying to find tasks to steal for {0} offers".format(len(offers))
         tasksToSteal = self.selectTasksToSteal(driver, offers, driver.pendingTasks)
 
         for offerIdValue, taskChunks in tasksToSteal.iteritems():
@@ -108,8 +109,12 @@ class TaskStealingScheduler(TaskChunkScheduler):
             parentTaskId, update = message.getPayload()
             if (parentTaskId.value, update.task_id.value) in self.stolenTaskIds:
                 # Potentially log this and remove from stolenTasks.
-                print "\tSquelched update from stolen task '{0}' in task chunk '{1}'".format(
-                        update.task_id.value, parentTaskId.value)
+                if update.state == mesos_pb2.TASK_KILLED:
+                    print "\tSquelched ack of killed/stolen sub task '{0}' from task chunk '{1}'".format(
+                            update.task_id.value, parentTaskId.value)
+                else:
+                    print "\tSquelched update from stolen task '{0}' in task chunk '{1}'".format(
+                            update.task_id.value, parentTaskId.value)
             else:
                 TaskChunkScheduler.frameworkMessage(self, driver, executor_id,
                         slave_id, data)
@@ -130,7 +135,7 @@ class TaskStealingScheduler(TaskChunkScheduler):
         """
         Generates a unique task chunk id string via a counter.
         """
-        return "task_chunk_id_{0}".format(self.counter.next())
+        return "stolen_task_chunk_id_{0}".format(self.counter.next())
 
 
 class TaskStealingSchedulerDriver(TaskChunkSchedulerDriver):
