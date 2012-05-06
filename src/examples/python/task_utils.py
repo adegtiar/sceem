@@ -75,7 +75,7 @@ def getTaskList(numTasks, sizeMem, sizeCpu, taskTime,
     mem.scalar.value = sizeMem
 
     task.args = pickle.dumps(taskTimes[i])
-    tasks.append(tasks)
+    tasks.append(task)
 
   return tasks
 

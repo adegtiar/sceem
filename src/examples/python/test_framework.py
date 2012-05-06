@@ -27,6 +27,7 @@ import mesos
 import mesos_pb2
 import steal_utils
 import task_stealing_scheduler
+import task_utils
 
 
 TOTAL_TASKS = 256
@@ -34,7 +35,10 @@ TOTAL_TASKS = 256
 TASK_CPUS = 2
 TASK_MEM = 32
 
+TIME = 32
+
 TASK_IDS = set(str(i) for i in range(TOTAL_TASKS))
+Tasks = task_utils.getTaskList(TOTAL_TASKS, TASK_CPUS, TASK_MEM, TIME,distribution=task_utils.Distribution.NORMAL)
 
 class TestScheduler(mesos.Scheduler):
   def __init__(self, executor):
