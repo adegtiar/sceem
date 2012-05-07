@@ -38,6 +38,10 @@ def getTaskChunkSize(distribution, numTasks, numSlaves):
     tasks = NORMAL_DIST[rand]
     return tasks
 
+def updateNormList(taskChunk, distribution, numTasks):
+  if taskChunk and distribution == Distribution.NORMAL:
+    NORMAL_DIST.remove(tasks_per_chunk)
+  
 
 def getNormList(numTasks, numBuckets):
   """
@@ -86,8 +90,7 @@ def selectTasksforOffers(offers, tasks, numTasks, numSlaves, distribution=Distri
         createdTasksChunk = None
       else:
         createdTasksChunk = taskQueue.stealTasks(offer, tasks_per_chunk, 0, False)
-      if createdTasksChunk:
-        NORMAL_DIST.remove(tasks_per_chunk)
+      updateNormList(createdTasksChunk, distribution, tasks_per_chunk)
     else:
       createdTasksChunk = taskQueue.stealTasks(offer, 1, 0, False)
 
