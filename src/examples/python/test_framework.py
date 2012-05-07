@@ -30,20 +30,20 @@ import task_utils
 import task_stealing_scheduler
 
 
-TOTAL_TASKS = 256
+NUM_SLAVES = 2
 TASK_TIME = 0.25
-TASK_TIME_2 = 32
+SIMULATION_TIME = 32
 
-TASK_CPUS = 1
+tasks_per_slave = int(SIMULATION_TIME / TASK_TIME)
+total_tasks = tasks_per_slave * NUM_SLAVES
+TASK_IDS = set(str(i) for i in range(total_tasks))
+
 TASK_MEM = 32
+task_cpus = None
 
+all_tasks = None
 
-TASK_IDS = set(str(i) for i in range(TOTAL_TASKS))
-
-TASKS = task_utils.getTaskList(TOTAL_TASKS, TASK_CPUS, TASK_MEM, TASK_TIME,
-        distribution=task_utils.Distribution.NORMAL)
-
-#TASKS = getTaskList(TOTAL_TASKS, 32, 2, TASK_TIME, Distribution.NORMAL)
+#all_tasks = getTaskList(total_tasks, 32, 2, TASK_TIME, Distribution.NORMAL)
 
 class TestScheduler(mesos.Scheduler):
   def __init__(self, executor):
@@ -57,13 +57,22 @@ class TestScheduler(mesos.Scheduler):
 
   def resourceOffers(self, driver, offers):
     print "Got %d resource offers" % len(offers)
+    global all_tasks
+
+    if all_tasks is None:
+        for resource in offers[0].resources:
+            if resource.name == "cpus":
+                task_cpus = resource.scalar.value
+        all_tasks = task_utils.getTaskList(total_tasks, TASK_MEM, task_cpus, TASK_TIME,
+                distribution=task_utils.Distribution.NORMAL)
 
     for offer in offers:
 
-      if TASKS:
-        tasks = TASKS[:TOTAL_TASKS/4]
-        del TASKS[:TOTAL_TASKS/4]
-        self.tasksLaunched += TOTAL_TASKS/4
+      if all_tasks:
+        tasks_per_chunk = total_tasks / 4
+        tasks = all_tasks[:tasks_per_chunk]
+        del all_tasks[:tasks_per_chunk]
+        self.tasksLaunched += tasks_per_chunk
 
         taskChunk = chunk_utils.newTaskChunk(offer.slave_id,
                 executor=self.executor, subTasks=tasks)
@@ -79,11 +88,11 @@ class TestScheduler(mesos.Scheduler):
 
   def statusUpdate(self, driver, update):
     print "Task %s is in state %d" % (update.task_id.value, update.state)
-    global TOTAL_TASKS
+    global total_tasks
     if update.state == mesos_pb2.TASK_FINISHED:
       if update.task_id.value in TASK_IDS:
         self.tasksFinished += 1
-        if self.tasksFinished == TOTAL_TASKS:
+        if self.tasksFinished == total_tasks:
           print "All tasks done, exiting"
           driver.stop()
       else:
