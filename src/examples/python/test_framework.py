@@ -36,17 +36,19 @@ NUM_SLAVES = 2
 TASK_TIME = 0.25
 # The total intended length of the simulation.
 SIMULATION_TIME = 32
+# The distribution to use.
+DISTRIBUTION = task_utils.Distribution.NORMAL
 
 tasks_per_slave = int(SIMULATION_TIME / TASK_TIME)
-total_tasks = tasks_per_slave * NUM_SLAVES
-TASK_IDS = set("Task_"+str(i) for i in range(total_tasks))
+num_total_tasks = tasks_per_slave * NUM_SLAVES
+TASK_IDS = set("Task_" + str(i) for i in range(num_total_tasks))
 
 TASK_MEM = 32
 task_cpus = None
 
 all_tasks = None
 
-#all_tasks = getTaskList(total_tasks, 32, 2, TASK_TIME, Distribution.NORMAL)
+#all_tasks = getTaskList(num_total_tasks, 32, 2, TASK_TIME, Distribution.NORMAL)
 
 class TestScheduler(mesos.Scheduler):
   def __init__(self, executor):
@@ -67,12 +69,12 @@ class TestScheduler(mesos.Scheduler):
         for resource in offers[0].resources:
             if resource.name == "cpus":
                 task_cpus = resource.scalar.value
-        all_tasks = task_utils.getTaskList(total_tasks, TASK_MEM, task_cpus, TASK_TIME,
-                distribution=task_utils.Distribution.NORMAL)
+        all_tasks = task_utils.getTaskList(num_total_tasks, TASK_MEM, task_cpus, TASK_TIME,
+                distribution=DISTRIBUTION)
 
     for offer in offers:
       if all_tasks:
-        tasks_per_chunk = total_tasks / 4
+        tasks_per_chunk = num_total_tasks / NUM_SLAVES
         tasks = all_tasks[:tasks_per_chunk]
         del all_tasks[:tasks_per_chunk]
         self.tasksLaunched += tasks_per_chunk
@@ -91,11 +93,11 @@ class TestScheduler(mesos.Scheduler):
 
   def statusUpdate(self, driver, update):
     print "Task %s is in state %d" % (update.task_id.value, update.state)
-    global total_tasks
+    global num_total_tasks
     if update.state == mesos_pb2.TASK_FINISHED:
       if update.task_id.value in TASK_IDS:
         self.tasksFinished += 1
-        if self.tasksFinished == total_tasks:
+        if self.tasksFinished == num_total_tasks:
           print "All tasks done, exiting"
           driver.stop()
       else:
