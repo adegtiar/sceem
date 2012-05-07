@@ -8,13 +8,13 @@ import pickle
 import numpy
 
 class Distribution:
-        UNIFORM, SPLIT, NORMAL = range(3)        
+  UNIFORM, SPLIT, NORMAL = range(3)
 
 def generateTaskId(self):
-        """
-        Generates a unique task chunk id string via a counter.
-        """
-        return "stolen_task_chunk_id_{0}".format(COUNTER.next())
+  """
+  Generates a unique task chunk id string via a counter.
+  """
+  return "stolen_task_chunk_id_{0}".format(COUNTER.next())
 
 
 def selectTasksforOffers(offers, tasks, ratio, isTaskChunk=False):
@@ -27,19 +27,19 @@ def selectTasksforOffers(offers, tasks, ratio, isTaskChunk=False):
                           mapper = lambda offer: offer.id.value)
 
   stolenTasksChunks = defaultdict(list)
-  
+
   while offerQueue.hasNext():
     offer = offerQueue.pop()
     if taskChunk:
       stolenTasksChunk = taskQueue.stealTasks(offer, ratio)
     else:
       stolenTasksChunk = taskQueue.stealTasks(offer, 1)
-      
+
     if stolenTasksChunk:
       stolenTasksChunk.name = "task_chunk"
       stolenTasksChunk.task_id.value = self.generateTaskId()
       stolenTasksChunks[offer.id.value].append(stolenTasksChunk)
-      
+
       offerCopy = mesos_pb2.Offer()
       offerCopy.CopyFrom(offer)
 
@@ -48,10 +48,10 @@ def selectTasksforOffers(offers, tasks, ratio, isTaskChunk=False):
 
       if not chunk_utils.isOfferEmpty(offerCopy):
         offerQueue.push(offerCopy)
-        
+
     return stolenTasksChunks
-        
-    
+
+
 
 def getTaskList(numTasks, sizeMem, sizeCpu, taskTime,
                 distribution=None, taskTime2=0):
@@ -86,7 +86,7 @@ def getTaskTimes(numTasks, time, distribution=Distribution.UNIFORM, time2 =0):
   """
   if distribution==Distribution.UNIFORM:
     taskTime = [time for i in xrange(numTasks)]
-    
+
   if distribution==Distribution.SPLIT:
     taskTime = [time if (i>numTasks/2) else time2 for i in xrange(numTasks)]
 
