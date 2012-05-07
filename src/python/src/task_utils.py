@@ -6,40 +6,42 @@ import itertools
 import random
 import pickle
 import numpy
+from collections import defaultdict
+
+COUNTER = itertools.count()
 
 
 class Distribution:
   UNIFORM, SPLIT, NORMAL = range(3)
 
-
-def generateTaskId(self):
+def generateTaskId():
   """
   Generates a unique task chunk id string via a counter.
   """
   return "created_task_chunk_id_{0}".format(COUNTER.next())
 
 
-def selectTasksforOffers(offers, tasks, ratio, isTaskChunk=False):
+def selectTasksforOffers(offers, tasks, tasks_per_taskChunk, isTaskChunk=False):
   """
   Maps tasks to Offers and returns a dict of <offer, taskChunks>
   """
   taskQueue = steal_utils.TaskQueue(tasks)
   offerQueue = steal_utils.PriorityQueue(offers,
                           sort_key = steal_utils.getOfferSize,
-                          mapper = lambda offer: offer.id.value)
+                                         mapper = lambda offer: offer.id.value)
 
   createdTasksChunks = defaultdict(list)
 
   while offerQueue.hasNext():
     offer = offerQueue.pop()
-    if taskChunk:
-      createdTasksChunk = taskQueue.stealTasks(offer, ratio)
+    if isTaskChunk:
+      createdTasksChunk = taskQueue.stealTasks(offer, tasks_per_taskChunk, 0)
     else:
-      createdTasksChunk = taskQueue.stealTasks(offer, 1)
+      createdTasksChunk = taskQueue.stealTasks(offer, 1, 0)
 
     if createdTasksChunk:
       createdTasksChunk.name = "task_chunk"
-      createdTasksChunk.task_id.value = self.generateTaskId()
+      createdTasksChunk.task_id.value = generateTaskId()
       createdTasksChunks[offer.id.value].append(createdTasksChunk)
 
       offerCopy = mesos_pb2.Offer()
@@ -51,8 +53,7 @@ def selectTasksforOffers(offers, tasks, ratio, isTaskChunk=False):
       if not chunk_utils.isOfferEmpty(offerCopy):
         offerQueue.push(offerCopy)
 
-    return createdTasksChunks
-
+  return createdTasksChunks
 
 def getTaskList(numTasks, sizeMem, sizeCpu, taskTime,
                 distribution=Distribution.UNIFORM, taskTime2=0):
