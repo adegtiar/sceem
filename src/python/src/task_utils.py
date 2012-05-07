@@ -40,7 +40,7 @@ def getTaskChunkSize(distribution, numTasks, numSlaves):
 
 def updateNormList(taskChunk, distribution, numTasks):
   if taskChunk and distribution == Distribution.NORMAL:
-    NORMAL_DIST.remove(tasks_per_chunk)
+    NORMAL_DIST.remove(numTasks)
   
 
 def getNormList(numTasks, numBuckets):

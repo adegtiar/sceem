@@ -46,6 +46,8 @@ ENABLE_TASK_CHUNKING = True
 # Scheduler driver to use.
 SCHEDULER_DRIVER = TaskStealingSchedulerDriver
 #SCHEDULER_DRIVER = TaskChunkSchedulerDriver
+# Multiple levels of Task chunking.
+ENABLE_LEVELS = False
 
 
 class TestScheduler(mesos.Scheduler):
@@ -68,7 +70,7 @@ class TestScheduler(mesos.Scheduler):
         if resource.name == "cpus":
             self.task_cpus = resource.scalar.value
 
-    self.all_tasks = task_utils.getTaskList(self.num_total_tasks, self.task_mem,
+    return task_utils.getTaskList(self.num_total_tasks, self.task_mem,
             self.task_cpus, self.task_time)
 
   def registered(self, driver, frameworkId, masterInfo):
@@ -79,7 +81,18 @@ class TestScheduler(mesos.Scheduler):
 
     # Initialize the tasks.
     if self.all_tasks is None:
-        self.initializeTasks(offers)
+      if ENABLE_LEVELS:
+        self.all_tasks = []
+        for i in xrange(2):
+          tasks = self.initializeTasks(offers)
+          taskChunk = chunk_utils.newTaskChunk(offers[0].slave_id,
+                                               executor=self.executor,
+                                               subTasks = tasks)
+          self.all_tasks.append(taskChunk)
+          taskChunk.task_id.value = "Initial_taskChunk_"+str(i)
+          taskChunk.name = "Initial_taskChunk_"+str(i)
+      else:
+        self.all_tasks = self.initializeTasks(offers)
 
     taskChunk = chunk_utils.newTaskChunk(offers[0].slave_id,
             executor=self.executor, subTasks = self.all_tasks)
