@@ -80,7 +80,7 @@ def getTaskList(numTasks, sizeMem, sizeCpu, taskTime,
   return tasks
 
 
-def getTaskTimes(numTasks, time, distribution=Distribution.UNIFORM, time2 =0):
+def getTaskTimes(numTasks, time, distribution=Distribution.UNIFORM, time2=0):
   """
   Generate TaskTimes based on given distribution
   """
