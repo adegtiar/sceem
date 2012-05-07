@@ -40,6 +40,8 @@ WORK_PER_SLAVE = 6
 DEFAULT_DISTRIBUTION = task_utils.Distribution.NORMAL
 # Default memory footprint of the executor.
 DEFAULT_TASK_MEM = 32
+# Flag to enable Task chunking.
+ENABLE_TASK_CHUNKING = False
 
 
 class TestScheduler(mesos.Scheduler):
@@ -81,7 +83,7 @@ class TestScheduler(mesos.Scheduler):
     # dict <offerId, listofTaskChunks>
     dictOffers = task_utils.selectTasksforOffers(offers, [taskChunk],
             len(self.all_tasks), self.num_slaves,
-            distribution=self.distribution, isTaskChunk=True)
+            distribution=self.distribution, isTaskChunk=ENABLE_TASK_CHUNKING)
 
     for offer in offers:
       subTasks = dictOffers[offer.id.value]

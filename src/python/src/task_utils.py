@@ -101,8 +101,8 @@ def selectTasksforOffers(offers, tasks, numTasks, numSlaves, distribution=Distri
       chunk_utils.decrementResources(offerCopy.resources,
                                      createdTasksChunk.resources)
 
-      #if not chunk_utils.isOfferEmpty(offerCopy):
-       # offerQueue.push(offerCopy)
+      if not chunk_utils.isOfferEmpty(offerCopy):
+        offerQueue.push(offerCopy)
 
   return createdTasksChunks
 
