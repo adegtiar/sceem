@@ -69,18 +69,18 @@ class TaskQueue:
     """
     Returns a list of stolenSubTasks and removes them from the taskChunk
     """
-    subTaskChunks = [subTaskChunk for subTaskChunk in
-                     chunk_utils.subTaskChunkIterator(taskChunk)]
+    subTasks = [subTask for subTask in
+                     chunk_utils.subTaskIterator(taskChunk)]
     if stealFromBack:
-      startIndex = len(subTaskChunks) - numToSteal
-      stolenTaskChunks = subTaskChunks[startIndex:]
+      startIndex = len(subTasks) - numToSteal
+      stolenTasks = subTasks[startIndex:]
     else:
-      stolenTaskChunks = subTaskChunks[:numToSteal]
+      stolenTasks = subTasks[:numToSteal]
    
-    for stolenTaskChunk in stolenTaskChunks:
-      chunk_utils.removeSubTaskChunk(taskChunk, stolenTaskChunk.taskChunk_id)
+    for stolenTask in stolenTasks:
+      chunk_utils.removeSubTask(taskChunk, stolenTask.taskChunk_id)
 
-    return stolenTaskChunks
+    return stolenTasks
 
   def stealTasks(self, offer, numToSteal=None, minNumTasks=2, stealFromBack=True):
     """
