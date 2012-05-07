@@ -78,7 +78,7 @@ class TaskQueue:
       stolenTasks = subTasks[:numToSteal]
    
     for stolenTask in stolenTasks:
-      chunk_utils.removeSubTask(taskChunk, stolenTask.taskChunk_id)
+      chunk_utils.removeSubTask(taskChunk, stolenTask.task_id)
 
     return stolenTasks
 
