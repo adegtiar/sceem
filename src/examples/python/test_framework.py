@@ -30,8 +30,11 @@ import task_utils
 import task_stealing_scheduler
 
 
+# The number of slaves you intend to have in the cluster.
 NUM_SLAVES = 2
+# The size of each task, in terms of the number of seconds it takes.
 TASK_TIME = 0.25
+# The total intended length of the simulation.
 SIMULATION_TIME = 32
 
 tasks_per_slave = int(SIMULATION_TIME / TASK_TIME)
@@ -59,6 +62,7 @@ class TestScheduler(mesos.Scheduler):
     print "Got %d resource offers" % len(offers)
     global all_tasks
 
+    # Initialize the tasks.
     if all_tasks is None:
         for resource in offers[0].resources:
             if resource.name == "cpus":
@@ -67,7 +71,6 @@ class TestScheduler(mesos.Scheduler):
                 distribution=task_utils.Distribution.NORMAL)
 
     for offer in offers:
-
       if all_tasks:
         tasks_per_chunk = total_tasks / 4
         tasks = all_tasks[:tasks_per_chunk]
