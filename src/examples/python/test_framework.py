@@ -31,11 +31,7 @@ import task_stealing_scheduler
 
 
 # The number of slaves you intend to have in the cluster.
-<<<<<<< HEAD
 DEFAULT_NUM_SLAVES = 1
-=======
-NUM_SLAVES = 1
->>>>>>> automated assigning of tasks per offer
 # The size of each task, in terms of the number of seconds it takes.
 DEFAULT_TASK_TIME = 0.25
 # The total work per slave, in seconds.
@@ -73,64 +69,32 @@ class TestScheduler(mesos.Scheduler):
 
   def resourceOffers(self, driver, offers):
     print "Got %d resource offers" % len(offers)
-<<<<<<< HEAD
 
     # Initialize the tasks.
     if self.all_tasks is None:
         self.initializeTasks(offers)
 
-    for offer in offers:
-      if self.all_tasks:
-        tasks_per_chunk = self.num_total_tasks / self.num_slaves
-        tasks = self.all_tasks[:tasks_per_chunk]
-        del self.all_tasks[:tasks_per_chunk]
-        self.tasksLaunched += tasks_per_chunk
+    taskChunk = chunk_utils.newTaskChunk(offers[0].slave_id,
+                      executor=self.executor, subTasks = self.all_tasks)
 
-        taskChunk = chunk_utils.newTaskChunk(offer.slave_id,
-                executor=self.executor, subTasks=tasks)
-        taskChunk.task_id.value = "chunk_id_{0}".format(self.tasksLaunched)
-        taskChunk.name = "taskChunk"
-        self.taskChunkId = taskChunk.task_id
-
-=======
-    global all_tasks
-      
-    # Initialize the tasks.
-    if all_tasks is None:
-      for resource in offers[0].resources:
-        if resource.name == "cpus":
-          task_cpus = resource.scalar.value
-      all_tasks = task_utils.getTaskList(total_tasks, TASK_MEM, task_cpus, TASK_TIME, distribution=task_utils.Distribution.NORMAL)
-
-    #getTaskChunks(tasks, numSlaves, distribution, isTaskChunk)
+    # dict <offerId, listofTaskChunks>
+    dictOffers = task_utils.selectTasksforOffers(offers, [taskChunk],
+                         len(self.all_tasks), self.num_slaves,
+                         distribution=self.distribution,
+                         isTaskChunk=True)
     
-    taskChunk = chunk_utils.newTaskChunk(offers[0].slave_id, executor=self.executor, subTasks = all_tasks)
-    # get tasks per offer
-    dictOffers = task_utils.selectTasksforOffers(offers, [taskChunk], len(all_tasks), NUM_SLAVES+1, distribution=task_utils.Distribution.NORMAL, isTaskChunk=True)
-    
-    #if dictOffers:
     for offer in offers:
-      subTasks = dictOffers[offer.id.value]  #  if all_tasks:
-      print "Length of subTasks is" , len(subTasks)
+      subTasks = dictOffers[offer.id.value]
       if subTasks:
         offerTotalTasks = 0
         for subTask in subTasks:
           offerTotalTasks += chunk_utils.numSubTasks(subTask)
 
         self.tasksLaunched += offerTotalTasks
-        startIndex = max(0, len(all_tasks) - offerTotalTasks)
-        del all_tasks[startIndex:]
-        
-#        taskChunk = chunk_utils.newTaskChunk(offer.slave_id,
-  #                                           executor=self.executor, subTasks=subtasks)
- #       taskChunk.task_id.value = "chunk_id_{0}".format(self.tasksLaunched)
-   #     taskChunk.name = "taskChunk"
-   #     self.taskChunkId = taskChunk.task_id
-        
->>>>>>> automated assigning of tasks per offer
+        startIndex = max(0, len(self.all_tasks) - offerTotalTasks)
+        del self.all_tasks[startIndex:]
         print "Accepting offer on %s to start task chunk" % offer.hostname
         driver.launchTasks(offer.id, subTasks)
-      
       else:
         print "Rejecting offer {0}".format(offer.id.value)
         driver.launchTasks(offer.id, [])
