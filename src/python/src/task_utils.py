@@ -111,13 +111,13 @@ def selectTasksforOffers(offers, tasks, numTasks, numSlaves, distribution=Distri
   return createdTasksChunks
 
 def getTaskList(numTasks, sizeMem, sizeCpu, taskTime,
-                distribution=Distribution.UNIFORM, taskTime2=0):
+                distribution=Distribution.UNIFORM, taskTime2=0, index=0):
   """
   Creates new tasks specified by config
   """
   taskTimes = getTaskTimes(numTasks, taskTime, distribution, taskTime2)
   tasks = []
-  for i in xrange(numTasks):
+  for i in xrange(index*numTasks, (index+1)*numTasks):
     task = mesos_pb2.TaskInfo()
     task.task_id.value = "Task_"+str(i)
     task.name = "sub task name"
@@ -132,7 +132,7 @@ def getTaskList(numTasks, sizeMem, sizeCpu, taskTime,
     mem.type = mesos_pb2.Value.SCALAR
     mem.scalar.value = sizeMem
 
-    task.data = pickle.dumps(taskTimes[i])
+    task.data = pickle.dumps(taskTimes[i - index*numTasks])
     tasks.append(task)
 
   return tasks

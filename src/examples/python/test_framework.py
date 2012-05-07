@@ -48,6 +48,8 @@ ENABLE_TASK_CHUNKING = True
 SCHEDULER_DRIVER = TaskChunkSchedulerDriver
 # Multiple levels of Task chunking.
 ENABLE_LEVELS = False
+# Number of TaskChunks created of size num_total_tasks
+NUM_TASK_CHUNKS = 4
 
 
 class TestScheduler(mesos.Scheduler):
@@ -63,15 +65,18 @@ class TestScheduler(mesos.Scheduler):
     self.all_tasks = None
     self.task_mem = DEFAULT_TASK_MEM
     self.distribution = DEFAULT_DISTRIBUTION
-    self.task_ids = set("Task_" + str(i) for i in range(num_total_tasks))
+    if ENABLE_LEVELS:
+      self.task_ids = set("Task_" + str(i) for i in range(num_total_tasks*NUM_TASK_CHUNKS))
+    else:
+      self.task_ids = set("Task_" + str(i) for i in range(num_total_tasks))
 
-  def initializeTasks(self, offers):
+  def initializeTasks(self, offers, index=0):
     for resource in offers[0].resources:
         if resource.name == "cpus":
             self.task_cpus = resource.scalar.value
 
     return task_utils.getTaskList(self.num_total_tasks, self.task_mem,
-            self.task_cpus, self.task_time)
+            self.task_cpus, self.task_time, index=index)
 
   def registered(self, driver, frameworkId, masterInfo):
     print "Registered with framework ID %s" % frameworkId.value
@@ -83,8 +88,8 @@ class TestScheduler(mesos.Scheduler):
     if self.all_tasks is None:
       if ENABLE_LEVELS:
         self.all_tasks = []
-        for i in xrange(2):
-          tasks = self.initializeTasks(offers)
+        for i in xrange(NUM_TASK_CHUNKS):
+          tasks = self.initializeTasks(offers, i)
           taskChunk = chunk_utils.newTaskChunk(offers[0].slave_id,
                                                executor=self.executor,
                                                subTasks = tasks)
@@ -126,11 +131,15 @@ class TestScheduler(mesos.Scheduler):
       if update.task_id.value in self.task_ids:
         self.task_ids.remove(update.task_id.value)
         self.tasksFinished += 1
-        if self.tasksFinished == self.num_total_tasks:
-          print "All tasks done, exiting"
-          driver.stop()
       else:
         print "Task chunk finished: {0}".format(update.task_id.value)
+        if ENABLE_LEVELS:
+          total_tasks = self.num_total_tasks*NUM_TASK_CHUNKS
+        else:
+          total_tasks = self.num_total_tasks
+        if self.tasksFinished == total_tasks:
+          print "All tasks done, exiting"
+          driver.stop()
 
 
 def runSimulation(master, num_slaves, task_time):
