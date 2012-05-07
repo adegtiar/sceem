@@ -36,7 +36,6 @@ def getTaskChunkSize(distribution, numTasks, numSlaves):
 
     rand = random.randint(0, len(NORMAL_DIST) - 1)
     tasks = NORMAL_DIST[rand]
-    NORMAL_DIST.remove(tasks)
     return tasks
 
 
@@ -87,6 +86,8 @@ def selectTasksforOffers(offers, tasks, numTasks, numSlaves, distribution=Distri
         createdTasksChunk = None
       else:
         createdTasksChunk = taskQueue.stealTasks(offer, tasks_per_chunk, 0, False)
+      if createdTasksChunk:
+        NORMAL_DIST.remove(tasks_per_chunk)
     else:
       createdTasksChunk = taskQueue.stealTasks(offer, 1, 0, False)
 

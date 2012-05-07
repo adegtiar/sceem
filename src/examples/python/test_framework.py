@@ -41,7 +41,7 @@ DEFAULT_DISTRIBUTION = task_utils.Distribution.NORMAL
 # Default memory footprint of the executor.
 DEFAULT_TASK_MEM = 32
 # Flag to enable Task chunking.
-ENABLE_TASK_CHUNKING = False
+ENABLE_TASK_CHUNKING = True
 
 
 class TestScheduler(mesos.Scheduler):
@@ -87,6 +87,7 @@ class TestScheduler(mesos.Scheduler):
 
     for offer in offers:
       subTasks = dictOffers[offer.id.value]
+      print "offer_id = %s, numSubTasks" % (offer.id.value), len(subTasks)
       if subTasks:
         offerTotalTasks = 0
         for subTask in subTasks:
