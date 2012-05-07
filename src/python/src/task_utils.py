@@ -61,7 +61,7 @@ def getTaskList(numTasks, sizeMem, sizeCpu, taskTime,
   taskTimes = getTaskTimes(numTasks, taskTime, distribution, taskTime2)
   tasks = []
   for i in xrange(numTasks):
-    task = mesos.TaskInfo()
+    task = mesos_pb2.TaskInfo()
     task.task_id.value = "Task_"+str(i)
 
     cpu = task.resources.add()
