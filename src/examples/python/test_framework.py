@@ -27,7 +27,8 @@ import mesos_pb2
 import steal_utils
 import chunk_utils
 import task_utils
-import task_stealing_scheduler
+from task_chunk_scheduler import TaskChunkSchedulerDriver
+from task_stealing_scheduler import TaskStealingSchedulerDriver
 
 
 # The number of slaves you intend to have in the cluster.
@@ -42,6 +43,9 @@ DEFAULT_DISTRIBUTION = task_utils.Distribution.NORMAL
 DEFAULT_TASK_MEM = 32
 # Flag to enable Task chunking.
 ENABLE_TASK_CHUNKING = True
+# Scheduler driver to use.
+SCHEDULER_DRIVER = TaskStealingSchedulerDriver
+#SCHEDULER_DRIVER = TaskChunkSchedulerDriver
 
 
 class TestScheduler(mesos.Scheduler):
@@ -131,7 +135,7 @@ def runSimulation(master, num_slaves, task_time):
   scheduler = TestScheduler(executor, num_slaves, task_time, num_total_tasks)
 
   start_time = time.time()
-  driver = task_stealing_scheduler.TaskStealingSchedulerDriver(
+  driver = SCHEDULER_DRIVER(
     scheduler,
     framework,
     master)
