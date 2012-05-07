@@ -102,11 +102,11 @@ class TestScheduler(mesos.Scheduler):
           task_cpus = resource.scalar.value
       all_tasks = task_utils.getTaskList(total_tasks, TASK_MEM, task_cpus, TASK_TIME, distribution=task_utils.Distribution.NORMAL)
 
-    taskChunk = chunk_utils.newTaskChunk(offers[0].slave_id, executor=self.executor, subTasks = all_tasks)
     #getTaskChunks(tasks, numSlaves, distribution, isTaskChunk)
     
+    taskChunk = chunk_utils.newTaskChunk(offers[0].slave_id, executor=self.executor, subTasks = all_tasks)
     # get tasks per offer
-    dictOffers = task_utils.selectTasksforOffers(offers, [taskChunk], total_tasks/4, isTaskChunk=False)
+    dictOffers = task_utils.selectTasksforOffers(offers, [taskChunk], len(all_tasks), NUM_SLAVES+1, distribution=task_utils.Distribution.NORMAL, isTaskChunk=True)
     
     #if dictOffers:
     for offer in offers:

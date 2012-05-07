@@ -8,11 +8,48 @@ import pickle
 import numpy
 from collections import defaultdict
 
-COUNTER = itertools.count()
 
 
 class Distribution:
   UNIFORM, SPLIT, NORMAL = range(3)
+
+COUNTER = itertools.count()
+NORMAL_DIST = None
+
+def getTaskChunkSize(distribution, numTasks, numSlaves):
+  """
+  Return Number of tasks per task Chunk
+  """
+  global NORMAL_DIST
+  if distribution == Distribution.UNIFORM:
+    return numTasks / numSlaves
+  elif distribution == Distribution.NORMAL:
+    if NORMAL_DIST is None:
+      NORMAL_DIST = getNormList(numTasks, numSlaves)
+      print "NOMRAL_DIST" , NORMAL_DIST
+    
+    rand = random.randint(0, len(NORMAL_DIST)-1)
+    tasks = NORMAL_DIST[rand]
+    NORMAL_DIST.remove(tasks)
+    return tasks
+
+
+def getNormList(numTasks, buckets):
+  dictBuckets = defaultdict(int)
+  sigma = 1
+  interval = float(4.0 / buckets)
+  normList = [random.normalvariate(0,1) for i in xrange(numTasks)]
+  for normVal in normList:
+    currValue = -2
+    numBucket = 0
+    while (normVal < currValue):
+      currValue += interval
+      numBucket += 1
+    dictBuckets[numBucket] +=1
+  
+  print "length of dictBuckets" , len(dictBuckets)  
+  return [num for bucket, num  in dictBuckets.iteritems()]
+  
 
 def generateTaskId():
   """
@@ -21,7 +58,7 @@ def generateTaskId():
   return "created_task_chunk_id_{0}".format(COUNTER.next())
 
 
-def selectTasksforOffers(offers, tasks, tasks_per_taskChunk, isTaskChunk=False):
+def selectTasksforOffers(offers, tasks, numTasks, numSlaves, distribution=Distribution.UNIFORM, isTaskChunk=False):
   """
   Maps tasks to Offers and returns a dict of <offer, taskChunks>
   """
@@ -35,7 +72,8 @@ def selectTasksforOffers(offers, tasks, tasks_per_taskChunk, isTaskChunk=False):
   while offerQueue.hasNext():
     offer = offerQueue.pop()
     if isTaskChunk:
-      createdTasksChunk = taskQueue.stealTasks(offer, tasks_per_taskChunk, 0)
+      tasks_per_chunk = getTaskChunkSize(distribution, numTasks, numSlaves)
+      createdTasksChunk = taskQueue.stealTasks(offer, tasks_per_chunk, 0)
     else:
       createdTasksChunk = taskQueue.stealTasks(offer, 1, 0)
 
