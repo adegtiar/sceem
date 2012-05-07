@@ -7,8 +7,10 @@ import random
 import pickle
 import numpy
 
+
 class Distribution:
   UNIFORM, SPLIT, NORMAL = range(3)
+
 
 def generateTaskId(self):
   """
@@ -52,9 +54,8 @@ def selectTasksforOffers(offers, tasks, ratio, isTaskChunk=False):
     return createdTasksChunks
 
 
-
 def getTaskList(numTasks, sizeMem, sizeCpu, taskTime,
-                distribution=None, taskTime2=0):
+                distribution=Distribution.UNIFORM, taskTime2=0):
   """
   Creates new tasks specified by config
   """
