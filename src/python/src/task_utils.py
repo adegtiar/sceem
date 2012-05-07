@@ -15,7 +15,8 @@ class Distribution:
 COUNTER = itertools.count()
 NORMAL_DIST = None
 SIGMA = 1
-LEFT_MOST_BUCKET = SIGMA * -1.5
+LEFT_BOUND = SIGMA * -1.5
+RANGE = 2 * -LEFT_BOUND
 
 
 def getTaskChunkSize(distribution, numTasks, numSlaves):
@@ -44,20 +45,20 @@ def getNormList(numTasks, numBuckets):
   Returns a list of bucket sizes distributed normally, where the indices
   of the list correspond to the bucket index. The sizes add up to numTasks.
   """
-  dictBuckets = defaultdict(int)
-  interval = float(4.0 / numBuckets)
-  normList = [random.normalvariate(0, SIGMA) for i in xrange(numTasks)]
+  interval = RANGE / numBuckets
+  normNumbers = [random.normalvariate(0, SIGMA) for i in xrange(numTasks)]
 
-  for normVal in normList:
-    currValue = LEFT_MOST_BUCKET
+  dictBuckets = defaultdict(int)
+  for normVal in normNumbers:
+    currValue = LEFT_BOUND + interval
     bucketIndex = 0
-    while currValue < normVal:
+    while currValue < normVal and bucketIndex < numBuckets - 1:
       currValue += interval
       bucketIndex += 1
     dictBuckets[bucketIndex] += 1
 
   print "length of dictBuckets" , len(dictBuckets)
-  return [num for bucket, num in dictBuckets.iteritems()]
+  return dictBuckets.values()
 
 
 def generateTaskId():

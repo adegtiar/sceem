@@ -63,7 +63,7 @@ class TestScheduler(mesos.Scheduler):
             self.task_cpus = resource.scalar.value
 
     self.all_tasks = task_utils.getTaskList(self.num_total_tasks, self.task_mem,
-            self.task_cpus, self.task_time, distribution=self.distribution)
+            self.task_cpus, self.task_time)
 
   def registered(self, driver, frameworkId, masterInfo):
     print "Registered with framework ID %s" % frameworkId.value
