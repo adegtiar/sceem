@@ -8,7 +8,7 @@ import pickle
 import numpy
 
 class Distribution:
-        UNIFORM, SPLIT, NORMAL = range(3)        
+        UNIFORM, SPLIT, NORMAL = range(3)
 
 def generateTaskId(self):
         """
@@ -27,19 +27,19 @@ def selectTasksforOffers(offers, tasks, ratio, isTaskChunk=False):
                           mapper = lambda offer: offer.id.value)
 
   stolenTasksChunks = defaultdict(list)
-  
+
   while offerQueue.hasNext():
     offer = offerQueue.pop()
     if taskChunk:
       stolenTasksChunk = taskQueue.stealTasks(offer, ratio)
     else:
       stolenTasksChunk = taskQueue.stealTasks(offer, 1)
-      
+
     if stolenTasksChunk:
       stolenTasksChunk.name = "task_chunk"
       stolenTasksChunk.task_id.value = self.generateTaskId()
       stolenTasksChunks[offer.id.value].append(stolenTasksChunk)
-      
+
       offerCopy = mesos_pb2.Offer()
       offerCopy.CopyFrom(offer)
 
@@ -48,10 +48,10 @@ def selectTasksforOffers(offers, tasks, ratio, isTaskChunk=False):
 
       if not chunk_utils.isOfferEmpty(offerCopy):
         offerQueue.push(offerCopy)
-        
+
     return stolenTasksChunks
-        
-    
+
+
 
 def getTaskList(numTasks, sizeMem, sizeCpu, taskTime,
                 distribution=None, taskTime2=0):
@@ -61,8 +61,9 @@ def getTaskList(numTasks, sizeMem, sizeCpu, taskTime,
   taskTimes = getTaskTimes(numTasks, taskTime, distribution, taskTime2)
   tasks = []
   for i in xrange(numTasks):
-    task = mesos.TaskInfo()
+    task = mesos_pb2.TaskInfo()
     task.task_id.value = "Task_"+str(i)
+    task.name = "sub task name"
 
     cpu = task.resources.add()
     cpu.name = "cpus"
@@ -74,7 +75,7 @@ def getTaskList(numTasks, sizeMem, sizeCpu, taskTime,
     mem.type = mesos_pb2.Value.SCALAR
     mem.scalar.value = sizeMem
 
-    task.args = pickle.dumps(taskTimes[i])
+    task.data = pickle.dumps(taskTimes[i])
     tasks.append(task)
 
   return tasks
@@ -86,7 +87,7 @@ def getTaskTimes(numTasks, time, distribution=Distribution.UNIFORM, time2 =0):
   """
   if distribution==Distribution.UNIFORM:
     taskTime = [time for i in xrange(numTasks)]
-    
+
   if distribution==Distribution.SPLIT:
     taskTime = [time if (i>numTasks/2) else time2 for i in xrange(numTasks)]
 
@@ -95,5 +96,3 @@ def getTaskTimes(numTasks, time, distribution=Distribution.UNIFORM, time2 =0):
     taskTime = [abs(random.normalvariate(0,1))*time for i in xrange(numTasks)]
 
   return taskTime
-
-
