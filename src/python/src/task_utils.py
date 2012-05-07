@@ -8,13 +8,15 @@ import pickle
 import numpy
 from collections import defaultdict
 
-
-
 class Distribution:
   UNIFORM, SPLIT, NORMAL = range(3)
 
+
 COUNTER = itertools.count()
 NORMAL_DIST = None
+SIGMA = 1
+LEFT_MOST_BUCKET = SIGMA * -1.5
+
 
 def getTaskChunkSize(distribution, numTasks, numSlaves):
   """
@@ -26,30 +28,37 @@ def getTaskChunkSize(distribution, numTasks, numSlaves):
   elif distribution == Distribution.NORMAL:
     if NORMAL_DIST is None:
       NORMAL_DIST = getNormList(numTasks, numSlaves)
-      print "NOMRAL_DIST" , NORMAL_DIST
-    
-    rand = random.randint(0, len(NORMAL_DIST)-1)
+      print "NORMAL_DIST" , NORMAL_DIST
+
+    if len(NORMAL_DIST) == 0:
+      return 0
+
+    rand = random.randint(0, len(NORMAL_DIST) - 1)
     tasks = NORMAL_DIST[rand]
     NORMAL_DIST.remove(tasks)
     return tasks
 
 
-def getNormList(numTasks, buckets):
+def getNormList(numTasks, numBuckets):
+  """
+  Returns a list of bucket sizes distributed normally, where the indices
+  of the list correspond to the bucket index. The sizes add up to numTasks.
+  """
   dictBuckets = defaultdict(int)
-  sigma = 1
-  interval = float(4.0 / buckets)
-  normList = [random.normalvariate(0,1) for i in xrange(numTasks)]
+  interval = float(4.0 / numBuckets)
+  normList = [random.normalvariate(0, SIGMA) for i in xrange(numTasks)]
+
   for normVal in normList:
-    currValue = -2
-    numBucket = 0
-    while (normVal < currValue):
+    currValue = LEFT_MOST_BUCKET
+    bucketIndex = 0
+    while currValue < normVal:
       currValue += interval
-      numBucket += 1
-    dictBuckets[numBucket] +=1
-  
-  print "length of dictBuckets" , len(dictBuckets)  
-  return [num for bucket, num  in dictBuckets.iteritems()]
-  
+      bucketIndex += 1
+    dictBuckets[bucketIndex] += 1
+
+  print "length of dictBuckets" , len(dictBuckets)
+  return [num for bucket, num in dictBuckets.iteritems()]
+
 
 def generateTaskId():
   """

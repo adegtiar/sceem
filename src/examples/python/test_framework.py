@@ -37,7 +37,7 @@ DEFAULT_TASK_TIME = 0.25
 # The total work per slave, in seconds.
 WORK_PER_SLAVE = 6
 # The distribution to use.
-DEFAULT_DISTRIBUTION = task_utils.Distribution.UNIFORM
+DEFAULT_DISTRIBUTION = task_utils.Distribution.NORMAL
 # Default memory footprint of the executor.
 DEFAULT_TASK_MEM = 32
 
