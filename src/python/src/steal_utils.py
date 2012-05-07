@@ -98,7 +98,7 @@ class TaskQueue:
         taskCopy = mesos_pb2.TaskInfo()
         taskCopy.CopyFrom(task)
         if numToSteal is None:  #Steal Half
-          numToSteal = chunk_utils.numSubTasks(taskChunk) / 2
+          numToSteal = chunk_utils.numSubTasks(taskCopy) / 2
 
         stolenTasks = self.stealSubTasks(taskCopy, numToSteal, stealFromBack)
         stolenTasksChunk = chunk_utils.newTaskChunk(offer.slave_id,
