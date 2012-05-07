@@ -527,6 +527,7 @@ TASK_CHUNK_TARGETS = python/src/task_chunk_executor.py	\
 		     python/src/task_chunk_scheduler.py	\
 		     python/src/chunk_utils.py	\
 		     python/src/steal_utils.py	\
+		     python/src/task_utils.py	\
 		     python/src/task_stealing_scheduler.py
 
 
@@ -534,6 +535,7 @@ TASK_CHUNK_SRC = $(srcdir)/python/src/task_chunk_executor.py	\
 		     $(srcdir)/python/src/task_chunk_scheduler.py	\
 		     $(srcdir)/python/src/chunk_utils.py	\
 		     $(srcdir)/python/src/steal_utils.py	\
+		     $(srcdir)/python/src/task_utils.py	\
 		     $(srcdir)/python/src/task_stealing_scheduler.py
 
 
