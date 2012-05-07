@@ -61,6 +61,7 @@ class TestScheduler(mesos.Scheduler):
     for resource in offers[0].resources:
         if resource.name == "cpus":
             self.task_cpus = resource.scalar.value
+
     self.all_tasks = task_utils.getTaskList(self.num_total_tasks, self.task_mem,
             self.task_cpus, self.task_time, distribution=self.distribution)
 
@@ -75,14 +76,13 @@ class TestScheduler(mesos.Scheduler):
         self.initializeTasks(offers)
 
     taskChunk = chunk_utils.newTaskChunk(offers[0].slave_id,
-                      executor=self.executor, subTasks = self.all_tasks)
+            executor=self.executor, subTasks = self.all_tasks)
 
     # dict <offerId, listofTaskChunks>
     dictOffers = task_utils.selectTasksforOffers(offers, [taskChunk],
-                         len(self.all_tasks), self.num_slaves,
-                         distribution=self.distribution,
-                         isTaskChunk=True)
-    
+            len(self.all_tasks), self.num_slaves,
+            distribution=self.distribution, isTaskChunk=True)
+
     for offer in offers:
       subTasks = dictOffers[offer.id.value]
       if subTasks:
@@ -93,12 +93,12 @@ class TestScheduler(mesos.Scheduler):
         self.tasksLaunched += offerTotalTasks
         startIndex = max(0, len(self.all_tasks) - offerTotalTasks)
         del self.all_tasks[startIndex:]
+
         print "Accepting offer on %s to start task chunk" % offer.hostname
         driver.launchTasks(offer.id, subTasks)
       else:
         print "Rejecting offer {0}".format(offer.id.value)
         driver.launchTasks(offer.id, [])
-    
 
   def statusUpdate(self, driver, update):
     print "Task %s is in state %d" % (update.task_id.value, update.state)
