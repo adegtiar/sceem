@@ -14,7 +14,7 @@ def generateTaskId(self):
   """
   Generates a unique task chunk id string via a counter.
   """
-  return "stolen_task_chunk_id_{0}".format(COUNTER.next())
+  return "created_task_chunk_id_{0}".format(COUNTER.next())
 
 
 def selectTasksforOffers(offers, tasks, ratio, isTaskChunk=False):
@@ -26,30 +26,30 @@ def selectTasksforOffers(offers, tasks, ratio, isTaskChunk=False):
                           sort_key = steal_utils.getOfferSize,
                           mapper = lambda offer: offer.id.value)
 
-  stolenTasksChunks = defaultdict(list)
+  createdTasksChunks = defaultdict(list)
 
   while offerQueue.hasNext():
     offer = offerQueue.pop()
     if taskChunk:
-      stolenTasksChunk = taskQueue.stealTasks(offer, ratio)
+      createdTasksChunk = taskQueue.stealTasks(offer, ratio)
     else:
-      stolenTasksChunk = taskQueue.stealTasks(offer, 1)
+      createdTasksChunk = taskQueue.stealTasks(offer, 1)
 
-    if stolenTasksChunk:
-      stolenTasksChunk.name = "task_chunk"
-      stolenTasksChunk.task_id.value = self.generateTaskId()
-      stolenTasksChunks[offer.id.value].append(stolenTasksChunk)
+    if createdTasksChunk:
+      createdTasksChunk.name = "task_chunk"
+      createdTasksChunk.task_id.value = self.generateTaskId()
+      createdTasksChunks[offer.id.value].append(createdTasksChunk)
 
       offerCopy = mesos_pb2.Offer()
       offerCopy.CopyFrom(offer)
 
       chunk_utils.decrementResources(offerCopy.resources,
-                                     stolenTasksChunk.resources)
+                                     createdTasksChunk.resources)
 
       if not chunk_utils.isOfferEmpty(offerCopy):
         offerQueue.push(offerCopy)
 
-    return stolenTasksChunks
+    return createdTasksChunks
 
 
 

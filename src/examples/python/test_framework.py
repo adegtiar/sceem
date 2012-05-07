@@ -34,17 +34,16 @@ TOTAL_TASKS = 256
 TASK_TIME = 0.25
 TASK_TIME_2 = 32
 
-TASK_CPUS = 2
+TASK_CPUS = 1
 TASK_MEM = 32
 
 
 TASK_IDS = set(str(i) for i in range(TOTAL_TASKS))
 
-#TASKS = getTaskList(TOTAL_TASKS, 32, 2, TASK_TIME, Distribution.NORMAL)
-
 TASKS = task_utils.getTaskList(TOTAL_TASKS, TASK_CPUS, TASK_MEM, TASK_TIME,
         distribution=task_utils.Distribution.NORMAL)
 
+#TASKS = getTaskList(TOTAL_TASKS, 32, 2, TASK_TIME, Distribution.NORMAL)
 
 class TestScheduler(mesos.Scheduler):
   def __init__(self, executor):
