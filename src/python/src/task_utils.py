@@ -8,13 +8,13 @@ import pickle
 import numpy
 
 class Distribution:
-        UNIFORM, SPLIT, NORMAL = range(3)
+  UNIFORM, SPLIT, NORMAL = range(3)
 
 def generateTaskId(self):
-        """
-        Generates a unique task chunk id string via a counter.
-        """
-        return "stolen_task_chunk_id_{0}".format(COUNTER.next())
+  """
+  Generates a unique task chunk id string via a counter.
+  """
+  return "stolen_task_chunk_id_{0}".format(COUNTER.next())
 
 
 def selectTasksforOffers(offers, tasks, ratio, isTaskChunk=False):
@@ -81,7 +81,7 @@ def getTaskList(numTasks, sizeMem, sizeCpu, taskTime,
   return tasks
 
 
-def getTaskTimes(numTasks, time, distribution=Distribution.UNIFORM, time2 =0):
+def getTaskTimes(numTasks, time, distribution=Distribution.UNIFORM, time2=0):
   """
   Generate TaskTimes based on given distribution
   """
