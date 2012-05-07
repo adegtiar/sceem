@@ -32,7 +32,7 @@ def getTaskChunkSize(distribution, numTasks, numSlaves):
       print "NORMAL_DIST" , NORMAL_DIST
 
     if len(NORMAL_DIST) == 0:
-      return 0
+      return None
 
     rand = random.randint(0, len(NORMAL_DIST) - 1)
     tasks = NORMAL_DIST[rand]
@@ -83,9 +83,12 @@ def selectTasksforOffers(offers, tasks, numTasks, numSlaves, distribution=Distri
     offer = offerQueue.pop()
     if isTaskChunk:
       tasks_per_chunk = getTaskChunkSize(distribution, numTasks, numSlaves)
-      createdTasksChunk = taskQueue.stealTasks(offer, tasks_per_chunk, 0)
+      if tasks_per_chunk is None:
+        createdTasksChunk = None
+      else:
+        createdTasksChunk = taskQueue.stealTasks(offer, tasks_per_chunk, 0, False)
     else:
-      createdTasksChunk = taskQueue.stealTasks(offer, 1, 0)
+      createdTasksChunk = taskQueue.stealTasks(offer, 1, 0, False)
 
     if createdTasksChunk:
       createdTasksChunk.name = "task_chunk"
@@ -98,8 +101,8 @@ def selectTasksforOffers(offers, tasks, numTasks, numSlaves, distribution=Distri
       chunk_utils.decrementResources(offerCopy.resources,
                                      createdTasksChunk.resources)
 
-      if not chunk_utils.isOfferEmpty(offerCopy):
-        offerQueue.push(offerCopy)
+      #if not chunk_utils.isOfferEmpty(offerCopy):
+       # offerQueue.push(offerCopy)
 
   return createdTasksChunks
 

@@ -65,24 +65,24 @@ class TaskQueue:
             sort_key = lambda task: -chunk_utils.numSubTasks(task),
             mapper = lambda offer: offer.task_id.value)
 
-  def stealHalfSubTasks(self, task, stealNum=0):
+  def stealSubTasks(self, taskChunk, numToSteal, stealFromBack):
     """
     Returns a list of stolenSubTasks and removes them from the taskChunk
     """
-    subTasks = [subTask for subTask in chunk_utils.subTaskIterator(task)]
-    if stealNum == 0:
-      startIndex = len(subTasks)/2
+    subTaskChunks = [subTaskChunk for subTaskChunk in
+                     chunk_utils.subTaskChunkIterator(taskChunk)]
+    if stealFromBack:
+      startIndex = len(subTaskChunks) - numToSteal
+      stolenTaskChunks = subTaskChunks[startIndex:]
     else:
-      startIndex = max(0, len(subTasks) - stealNum)
-    stolenTasks = subTasks[startIndex:]
-    
-    #stolenTasks = subTasks[max(0,len(subTasks)-numTasks):]
-    for stolenTask in stolenTasks:
-      chunk_utils.removeSubTask(task, stolenTask.task_id)
+      stolenTaskChunks = subTaskChunks[:numToSteal]
+   
+    for stolenTaskChunk in stolenTaskChunks:
+      chunk_utils.removeSubTaskChunk(taskChunk, stolenTaskChunk.taskChunk_id)
 
-    return stolenTasks
+    return stolenTaskChunks
 
-  def stealTasks(self, offer, stealNum=0, minNumTasks = 2):
+  def stealTasks(self, offer, numToSteal=None, minNumTasks=2, stealFromBack=True):
     """
     Give an offer to the queue. If accepted, it will return a
     new task chunk containing the subTasks it stole.
@@ -97,8 +97,10 @@ class TaskQueue:
       if (chunk_utils.numSubTasks(task) > minNumTasks and fitsIn(task, offer)):
         taskCopy = mesos_pb2.TaskInfo()
         taskCopy.CopyFrom(task)
-        stolenTasks = self.stealHalfSubTasks(taskCopy, stealNum)
+        if numToSteal is None:  #Steal Half
+          numToSteal = chunk_utils.numSubTasks(taskChunk) / 2
 
+        stolenTasks = self.stealSubTasks(taskCopy, numToSteal, stealFromBack)
         stolenTasksChunk = chunk_utils.newTaskChunk(offer.slave_id,
                 executor=taskCopy.executor, subTasks=stolenTasks)
 

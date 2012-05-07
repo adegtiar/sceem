@@ -91,8 +91,8 @@ class TestScheduler(mesos.Scheduler):
           offerTotalTasks += chunk_utils.numSubTasks(subTask)
 
         self.tasksLaunched += offerTotalTasks
-        startIndex = max(0, len(self.all_tasks) - offerTotalTasks)
-        del self.all_tasks[startIndex:]
+        index = min(offerTotalTasks,len(self.all_tasks))
+        del self.all_tasks[:index]
 
         print "Accepting offer on %s to start task chunk" % offer.hostname
         driver.launchTasks(offer.id, subTasks)
