@@ -39,7 +39,7 @@ SIMULATION_TIME = 32
 
 tasks_per_slave = int(SIMULATION_TIME / TASK_TIME)
 total_tasks = tasks_per_slave * NUM_SLAVES
-TASK_IDS = set(str(i) for i in range(total_tasks))
+TASK_IDS = set("Task_"+str(i) for i in range(total_tasks))
 
 TASK_MEM = 32
 task_cpus = None
