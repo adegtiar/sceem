@@ -76,7 +76,7 @@ class TaskQueue:
       stolenTasks = subTasks[startIndex:]
     else:
       stolenTasks = subTasks[:numToSteal]
-   
+
     for stolenTask in stolenTasks:
       chunk_utils.removeSubTask(taskChunk, stolenTask.task_id)
 
@@ -93,7 +93,7 @@ class TaskQueue:
 
     while self.queue.hasNext():
       task = self.queue.pop()
-        
+
       if (chunk_utils.numSubTasks(task) > minNumTasks and fitsIn(task, offer)):
         taskCopy = mesos_pb2.TaskInfo()
         taskCopy.CopyFrom(task)
@@ -113,5 +113,5 @@ class TaskQueue:
       self.queue.push(task)
 
     return stolenTasksChunk
-  
+
 
