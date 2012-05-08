@@ -38,7 +38,7 @@ DEFAULT_TASK_TIME = 0.25
 # The total work per slave, in seconds.
 WORK_PER_SLAVE = 6
 # The distribution to use.
-DEFAULT_DISTRIBUTION = task_utils.Distribution.NORMAL
+DEFAULT_DISTRIBUTION = task_utils.Distribution.UNIFORM
 # Default memory footprint of the executor.
 DEFAULT_TASK_MEM = 32
 # Flag to enable Task chunking.
@@ -126,13 +126,13 @@ class TestScheduler(mesos.Scheduler):
         driver.launchTasks(offer.id, [])
 
   def statusUpdate(self, driver, update):
-    print "Task %s is in state %d" % (update.task_id.value, update.state)
+    #print "Task %s is in state %d" % (update.task_id.value, update.state)
     if update.state == mesos_pb2.TASK_FINISHED:
       if update.task_id.value in self.task_ids:
         self.task_ids.remove(update.task_id.value)
         self.tasksFinished += 1
       else:
-        print "Task chunk finished: {0}".format(update.task_id.value)
+        #print "Task chunk finished: {0}".format(update.task_id.value)
         if ENABLE_LEVELS:
           total_tasks = self.num_total_tasks*NUM_TASK_CHUNKS
         else:
