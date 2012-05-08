@@ -44,8 +44,8 @@ DEFAULT_TASK_MEM = 32
 # Flag to enable Task chunking.
 ENABLE_TASK_CHUNKING = True
 # Scheduler driver to use.
-SCHEDULER_DRIVER = TaskStealingSchedulerDriver
-#SCHEDULER_DRIVER = TaskChunkSchedulerDriver
+#SCHEDULER_DRIVER = TaskStealingSchedulerDriver
+SCHEDULER_DRIVER = TaskChunkSchedulerDriver
 # Multiple levels of Task chunking.
 ENABLE_LEVELS = False
 
@@ -135,6 +135,7 @@ class TestScheduler(mesos.Scheduler):
 
 def runSimulation(master, num_slaves, task_time):
   print "Starting simulation with task time {0}".format(task_time)
+  task_utils.NORMAL_DIST = None
   executor = mesos_pb2.ExecutorInfo()
   executor.executor_id.value = "default"
   executor.command.value = os.path.abspath("./test-executor")
