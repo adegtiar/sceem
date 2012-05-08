@@ -19,6 +19,14 @@ LEFT_BOUND = SIGMA * -1.5
 RANGE = 2 * -LEFT_BOUND
 
 
+def resetGlobals(sigma=SIGMA):
+  COUNTER = itertools.count()
+  NORMAL_DIST = None
+  SIGMA = sigma
+  LEFT_BOUND = SIGMA * -1.5
+  RANGE = 2 * - LEFT_BOUND
+  
+
 def getTaskChunkSize(distribution, numTasks, numSlaves):
   """
   Return Number of tasks per task Chunk
