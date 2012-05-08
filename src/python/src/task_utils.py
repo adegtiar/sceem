@@ -12,20 +12,30 @@ class Distribution:
   UNIFORM, SPLIT, NORMAL = range(3)
 
 
-COUNTER = itertools.count()
-NORMAL_DIST = None
 SIGMA = 1
-LEFT_BOUND = SIGMA * -1.5
-RANGE = 2 * -LEFT_BOUND
+LEFT_BOUND_SCALE = 1.5
+
+# Initialized at the bottom.
+COUNTER = None
+NORMAL_DIST = None
+LEFT_BOUND = None
+RANGE = None
 
 
-def resetGlobals(sigma=SIGMA):
+def resetGlobals(sigma=SIGMA, leftBoundScale=LEFT_BOUND_SCALE):
+  global COUNTER
   COUNTER = itertools.count()
+  global NORMAL_DIST
   NORMAL_DIST = None
+  global SIGMA
   SIGMA = sigma
-  LEFT_BOUND = SIGMA * -1.5
+  global LEFT_BOUND_SCALE
+  LEFT_BOUND_SCALE = leftBoundScale
+  global LEFT_BOUND
+  LEFT_BOUND = SIGMA * -LEFT_BOUND_SCALE
+  global RANGE
   RANGE = 2 * - LEFT_BOUND
-  
+
 
 def getTaskChunkSize(distribution, numTasks, numSlaves):
   """
@@ -49,7 +59,7 @@ def getTaskChunkSize(distribution, numTasks, numSlaves):
 def updateNormList(taskChunk, distribution, numTasks):
   if taskChunk and distribution == Distribution.NORMAL:
     NORMAL_DIST.remove(numTasks)
-  
+
 
 def getNormList(numTasks, numBuckets):
   """
@@ -161,3 +171,7 @@ def getTaskTimes(numTasks, time, distribution=Distribution.UNIFORM, time2=0):
     taskTime = [abs(random.normalvariate(0,1))*time for i in xrange(numTasks)]
 
   return taskTime
+
+
+# Initialize globals.
+resetGlobals()
