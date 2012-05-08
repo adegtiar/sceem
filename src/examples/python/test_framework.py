@@ -144,7 +144,7 @@ class TestScheduler(mesos.Scheduler):
 
 def runSimulation(master, num_slaves, task_time):
   print "Starting simulation with task time {0}".format(task_time)
-  task_utils.NORMAL_DIST = None
+  task_utils.resetGlobals()
   executor = mesos_pb2.ExecutorInfo()
   executor.executor_id.value = "default"
   executor.command.value = os.path.abspath("./test-executor")
