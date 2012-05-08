@@ -1,0 +1,1 @@
+This project seeks to implement the back-end abstract schedulers and executors that provide task chunking and task stealing.
