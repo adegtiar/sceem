@@ -1,5 +1,5 @@
 Stealing and Chunking Execution Engine for Mesos
 
 This project seeks to implement the back-end abstract schedulers and executors that provide task chunking and task stealing.
-Link to technical report: https://github.com/adegtiar/sceem/raw/master/sceem_report.pdf
+Link to technical report: https://github.com/adegtiar/sceem/raw/master/technical_report.pdf
 Link to poster slides: https://github.com/adegtiar/sceem/raw/master/poster_slides.pdf
